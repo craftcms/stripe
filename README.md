@@ -4,7 +4,7 @@ Stripe Integration for Craft CMS
 
 ## Requirements
 
-This plugin requires Craft CMS 4.3.6.1 or later, and PHP 8.0.2 or later.
+This plugin requires Craft CMS 5.x or later, and PHP 8.2.x or later.
 
 ## Installation
 
