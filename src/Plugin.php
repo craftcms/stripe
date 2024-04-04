@@ -5,7 +5,16 @@ namespace craft\stripe;
 use Craft;
 use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
+use craft\events\RegisterComponentTypesEvent;
+use craft\events\RegisterUrlRulesEvent;
+use craft\services\Elements;
+use craft\stripe\elements\Product;
 use craft\stripe\models\Settings;
+use craft\stripe\services\Api;
+use craft\stripe\services\Products;
+use craft\web\UrlManager;
+use yii\base\Event;
+use yii\base\InvalidConfigException;
 
 /**
  * Stripe plugin
@@ -15,17 +24,40 @@ use craft\stripe\models\Settings;
  * @author Pixel & Tonic <support@craftcms.com>
  * @copyright Pixel & Tonic
  * @license MIT
+ * @property-read Products $products
+ * @property-read Api $api
  */
 class Plugin extends BasePlugin
 {
+    public const PC_PATH_PRODUCT_FIELD_LAYOUTS = 'stripe.productFieldLayout';
+
+    /**
+     * @var string
+     */
     public string $schemaVersion = '1.0.0';
+
+    /**
+     * @inheritdoc
+     */
     public bool $hasCpSettings = true;
+
+    /**
+     * @inheritdoc
+     */
+    public bool $hasCpSection = true;
+
+    /**
+     * @inheritdoc
+     */
+    public string $minVersionRequired = '5.0.0';
 
     public static function config(): array
     {
         return [
             'components' => [
-                // Define component configs here...
+                'api' => ['class' => Api::class],
+                'products' => ['class' => Products::class],
+                //'store' => ['class' => Store::class],
             ],
         ];
     }
@@ -36,9 +68,36 @@ class Plugin extends BasePlugin
 
         // Defer most setup tasks until Craft is fully initialized
         Craft::$app->onInit(function() {
-            $this->attachEventHandlers();
-            // ...
+            $request = Craft::$app->getRequest();
+            
+            $this->_registerElementTypes();
+//            $this->_registerUtilityTypes();
+//            $this->_registerFieldTypes();
+//            $this->_registerVariables();
+//            $this->_registerResaveCommands();
+
+            if (!$request->getIsConsoleRequest()) {
+                if ($request->getIsCpRequest()) {
+                    $this->_registerCpRoutes();
+                } /*else {
+                    $this->_registerSiteRoutes();
+                }*/
+            }
+//
+//            $projectConfigService = Craft::$app->getProjectConfig();
+//            $productsService = $this->getProducts();
+//
+//            $projectConfigService->onAdd(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
+//                ->onUpdate(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
+//                ->onRemove(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleDeletedFieldLayout']);
+
+//            // Globally register shopify webhooks registry event handlers
+//            Registry::addHandler(Topics::PRODUCTS_CREATE, new ProductHandler());
+//            Registry::addHandler(Topics::PRODUCTS_DELETE, new ProductHandler());
+//            Registry::addHandler(Topics::PRODUCTS_UPDATE, new ProductHandler());
+//            Registry::addHandler(Topics::INVENTORY_LEVELS_UPDATE, new ProductHandler());
         });
+
     }
 
     protected function createSettingsModel(): ?Model
@@ -48,15 +107,181 @@ class Plugin extends BasePlugin
 
     protected function settingsHtml(): ?string
     {
-        return Craft::$app->view->renderTemplate('stripe/_settings.twig', [
+        return Craft::$app->view->renderTemplate('stripe/settings/index.twig', [
             'plugin' => $this,
             'settings' => $this->getSettings(),
         ]);
     }
 
-    private function attachEventHandlers(): void
+    /**
+     * Returns the API service
+     *
+     * @return Api The API service
+     * @throws InvalidConfigException
+     */
+    public function getApi(): Api
     {
-        // Register event handlers here ...
-        // (see https://craftcms.com/docs/4.x/extend/events.html to get started)
+        return $this->get('api');
     }
+
+    /**
+     * Returns the Products service
+     *
+     * @return Products The Products service
+     * @throws InvalidConfigException
+     */
+    public function getProducts(): Products
+    {
+        return $this->get('products');
+    }
+
+//    /**
+//     * Returns the Store service
+//     *
+//     * @return Store The Store service
+//     * @throws InvalidConfigException
+//     * @since 3.0
+//     */
+//    public function getStore(): Store
+//    {
+//        return $this->get('store');
+//    }
+
+//    /**
+//     * Registers the utilities.
+//     *
+//     * @since 3.0
+//     */
+//    private function _registerUtilityTypes(): void
+//    {
+//        Event::on(
+//            Utilities::class,
+//            Utilities::EVENT_REGISTER_UTILITIES,
+//            function(RegisterComponentTypesEvent $event) {
+//                $event->types[] = Sync::class;
+//            }
+//        );
+//    }
+
+    /**
+     * Register the element types supplied by Shopify
+     *
+     * @since 3.0
+     */
+    private function _registerElementTypes(): void
+    {
+        Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, function (RegisterComponentTypesEvent $event) {
+            $event->types[] = Product::class;
+        });
+    }
+
+//    /**
+//     * Register Shopify’s fields
+//     *
+//     * @since 3.0
+//     */
+//    private function _registerFieldTypes(): void
+//    {
+//        Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, static function(RegisterComponentTypesEvent $event) {
+//            $event->types[] = ProductsField::class;
+//        });
+//    }
+
+//    /**
+//     * Register Shopify twig variables to the main craft variable
+//     *
+//     * @since 3.0
+//     */
+//    private function _registerVariables(): void
+//    {
+//        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, static function(Event $event) {
+//            $variable = $event->sender;
+//            $variable->attachBehavior('shopify', CraftVariableBehavior::class);
+//        });
+//    }
+
+//    public function _registerResaveCommands(): void
+//    {
+//        Event::on(ResaveController::class, Controller::EVENT_DEFINE_ACTIONS, static function(DefineConsoleActionsEvent $e) {
+//            $e->actions['shopify-products'] = [
+//                'action' => function(): int {
+//                    /** @var ResaveController $controller */
+//                    $controller = Craft::$app->controller;
+//                    return $controller->resaveElements(Product::class);
+//                },
+//                'options' => [],
+//                'helpSummary' => 'Re-saves Shopify products.',
+//            ];
+//        });
+//    }
+
+    /**
+     * Register the CP routes
+     */
+    private function _registerCpRoutes(): void
+    {
+        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
+            //$session = Plugin::getInstance()->getApi()->getSession();
+            $session = false;
+            $event->rules['stripe'] = ['template' => 'stripe/_index', 'variables' => ['hasSession' => (bool)$session]];
+            $event->rules['stripe/products'] = ['template' => 'stripe/products/_index.twig'];
+            $event->rules['stripe/products/<elementId:\\d+>'] = 'elements/edit';
+            $event->rules['stripe/settings'] = 'stripe/settings';
+
+//            $event->rules['shopify/products'] = 'shopify/products/product-index';
+//            $event->rules['shopify/sync-products'] = 'shopify/products/sync';
+//            $event->rules['shopify/products/<elementId:\d+>'] = 'elements/edit';
+
+//            $event->rules['shopify/webhooks'] = 'shopify/webhooks/edit';
+        });
+    }
+
+//    /**
+//     * Registers the Site routes.
+//     *
+//     * @since 3.0
+//     */
+//    private function _registerSiteRoutes(): void
+//    {
+//        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function(RegisterUrlRulesEvent $event) {
+//            $event->rules['shopify/webhook/handle'] = 'shopify/webhook/handle';
+//        });
+//    }
+
+//    /**
+//     * @inheritdoc
+//     */
+//    public function getCpNavItem(): ?array
+//    {
+//        $ret = parent::getCpNavItem();
+//        $ret['label'] = Craft::t('shopify', 'Shopify');
+//
+//        $session = Plugin::getInstance()->getApi()->getSession();
+//
+//        if ($session) {
+//            $ret['subnav']['products'] = [
+//                'label' => Craft::t('shopify', 'Products'),
+//                'url' => 'shopify/products',
+//            ];
+//        }
+//
+//        if (Craft::$app->getUser()->getIsAdmin() && Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+//            $ret['subnav']['settings'] = [
+//                'label' => Craft::t('shopify', 'Settings'),
+//                'url' => 'shopify/settings',
+//            ];
+//        }
+//
+//        if ($session) {
+//            if (Craft::$app->getUser()->getIsAdmin()) {
+//                $ret['subnav']['webhooks'] = [
+//                    'label' => Craft::t('shopify', 'Webhooks'),
+//                    'url' => 'shopify/webhooks',
+//                ];
+//            }
+//        }
+//
+//
+//        return $ret;
+//    }
 }
