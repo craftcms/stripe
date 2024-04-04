@@ -1,0 +1,83 @@
+{% extends "stripe/settings/_layout" %}
+{% import '_includes/forms.twig' as forms %}
+{% set fullPageForm = true %}
+
+{#{% do view.registerTranslations('stripe', [
+    "Topic",
+    "Address"
+]) %}#}
+
+{% block content %}
+    {% set headlessMode = craft.app.config.general.headlessMode %}
+    {{ actionInput('stripe/settings/save-settings') }}
+    {{ redirectInput('stripe/settings') }}
+
+    <div id="products" class="hidden">
+
+        {#{{ forms.editableTableField({
+            label: "Routing Settings"|t('shopify'),
+            instructions: "Configure the product’s front-end routing settings."|t('shopify'),
+            id: 'routing',
+            name: 'settings',
+            cols: {
+                uriFormat: {
+                    type: 'singleline',
+                    heading: "Product URI Format"|t('shopify'),
+                    info: "What product URIs should look like."|t('shopify'),
+                    placeholder: "Leave blank if products don’t have URLs"|t('shopify'),
+                    code: true
+                },
+                template: not headlessMode ? {
+                    type: 'template',
+                    heading: "Template"|t('app'),
+                    info: "Which template should be loaded when a product’s URL is requested."|t('shopify'),
+                    code: true
+                },
+            }|filter,
+            rows: {
+                'routing': {
+                    uriFormat: {
+                        value: settings.uriFormat ?? null,
+                        hasErrors: settings.hasErrors('uriFormat') ?? false
+                    },
+                    template: not headlessMode ? {
+                        value: settings.template ?? null,
+                        hasErrors: settings.hasErrors('template') ?? false,
+                    }
+                }
+            },
+            allowAdd: false,
+            allowDelete: false,
+            allowReorder: false,
+            errors: []|unique
+        }) }}
+
+        {{ forms.fieldLayoutDesignerField({
+            fieldLayout: settings.getProductFieldLayout(),
+        }) }}#}
+    </div>
+
+    <div id="api">
+        {{ forms.autosuggestField({
+            first: true,
+            label: 'Secret Key'|t('stripe'),
+            id: 'secretKey',
+            name: 'settings[secretKey]',
+            value: settings.secretKey,
+            errors: settings.getErrors('secretKey'),
+            suggestEnvVars: true,
+            autofocus: true,
+        }) }}
+
+        {{ forms.autosuggestField({
+            first: true,
+            label: 'Public Key'|t('stripe'),
+            id: 'publicKey',
+            name: 'settings[publicKey]',
+            value: settings.publicKey,
+            errors: settings.getErrors('publicKey'),
+            suggestEnvVars: true,
+            autofocus: true,
+        }) }}
+    </div>
+{% endblock %}

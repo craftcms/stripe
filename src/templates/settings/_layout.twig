@@ -1,0 +1,33 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{% extends "_layouts/cp" %}
+{% set selectedSubnavItem = 'settings' %}
+
+{% set title = "Settings"|t('stripe') %}
+
+{% set navItems = {} %}
+
+{% if currentUser.admin %}
+    {% set navItems = {
+        'general': { title: "General"|t('stripe') },
+        'products': { title: "Products"|t('stripe') },
+    } %}
+{% endif %}
+
+{% if selectedItem is not defined %}
+    {% set selectedItem = craft.app.request.getSegment(2) %}
+{% endif %}
+
+{% macro configWarning(setting, file) -%}
+    {%- apply spaceless %}
+        {% set config = craft.app.config.getConfigFromFile(file) %}
+        {% if config[setting] is defined %}
+            {{ "This is being overridden by the {setting} config setting in `config/{file}.php`."|t('stripe', {
+                setting: setting,
+                file: file,
+            })|raw }}
+        {% else %}
+            {{ false }}
+        {% endif %}
+    {% endapply -%}
+{%- endmacro %}
+

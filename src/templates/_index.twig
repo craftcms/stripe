@@ -1,0 +1,5 @@
+{% if hasSession %}
+    {% redirect 'stripe/products' %}
+{% else %}
+    {% redirect 'stripe/settings' %}
+{% endif %}
