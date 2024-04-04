@@ -9,7 +9,9 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\App;
 use craft\services\Elements;
+use craft\services\Fields;
 use craft\stripe\elements\Product;
+use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\models\Settings;
 use craft\stripe\services\Api;
 use craft\stripe\services\Products;
@@ -84,7 +86,7 @@ class Plugin extends BasePlugin
             
             $this->_registerElementTypes();
 //            $this->_registerUtilityTypes();
-//            $this->_registerFieldTypes();
+            $this->_registerFieldTypes();
 //            $this->_registerVariables();
 //            $this->_registerResaveCommands();
 
@@ -112,7 +114,6 @@ class Plugin extends BasePlugin
             // get stripe environment from the secret key
             $this->stripeMode = $this->_getStripeMode();
         });
-
     }
 
     protected function createSettingsModel(): ?Model
@@ -190,17 +191,15 @@ class Plugin extends BasePlugin
         });
     }
 
-//    /**
-//     * Register Shopify’s fields
-//     *
-//     * @since 3.0
-//     */
-//    private function _registerFieldTypes(): void
-//    {
-//        Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, static function(RegisterComponentTypesEvent $event) {
-//            $event->types[] = ProductsField::class;
-//        });
-//    }
+    /**
+     * Register Stripe Product Relation field
+     */
+    private function _registerFieldTypes(): void
+    {
+        Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, static function(RegisterComponentTypesEvent $event) {
+            $event->types[] = ProductsField::class;
+        });
+    }
 
 //    /**
 //     * Register Shopify twig variables to the main craft variable
