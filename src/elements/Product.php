@@ -57,9 +57,9 @@ class Product extends Element
     public ?string $stripeId = null;
 
     /**
-     * @var array
+     * @var array|null
      */
-    private array $_data = [];
+    private ?array $_data = null;
 
 
     // Methods
@@ -256,19 +256,6 @@ class Product extends Element
     {
         return [
             'stripeId' => Craft::t('stripe', 'Stripe ID'),
-//            'createdAt' => Craft::t('shopify', 'Created At'),
-//            'handle' => Craft::t('shopify', 'Handle'),
-//            // TODO: Support images
-//            // 'images' => Craft::t('shopify', 'Images'),
-//            'options' => Craft::t('shopify', 'Options'),
-//            'productType' => Craft::t('shopify', 'Product Type'),
-//            'publishedAt' => Craft::t('shopify', 'Published At'),
-//            'publishedScope' => Craft::t('shopify', 'Published Scope'),
-//            'shopifyStatus' => Craft::t('shopify', 'Shopify Status'),
-//            'tags' => Craft::t('shopify', 'Tags'),
-//            'updatedAt' => Craft::t('shopify', 'Updated At'),
-//            'variants' => Craft::t('shopify', 'Variants'),
-//            'vendor' => Craft::t('shopify', 'Vendor'),
             'stripeEdit' => Craft::t('stripe', 'Stripe Edit'),
         ];
     }
@@ -364,7 +351,7 @@ class Product extends Element
 
     public function canDelete(User $user): bool
     {
-        // We normally cant delete shopify elements, but we can if we are in a draft state.
+        // We normally cant delete stripe elements, but we can if we are in a draft state.
         if ($this->getIsDraft()) {
             return true;
         }
@@ -506,7 +493,7 @@ class Product extends Element
      * @param string|array $value
      * @return void
      */
-    public function setData(string|array $value): void
+    public function setData(string|array|null $value): void
     {
         if (is_string($value)) {
             $value = Json::decodeIfJson($value);

@@ -5,10 +5,11 @@ namespace craft\stripe\services;
 use Craft;
 use craft\events\ConfigEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Json;
 use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
-use craft\stripe\elements\Product;
 use craft\stripe\elements\Product as ProductElement;
+use craft\stripe\events\StripeProductSyncEvent;
 use craft\stripe\records\ProductData as ProductDataRecord;
 use craft\stripe\Plugin;
 use Stripe\Product as StripeProduct;
@@ -19,6 +20,30 @@ use yii\base\Component;
  */
 class Products extends Component
 {
+    /**
+     * @event StripeProductSyncEvent Event triggered just before Stripe product data is saved to a product element.
+     *
+     * ---
+     *
+     * ```php
+     * use craft\stripe\events\StripeProductSyncEvent;
+     * use craft\stripe\services\Products;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Products::class,
+     *     Products::EVENT_BEFORE_SYNCHRONIZE_PRODUCT,
+     *     function(StripeProductSyncEvent $event) {
+     *         // Cancel the sync if a flag is set via a Stripe metadata:
+     *         if ($event->element->data['metadata']['do_not_sync'] ?? false) {
+     *             $event->isValid = false;
+     *         }
+     *     }
+     * );
+     * ```
+     */
+    public const EVENT_BEFORE_SYNCHRONIZE_PRODUCT = 'beforeSynchronizeProduct';
+
     /**
      * @return void
      * @throws \Throwable
@@ -57,8 +82,8 @@ class Products extends Component
         $attributes = [
             'stripeId' => $product->id,
             'title' => $product->name,
-            'stripeStatus' => $product->active ? Product::STRIPE_STATUS_ACTIVE : Product::STRIPE_STATUS_ARCHIVED,
-            'data' => $product->toJSON(),
+            'stripeStatus' => $product->active ? ProductElement::STRIPE_STATUS_ACTIVE : ProductElement::STRIPE_STATUS_ARCHIVED,
+            'data' => Json::decode($product->toJSON()),
         ];
 
         // Find the product data or create one
@@ -67,7 +92,7 @@ class Products extends Component
 
         // Set attributes and save:
         $productDataRecord->setAttributes($attributes, false);
-        $productDataRecord->save();
+
 
         // Find the product element or create one
         /** @var ProductElement|null $productElement */
@@ -84,17 +109,20 @@ class Products extends Component
         // Set attributes on the element to emulate it having been loaded with JOINed data:
         $productElement->setAttributes($attributes, false);
 
-//        $event = new ShopifyProductSyncEvent([
-//            'element' => $productElement,
-//            'source' => $product,
-//        ]);
-//        $this->trigger(self::EVENT_BEFORE_SYNCHRONIZE_PRODUCT, $event);
-//
-//        if (!$event->isValid) {
-//            Craft::warning("Synchronization of Shopify product ID #{$product->id} was stopped by a plugin.", 'shopify');
-//
-//            return false;
-//        }
+        $event = new StripeProductSyncEvent([
+            'element' => $productElement,
+            'source' => $product,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_SYNCHRONIZE_PRODUCT, $event);
+
+        if (!$event->isValid) {
+            Craft::warning("Synchronization of Stripe product ID #{$product->id} was stopped by a plugin.", 'stripe');
+
+            return false;
+        }
+
+        // if we're still processing, we can save the productDataRecord
+        $productDataRecord->save();
 
         if (!Craft::$app->getElements()->saveElement($productElement)) {
             Craft::error("Failed to synchronize Stripe product ID #{$product->id}.", 'stripe');
@@ -119,20 +147,20 @@ class Products extends Component
 
         if (empty($data) || empty(reset($data))) {
             // Delete the field layout
-            $fieldsService->deleteLayoutsByType(Product::class);
+            $fieldsService->deleteLayoutsByType(ProductElement::class);
             return;
         }
 
         // Save the field layout
         $layout = FieldLayout::createFromConfig(reset($data));
-        $layout->id = $fieldsService->getLayoutByType(Product::class)->id;
-        $layout->type = Product::class;
+        $layout->id = $fieldsService->getLayoutByType(ProductElement::class)->id;
+        $layout->type = ProductElement::class;
         $layout->uid = key($data);
         $fieldsService->saveLayout($layout, false);
 
 
         // Invalidate product caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Product::class);
+        Craft::$app->getElements()->invalidateCachesForElementType(ProductElement::class);
     }
 
     /**
@@ -140,6 +168,6 @@ class Products extends Component
      */
     public function handleDeletedFieldLayout(): void
     {
-        Craft::$app->getFields()->deleteLayoutsByType(Product::class);
+        Craft::$app->getFields()->deleteLayoutsByType(ProductElement::class);
     }
 }

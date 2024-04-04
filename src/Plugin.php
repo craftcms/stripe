@@ -105,7 +105,7 @@ class Plugin extends BasePlugin
                 ->onUpdate(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
                 ->onRemove(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleDeletedFieldLayout']);
 
-//            // Globally register shopify webhooks registry event handlers
+//            // Globally register stripe webhooks registry event handlers
 //            Registry::addHandler(Topics::PRODUCTS_CREATE, new ProductHandler());
 //            Registry::addHandler(Topics::PRODUCTS_DELETE, new ProductHandler());
 //            Registry::addHandler(Topics::PRODUCTS_UPDATE, new ProductHandler());
@@ -180,7 +180,7 @@ class Plugin extends BasePlugin
 //    }
 
     /**
-     * Register the element types supplied by Shopify
+     * Register the element types supplied by Stripe
      *
      * @since 3.0
      */
@@ -202,7 +202,7 @@ class Plugin extends BasePlugin
     }
 
 //    /**
-//     * Register Shopify twig variables to the main craft variable
+//     * Register Stripe twig variables to the main craft variable
 //     *
 //     * @since 3.0
 //     */
@@ -210,21 +210,21 @@ class Plugin extends BasePlugin
 //    {
 //        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, static function(Event $event) {
 //            $variable = $event->sender;
-//            $variable->attachBehavior('shopify', CraftVariableBehavior::class);
+//            $variable->attachBehavior('stripe', CraftVariableBehavior::class);
 //        });
 //    }
 
 //    public function _registerResaveCommands(): void
 //    {
 //        Event::on(ResaveController::class, Controller::EVENT_DEFINE_ACTIONS, static function(DefineConsoleActionsEvent $e) {
-//            $e->actions['shopify-products'] = [
+//            $e->actions['stripe-products'] = [
 //                'action' => function(): int {
 //                    /** @var ResaveController $controller */
 //                    $controller = Craft::$app->controller;
 //                    return $controller->resaveElements(Product::class);
 //                },
 //                'options' => [],
-//                'helpSummary' => 'Re-saves Shopify products.',
+//                'helpSummary' => 'Re-saves Stripe products.',
 //            ];
 //        });
 //    }
@@ -242,8 +242,8 @@ class Plugin extends BasePlugin
             $event->rules['stripe/products/<elementId:\\d+>'] = 'elements/edit';
             $event->rules['stripe/settings'] = 'stripe/settings';
 
-//            $event->rules['shopify/sync-products'] = 'shopify/products/sync';
-//            $event->rules['shopify/webhooks'] = 'shopify/webhooks/edit';
+//            $event->rules['stripe/sync-products'] = 'stripe/products/sync';
+//            $event->rules['stripe/webhooks'] = 'stripe/webhooks/edit';
         });
     }
 
@@ -255,7 +255,7 @@ class Plugin extends BasePlugin
 //    private function _registerSiteRoutes(): void
 //    {
 //        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function(RegisterUrlRulesEvent $event) {
-//            $event->rules['shopify/webhook/handle'] = 'shopify/webhook/handle';
+//            $event->rules['stripe/webhook/handle'] = 'stripe/webhook/handle';
 //        });
 //    }
 

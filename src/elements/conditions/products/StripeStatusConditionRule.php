@@ -7,8 +7,8 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\StringHelper;
-use craft\shopify\elements\db\ProductQuery;
-use craft\shopify\elements\Product;
+use craft\stripe\elements\db\ProductQuery;
+use craft\stripe\elements\Product;
 
 class StripeStatusConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
@@ -26,8 +26,8 @@ class StripeStatusConditionRule extends BaseMultiSelectConditionRule implements 
     protected function options(): array
     {
         return [
-            ['value' => Product::SHOPIFY_STATUS_ACTIVE, 'label' => StringHelper::titleize(Product::SHOPIFY_STATUS_ACTIVE)],
-            ['value' => Product::SHOPIFY_STATUS_ARCHIVED, 'label' => StringHelper::titleize(Product::SHOPIFY_STATUS_ARCHIVED)],
+            ['value' => Product::STRIPE_STATUS_ACTIVE, 'label' => StringHelper::titleize(Product::STRIPE_STATUS_ACTIVE)],
+            ['value' => Product::STRIPE_STATUS_ARCHIVED, 'label' => StringHelper::titleize(Product::STRIPE_STATUS_ARCHIVED)],
         ];
     }
 

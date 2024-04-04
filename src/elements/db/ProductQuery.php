@@ -16,12 +16,12 @@ class ProductQuery extends ElementQuery
     /**
      * @var mixed The Stripe product ID(s) that the resulting products must have.
      */
-    public ?string $stripeId = null;
+    public mixed $stripeId = null;
 
     /**
-     * @var string|null
+     * @var mixed
      */
-    public ?string $stripeStatus = null;
+    public mixed $stripeStatus = null;
 
 //    public mixed $handle = null;
 //    public mixed $productType = null;
@@ -50,7 +50,7 @@ class ProductQuery extends ElementQuery
     }
 
 //    /**
-//     * Narrows the query results based on the Shopify product type
+//     * Narrows the query results based on the Stripe product type
 //     */
 //    public function productType(mixed $value): self
 //    {
@@ -59,7 +59,7 @@ class ProductQuery extends ElementQuery
 //    }
 
 //    /**
-//     * Narrows the query results based on the Shopify product type
+//     * Narrows the query results based on the Stripe product type
 //     */
 //    public function publishedScope(mixed $value): self
 //    {
@@ -77,7 +77,7 @@ class ProductQuery extends ElementQuery
     }
 
 //    /**
-//     * Narrows the query results based on the Shopify product handle
+//     * Narrows the query results based on the Stripe product handle
 //     */
 //    public function handle(mixed $value): self
 //    {
@@ -86,7 +86,7 @@ class ProductQuery extends ElementQuery
 //    }
 
 //    /**
-//     * Narrows the query results based on the Shopify product vendor
+//     * Narrows the query results based on the Stripe product vendor
 //     */
 //    public function vendor(mixed $value): self
 //    {
@@ -95,7 +95,7 @@ class ProductQuery extends ElementQuery
 //    }
 
 //    /**
-//     * Narrows the query results based on the Shopify product tags
+//     * Narrows the query results based on the Stripe product tags
 //     */
 //    public function tags(mixed $value): self
 //    {
@@ -104,9 +104,9 @@ class ProductQuery extends ElementQuery
 //    }
 
     /**
-     * Narrows the query results based on the Shopify product ID
+     * Narrows the query results based on the Stripe product ID
      */
-    public function stripeId(mixed $value): \craft\stripe\elements\db\ProductQuery
+    public function stripeId(mixed $value): self
     {
         $this->stripeId = $value;
         return $this;
@@ -119,10 +119,10 @@ class ProductQuery extends ElementQuery
      *
      * | Value | Fetches {elements}…
      * | - | -
-     * | `'live'` _(default)_ | that are live (enabled in Craft, with an Active shopify Status).
+     * | `'live'` _(default)_ | that are live (enabled in Craft, with an Active Stripe Status).
      * | `'stripeArchived'` | that are enabled, with an Archived Stripe Status.
      * | `'disabled'` | that are disabled in Craft (Regardless of Stripe Status).
-     * | `['live', 'stripeArchived']` | that are live or shopify draft.
+     * | `['live', 'stripeArchived']` | that are live or with an Archived Stripe Status.
      *
      * ---
      *
@@ -181,7 +181,7 @@ class ProductQuery extends ElementQuery
         $productTable = 'stripe_products';
         $productDataTable = 'stripe_productdata';
 
-        // join standard product element table that only contains the shopifyId
+        // join standard product element table that only contains the stripeId
         $this->joinElementTable($productTable);
 
         $productDataJoinTable = [$productDataTable => "{{%$productDataTable}}"];
@@ -203,11 +203,11 @@ class ProductQuery extends ElementQuery
         }
 //
 //        if (isset($this->productType)) {
-//            $this->subQuery->andWhere(Db::parseParam('shopify_productdata.productType', $this->productType));
+//            $this->subQuery->andWhere(Db::parseParam('stripe_productdata.productType', $this->productType));
 //        }
 //
 //        if (isset($this->publishedScope)) {
-//            $this->subQuery->andWhere(Db::parseParam('shopify_productdata.publishedScope', $this->publishedScope));
+//            $this->subQuery->andWhere(Db::parseParam('stripe_productdata.publishedScope', $this->publishedScope));
 //        }
 //
         if (isset($this->stripeStatus)) {
@@ -215,15 +215,15 @@ class ProductQuery extends ElementQuery
         }
 //
 //        if (isset($this->handle)) {
-//            $this->subQuery->andWhere(Db::parseParam('shopify_productdata.handle', $this->handle));
+//            $this->subQuery->andWhere(Db::parseParam('stripe_productdata.handle', $this->handle));
 //        }
 //
 //        if (isset($this->vendor)) {
-//            $this->subQuery->andWhere(Db::parseParam('shopify_productdata.vendor', $this->vendor));
+//            $this->subQuery->andWhere(Db::parseParam('stripe_productdata.vendor', $this->vendor));
 //        }
 //
 //        if (isset($this->tags)) {
-//            $this->subQuery->andWhere(Db::parseParam('shopify_productdata.tags', $this->tags));
+//            $this->subQuery->andWhere(Db::parseParam('stripe_productdata.tags', $this->tags));
 //        }
 
         return parent::beforePrepare();
