@@ -58,29 +58,31 @@ class SettingsController extends Controller
     {
         $settings = Craft::$app->getRequest()->getParam('settings');
         $plugin = Plugin::getInstance();
+
         /** @var Settings $pluginSettings */
         $pluginSettings = $plugin->getSettings();
-//        $originalUriFormat = $pluginSettings->uriFormat;
-//
-//        // Remove from editable table namespace
-//        $settings['uriFormat'] = $settings['routing']['uriFormat'];
-//        // Could be blank if in headless mode
-//        if (isset($settings['routing']['template'])) {
-//            $settings['template'] = $settings['routing']['template'];
-//        }
-//        unset($settings['routing']);
+
+        $originalUriFormat = $pluginSettings->uriFormat;
+
+        // Remove from editable table namespace
+        $settings['uriFormat'] = $settings['routing']['uriFormat'];
+        // Could be blank if in headless mode
+        if (isset($settings['routing']['template'])) {
+            $settings['template'] = $settings['routing']['template'];
+        }
+        unset($settings['routing']);
 
         $settingsSuccess = Craft::$app->getPlugins()->savePluginSettings($plugin, $settings);
 
-//        $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
-//        $fieldLayout->type = Product::class;
-//
-//        $projectConfig = Craft::$app->getProjectConfig();
-//        $uid = StringHelper::UUID();
-//        $fieldLayoutConfig = $fieldLayout->getConfig();
-//        $projectConfig->set(Plugin::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Shopify product field layout');
-//
-//        $pluginSettings->setProductFieldLayout($fieldLayout);
+        $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
+        $fieldLayout->type = Product::class;
+
+        $projectConfig = Craft::$app->getProjectConfig();
+        $uid = StringHelper::UUID();
+        $fieldLayoutConfig = $fieldLayout->getConfig();
+        $projectConfig->set(Plugin::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Stripe product field layout');
+
+        $pluginSettings->setProductFieldLayout($fieldLayout);
 
         if (!$settingsSuccess) {
             return $this->asModelFailure(
@@ -90,17 +92,17 @@ class SettingsController extends Controller
             );
         }
 
-//        // Resave all products if the URI format changed
-//        if ($originalUriFormat != $settings['uriFormat']) {
-//            Craft::$app->getQueue()->push(new ResaveElements([
-//                'elementType' => Product::class,
-//                'criteria' => [
-//                    'siteId' => '*',
-//                    'unique' => true,
-//                    'status' => null,
-//                ],
-//            ]));
-//        }
+        // Resave all products if the URI format changed
+        if ($originalUriFormat != $settings['uriFormat']) {
+            Craft::$app->getQueue()->push(new ResaveElements([
+                'elementType' => Product::class,
+                'criteria' => [
+                    'siteId' => '*',
+                    'unique' => true,
+                    'status' => null,
+                ],
+            ]));
+        }
 
         return $this->asModelSuccess(
             $pluginSettings,

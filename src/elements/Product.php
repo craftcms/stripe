@@ -10,9 +10,13 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use craft\stripe\records\Product as ProductRecord;
-use craft\stripe\elements\conditions\ProductCondition;
+use craft\models\FieldLayout;
+use craft\stripe\Plugin;
+use craft\stripe\elements\conditions\products\ProductCondition;
 use craft\stripe\elements\db\ProductQuery;
+use craft\stripe\helpers\Product as ProductHelper;
+use craft\stripe\records\Product as ProductRecord;
+use craft\stripe\web\assets\stripecp\StripeCpAsset;
 use craft\web\CpScreenResponseBehavior;
 use yii\base\InvalidConfigException;
 use yii\helpers\Html as HtmlHelper;
@@ -61,46 +65,73 @@ class Product extends Element
     // Methods
     // -------------------------------------------------------------------------
 
+    /**
+     * @inheritdoc
+     */
     public static function displayName(): string
     {
-        return Craft::t('stripe', 'Product');
+        return Craft::t('stripe', 'Stripe Product');
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('stripe', 'product');
+        return Craft::t('stripe', 'stripe product');
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('stripe', 'Products');
+        return Craft::t('stripe', 'Stripe Products');
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('stripe', 'products');
+        return Craft::t('stripe', 'stripe products');
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function refHandle(): ?string
     {
-        return 'product';
+        return 'stripeproduct';
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function trackChanges(): bool
     {
         return true;
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function hasTitles(): bool
     {
         return true;
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function hasUris(): bool
     {
         return true;
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function isLocalized(): bool
     {
         return false;
@@ -143,16 +174,44 @@ class Product extends Element
         return $status;
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function find(): ElementQueryInterface
     {
         return Craft::createObject(ProductQuery::class, [static::class]);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function createCondition(): ElementConditionInterface
     {
         return Craft::createObject(ProductCondition::class, [static::class]);
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout(): ?FieldLayout
+    {
+        return Craft::$app->fields->getLayoutByType(Product::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSidebarHtml(bool $static): string
+    {
+        /** @noinspection PhpUnhandledExceptionInspection */
+        Craft::$app->getView()->registerAssetBundle(StripeCpAsset::class);
+        $productCard = ProductHelper::renderCardHtml($this);
+        return $productCard . parent::getSidebarHtml($static);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected static function defineSources(string $context): array
     {
         return [
@@ -163,80 +222,79 @@ class Product extends Element
         ];
     }
 
-    protected static function defineActions(string $source): array
-    {
-        // List any bulk element actions here
-        return [];
-    }
-
+    /**
+     * @inheritdoc
+     */
     protected static function includeSetStatusAction(): bool
     {
         return true;
     }
 
+    /**
+     * @inheritdoc
+     */
     protected static function defineSortOptions(): array
     {
-        return [
-            'title' => Craft::t('app', 'Title'),
-            'slug' => Craft::t('app', 'Slug'),
-            'uri' => Craft::t('app', 'URI'),
-            [
-                'label' => Craft::t('app', 'Date Created'),
-                'orderBy' => 'elements.dateCreated',
-                'attribute' => 'dateCreated',
-                'defaultDir' => 'desc',
-            ],
-            [
-                'label' => Craft::t('app', 'Date Updated'),
-                'orderBy' => 'elements.dateUpdated',
-                'attribute' => 'dateUpdated',
-                'defaultDir' => 'desc',
-            ],
-            [
-                'label' => Craft::t('app', 'ID'),
-                'orderBy' => 'elements.id',
-                'attribute' => 'id',
-            ],
-            // ...
+        $sortOptions = parent::defineSortOptions();
+
+        $sortOptions['stripeId'] = [
+            'label' => Craft::t('stripe', 'Stripe ID'),
+            'orderBy' => 'stripe_productdata.stripeId',
+            'defaultDir' => SORT_DESC,
         ];
+
+        $sortOptions['stripeStatus'] = [
+            'label' => Craft::t('stripe', 'Stripe Status'),
+            'orderBy' => 'stripe_productdata.stripeStatus',
+            'defaultDir' => SORT_DESC,
+        ];
+
+        return $sortOptions;
     }
 
     protected static function defineTableAttributes(): array
     {
         return [
-            'slug' => ['label' => Craft::t('app', 'Slug')],
-            'uri' => ['label' => Craft::t('app', 'URI')],
-            'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
-            'id' => ['label' => Craft::t('app', 'ID')],
-            'uid' => ['label' => Craft::t('app', 'UID')],
-            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
-            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
-            // ...
+            'stripeId' => Craft::t('stripe', 'Stripe ID'),
+//            'createdAt' => Craft::t('shopify', 'Created At'),
+//            'handle' => Craft::t('shopify', 'Handle'),
+//            // TODO: Support images
+//            // 'images' => Craft::t('shopify', 'Images'),
+//            'options' => Craft::t('shopify', 'Options'),
+//            'productType' => Craft::t('shopify', 'Product Type'),
+//            'publishedAt' => Craft::t('shopify', 'Published At'),
+//            'publishedScope' => Craft::t('shopify', 'Published Scope'),
+//            'shopifyStatus' => Craft::t('shopify', 'Shopify Status'),
+//            'tags' => Craft::t('shopify', 'Tags'),
+//            'updatedAt' => Craft::t('shopify', 'Updated At'),
+//            'variants' => Craft::t('shopify', 'Variants'),
+//            'vendor' => Craft::t('shopify', 'Vendor'),
+            'stripeEdit' => Craft::t('stripe', 'Stripe Edit'),
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
-            'link',
-            'dateCreated',
-            // ...
+            'stripeId',
+            'stripeStatus',
         ];
     }
 
-    protected function defineRules(): array
-    {
-        return array_merge(parent::defineRules(), [
-            // ...
-        ]);
-    }
-
+    /**
+     * @inheritdoc
+     */
     public function getUriFormat(): ?string
     {
-        // If products should have URLs, define their URI format here
-        return null;
+        return Plugin::getInstance()->getSettings()->uriFormat;
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function previewTargets(): array
     {
         $previewTargets = [];
@@ -250,18 +308,6 @@ class Product extends Element
             ];
         }
         return $previewTargets;
-    }
-
-    protected function route(): array|string|null
-    {
-        // Define how products should be routed when their URLs are requested
-        return [
-            'templates/render',
-            [
-                'template' => 'site/template/path',
-                'variables' => ['product' => $this],
-            ]
-        ];
     }
 
     public function canView(User $user): bool
@@ -282,50 +328,71 @@ class Product extends Element
         return $user->can('saveProducts');
     }
 
-    public function canDuplicate(User $user): bool
-    {
-        if (parent::canDuplicate($user)) {
-            return true;
-        }
-        // todo: implement user permissions
-        return $user->can('saveProducts');
-    }
+//    public function canDuplicate(User $user): bool
+//    {
+//        if (parent::canDuplicate($user)) {
+//            return true;
+//        }
+//        // todo: implement user permissions
+//        return $user->can('saveProducts');
+//    }
 
     public function canDelete(User $user): bool
     {
-        if (parent::canSave($user)) {
+        // We normally cant delete shopify elements, but we can if we are in a draft state.
+        if ($this->getIsDraft()) {
             return true;
         }
-        // todo: implement user permissions
-        return $user->can('deleteProducts');
+
+        return false;
+//        if (parent::canSave($user)) {
+//            return true;
+//        }
+//        // todo: implement user permissions
+//        return $user->can('deleteProducts');
     }
 
+    /**
+     * @inheritdoc
+     */
     public function canCreateDrafts(User $user): bool
     {
         return true;
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function cpEditUrl(): ?string
     {
-        return sprintf('products/%s', $this->getCanonicalId());
+        return sprintf('stripe/products/%s', $this->getCanonicalId());
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getPostEditUrl(): ?string
     {
-        return UrlHelper::cpUrl('products');
+        return UrlHelper::cpUrl('stripe/products');
     }
 
+    /**
+     * @inheritdoc
+     */
     public function prepareEditScreen(Response $response, string $containerId): void
     {
         /** @var Response|CpScreenResponseBehavior $response */
         $response->crumbs([
             [
                 'label' => self::pluralDisplayName(),
-                'url' => UrlHelper::cpUrl('products'),
+                'url' => UrlHelper::cpUrl('stripe/products'),
             ],
         ]);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function afterSave(bool $isNew): void
     {
         if (!$isNew) {
@@ -351,28 +418,13 @@ class Product extends Element
     }
 
     /**
-     * @return string
-     */
-    public function getStripeStatusHtml(): string
-    {
-        $color = match ($this->stripeStatus) {
-            'active' => 'green',
-            'archived' => 'red',
-            default => 'orange',
-        };
-        return "<span class='status $color'></span>" . StringHelper::titleize($this->stripeStatus);
-    }
-
-    /**
-     * @param string $attribute
-     * @return string
-     * @throws InvalidConfigException
+     * @inheritdoc
      */
     protected function attributeHtml(string $attribute): string
     {
         switch ($attribute) {
-//            case 'shopifyEdit':
-//                return HtmlHelper::a('', $this->getShopifyEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]);
+            case 'stripeEdit':
+                return HtmlHelper::a('', $this->getStripeEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]);
             case 'stripeStatus':
                 return $this->getStripeStatusHtml();
             case 'stripeId':
@@ -397,6 +449,31 @@ class Product extends Element
                 return parent::attributeHtml($attribute);
             }
         }
+    }
+
+
+    /**
+     * Return URL to edit the product in Stripe Dashboard
+     *
+     * @return string
+     */
+    public function getStripeEditUrl(): string
+    {
+        $mode = Plugin::getInstance()->stripeMode;
+        return "https://dashboard.stripe.com/{$mode}/products/{$this->stripeId}";
+    }
+
+    /**
+     * @return string
+     */
+    public function getStripeStatusHtml(): string
+    {
+        $color = match ($this->stripeStatus) {
+            'active' => 'green',
+            'archived' => 'red',
+            default => 'orange',
+        };
+        return "<span class='status $color'></span>" . StringHelper::titleize($this->stripeStatus);
     }
 
     /**

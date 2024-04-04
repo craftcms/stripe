@@ -14,23 +14,23 @@
 
     <div id="products" class="hidden">
 
-        {#{{ forms.editableTableField({
-            label: "Routing Settings"|t('shopify'),
-            instructions: "Configure the product’s front-end routing settings."|t('shopify'),
+        {{ forms.editableTableField({
+            label: "Routing Settings"|t('stripe'),
+            instructions: "Configure the product’s front-end routing settings."|t('stripe'),
             id: 'routing',
             name: 'settings',
             cols: {
                 uriFormat: {
                     type: 'singleline',
-                    heading: "Product URI Format"|t('shopify'),
-                    info: "What product URIs should look like."|t('shopify'),
-                    placeholder: "Leave blank if products don’t have URLs"|t('shopify'),
+                    heading: "Product URI Format"|t('stripe'),
+                    info: "What product URIs should look like."|t('stripe'),
+                    placeholder: "Leave blank if products don’t have URLs"|t('stripe'),
                     code: true
                 },
                 template: not headlessMode ? {
                     type: 'template',
                     heading: "Template"|t('app'),
-                    info: "Which template should be loaded when a product’s URL is requested."|t('shopify'),
+                    info: "Which template should be loaded when a product’s URL is requested."|t('stripe'),
                     code: true
                 },
             }|filter,
@@ -54,7 +54,7 @@
 
         {{ forms.fieldLayoutDesignerField({
             fieldLayout: settings.getProductFieldLayout(),
-        }) }}#}
+        }) }}
     </div>
 
     <div id="api">

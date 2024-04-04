@@ -1,51 +1,51 @@
 {
-    "name": "craftcms/stripe",
-    "description": "Stripe Integration for Craft CMS",
-    "type": "craft-plugin",
-    "license": "mit",
-    "support": {
-        "email": "support@craftcms.com",
-        "issues": "https://github.com/craftcms/stripe/issues?state=open",
-        "source": "https://github.com/craftcms/stripe",
-        "docs": "https://github.com/craftcms/stripe",
-        "rss": "https://github.com/craftcms/stripe/releases.atom"
-    },
-    "require": {
-        "php": "^8.2",
-        "craftcms/cms": "^5.0.0",
-        "stripe/stripe-php": "^13"
-    },
-    "require-dev": {
-        "craftcms/ecs": "dev-main",
-        "craftcms/phpstan": "dev-main",
-        "craftcms/generator": "2.0.1",
-        "craftcms/rector": "dev-main",
-        "vlucas/phpdotenv": "^5.4.1"
-    },
-    "autoload": {
-        "psr-4": {
-            "craft\\stripe\\": "src/"
-        }
-    },
-    "extra": {
-        "handle": "stripe",
-        "name": "Stripe",
-        "developer": "Pixel & Tonic",
-        "documentationUrl": "https://github.com/craftcms/stripe"
-    },
-    "scripts": {
-        "check-cs": "ecs check --ansi",
-        "fix-cs": "ecs check --ansi --fix",
-        "phpstan": "phpstan --memory-limit=1G"
-    },
-    "config": {
-        "sort-packages": true,
-        "platform": {
-            "php": "8.2"
-        },
-        "allow-plugins": {
-            "yiisoft/yii2-composer": true,
-            "craftcms/plugin-installer": true
-        }
+  "name": "craftcms/stripe",
+  "description": "Stripe Integration for Craft CMS",
+  "type": "craft-plugin",
+  "license": "mit",
+  "support": {
+    "email": "support@craftcms.com",
+    "issues": "https://github.com/craftcms/stripe/issues?state=open",
+    "source": "https://github.com/craftcms/stripe",
+    "docs": "https://github.com/craftcms/stripe",
+    "rss": "https://github.com/craftcms/stripe/releases.atom"
+  },
+  "require": {
+    "php": "^8.2",
+    "craftcms/cms": "^5.0.0",
+    "stripe/stripe-php": "^13"
+  },
+  "require-dev": {
+    "craftcms/ecs": "dev-main",
+    "craftcms/phpstan": "dev-main",
+    "craftcms/generator": "2.0.1",
+    "craftcms/rector": "dev-main",
+    "vlucas/phpdotenv": "^5.4.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "craft\\stripe\\": "src/"
     }
+  },
+  "extra": {
+    "handle": "stripe",
+    "name": "Stripe",
+    "developer": "Pixel & Tonic",
+    "documentationUrl": "https://github.com/craftcms/stripe"
+  },
+  "scripts": {
+    "check-cs": "ecs check --ansi",
+    "fix-cs": "ecs check --ansi --fix",
+    "phpstan": "phpstan --memory-limit=1G"
+  },
+  "config": {
+    "sort-packages": true,
+    "platform": {
+      "php": "8.2"
+    },
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true,
+      "craftcms/plugin-installer": true
+    }
+  }
 }

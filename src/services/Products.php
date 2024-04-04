@@ -3,7 +3,10 @@
 namespace craft\stripe\services;
 
 use Craft;
+use craft\events\ConfigEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\ProjectConfig;
+use craft\models\FieldLayout;
 use craft\stripe\elements\Product;
 use craft\stripe\elements\Product as ProductElement;
 use craft\stripe\records\ProductData as ProductDataRecord;
@@ -100,5 +103,43 @@ class Products extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Handle field layout change
+     *
+     * @throws \Throwable
+     */
+    public function handleChangedFieldLayout(ConfigEvent $event): void
+    {
+        $data = $event->newValue;
+
+        ProjectConfig::ensureAllFieldsProcessed();
+        $fieldsService = Craft::$app->getFields();
+
+        if (empty($data) || empty(reset($data))) {
+            // Delete the field layout
+            $fieldsService->deleteLayoutsByType(Product::class);
+            return;
+        }
+
+        // Save the field layout
+        $layout = FieldLayout::createFromConfig(reset($data));
+        $layout->id = $fieldsService->getLayoutByType(Product::class)->id;
+        $layout->type = Product::class;
+        $layout->uid = key($data);
+        $fieldsService->saveLayout($layout, false);
+
+
+        // Invalidate product caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Product::class);
+    }
+
+    /**
+     * Handle field layout being deleted
+     */
+    public function handleDeletedFieldLayout(): void
+    {
+        Craft::$app->getFields()->deleteLayoutsByType(Product::class);
     }
 }

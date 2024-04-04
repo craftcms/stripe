@@ -1,8 +1,7 @@
 <?php
 
-namespace craft\stripe\elements\conditions;
+namespace craft\stripe\elements\conditions\products;
 
-use Craft;
 use craft\elements\conditions\ElementCondition;
 
 /**
@@ -12,8 +11,8 @@ class ProductCondition extends ElementCondition
 {
     protected function selectableConditionRules(): array
     {
-        return array_merge(parent::conditionRuleTypes(), [
-            // ...
+        return array_merge(parent::selectableConditionRules(), [
+            StripeStatusConditionRule::class,
         ]);
     }
 }

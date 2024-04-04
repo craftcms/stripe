@@ -7,6 +7,7 @@ use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
+use craft\helpers\App;
 use craft\services\Elements;
 use craft\stripe\elements\Product;
 use craft\stripe\models\Settings;
@@ -51,6 +52,12 @@ class Plugin extends BasePlugin
      */
     public string $minVersionRequired = '5.0.0';
 
+    /**
+     * @var string stripe environment determined from the key
+     * fall back to test environment to be safe
+     */
+    public string $stripeMode = 'test';
+
     public static function config(): array
     {
         return [
@@ -84,18 +91,21 @@ class Plugin extends BasePlugin
                 }*/
             }
 //
-//            $projectConfigService = Craft::$app->getProjectConfig();
-//            $productsService = $this->getProducts();
-//
-//            $projectConfigService->onAdd(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
-//                ->onUpdate(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
-//                ->onRemove(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleDeletedFieldLayout']);
+            $projectConfigService = Craft::$app->getProjectConfig();
+            $productsService = $this->getProducts();
+
+            $projectConfigService->onAdd(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
+                ->onUpdate(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
+                ->onRemove(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleDeletedFieldLayout']);
 
 //            // Globally register shopify webhooks registry event handlers
 //            Registry::addHandler(Topics::PRODUCTS_CREATE, new ProductHandler());
 //            Registry::addHandler(Topics::PRODUCTS_DELETE, new ProductHandler());
 //            Registry::addHandler(Topics::PRODUCTS_UPDATE, new ProductHandler());
 //            Registry::addHandler(Topics::INVENTORY_LEVELS_UPDATE, new ProductHandler());
+
+            // get stripe environment from the secret key
+            $this->stripeMode = $this->_getStripeMode();
         });
 
     }
@@ -222,16 +232,13 @@ class Plugin extends BasePlugin
     {
         Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
             //$session = Plugin::getInstance()->getApi()->getSession();
-            $session = false;
-            $event->rules['stripe'] = ['template' => 'stripe/_index', 'variables' => ['hasSession' => (bool)$session]];
+            //$session = false;
+            $event->rules['stripe'] = ['template' => 'stripe/_index', 'variables' => [/*'hasSession' => (bool)$session*/]];
             $event->rules['stripe/products'] = ['template' => 'stripe/products/_index.twig'];
             $event->rules['stripe/products/<elementId:\\d+>'] = 'elements/edit';
             $event->rules['stripe/settings'] = 'stripe/settings';
 
-//            $event->rules['shopify/products'] = 'shopify/products/product-index';
 //            $event->rules['shopify/sync-products'] = 'shopify/products/sync';
-//            $event->rules['shopify/products/<elementId:\d+>'] = 'elements/edit';
-
 //            $event->rules['shopify/webhooks'] = 'shopify/webhooks/edit';
         });
     }
@@ -248,40 +255,54 @@ class Plugin extends BasePlugin
 //        });
 //    }
 
-//    /**
-//     * @inheritdoc
-//     */
-//    public function getCpNavItem(): ?array
-//    {
-//        $ret = parent::getCpNavItem();
-//        $ret['label'] = Craft::t('shopify', 'Shopify');
-//
-//        $session = Plugin::getInstance()->getApi()->getSession();
-//
-//        if ($session) {
-//            $ret['subnav']['products'] = [
-//                'label' => Craft::t('shopify', 'Products'),
-//                'url' => 'shopify/products',
+    /**
+     * @inheritdoc
+     */
+    public function getCpNavItem(): ?array
+    {
+        $ret = parent::getCpNavItem();
+        $ret['label'] = Craft::t('stripe', 'Stripe');
+
+
+        $ret['subnav']['products'] = [
+            'label' => Craft::t('stripe', 'Products'),
+            'url' => 'stripe/products',
+        ];
+
+
+        if (Craft::$app->getUser()->getIsAdmin() && Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            $ret['subnav']['settings'] = [
+                'label' => Craft::t('stripe', 'Settings'),
+                'url' => 'stripe/settings',
+            ];
+        }
+
+
+//        if (Craft::$app->getUser()->getIsAdmin()) {
+//            $ret['subnav']['webhooks'] = [
+//                'label' => Craft::t('stripe', 'Webhooks'),
+//                'url' => 'stripe/webhooks',
 //            ];
 //        }
-//
-//        if (Craft::$app->getUser()->getIsAdmin() && Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
-//            $ret['subnav']['settings'] = [
-//                'label' => Craft::t('shopify', 'Settings'),
-//                'url' => 'shopify/settings',
-//            ];
-//        }
-//
-//        if ($session) {
-//            if (Craft::$app->getUser()->getIsAdmin()) {
-//                $ret['subnav']['webhooks'] = [
-//                    'label' => Craft::t('shopify', 'Webhooks'),
-//                    'url' => 'shopify/webhooks',
-//                ];
-//            }
-//        }
-//
-//
-//        return $ret;
-//    }
+
+
+        return $ret;
+    }
+
+    /**
+     * Get Stripe mode from the used secret key prefix.
+     *
+     * @return string
+     */
+    private function _getStripeMode(): string
+    {
+        $settings = $this->getSettings();
+        $secretKey = App::parseEnv($settings->secretKey);
+
+        if (!str_starts_with($secretKey, 'sk_test_')) {
+            return 'live';
+        }
+
+        return 'test';
+    }
 }
