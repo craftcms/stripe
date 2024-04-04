@@ -58,6 +58,11 @@ class Plugin extends BasePlugin
      */
     public string $stripeMode = 'test';
 
+    /**
+     * @var string Stripe Dashboard URL
+     */
+    public string $dashboardUrl = 'https://dashboard.stripe.com';
+
     public static function config(): array
     {
         return [
@@ -234,7 +239,7 @@ class Plugin extends BasePlugin
             //$session = Plugin::getInstance()->getApi()->getSession();
             //$session = false;
             $event->rules['stripe'] = ['template' => 'stripe/_index', 'variables' => [/*'hasSession' => (bool)$session*/]];
-            $event->rules['stripe/products'] = ['template' => 'stripe/products/_index.twig'];
+            $event->rules['stripe/products'] = 'stripe/products/product-index';
             $event->rules['stripe/products/<elementId:\\d+>'] = 'elements/edit';
             $event->rules['stripe/settings'] = 'stripe/settings';
 

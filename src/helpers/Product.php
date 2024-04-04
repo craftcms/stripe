@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\stripe\elements\Product as ProductElement;
@@ -56,55 +57,83 @@ class Product
 
         $meta = [];
 
-        $meta[Craft::t('stripe', 'Slug')] = $product->slug;
         $meta[Craft::t('stripe', 'Status')] = $product->getStripeStatusHtml();
-
-//        // Options
-//        if (count($product->getOptions()) > 0) {
-//            $meta[Craft::t('shopify', 'Options')] = collect($product->options)
-//                ->map(function($option) {
-//                    return Html::tag('span', $option['name'], [
-//                        'title' => Craft::t('shopify', '{name} option values: {values}', [
-//                            'name' => $option['name'],
-//                            'values' => join(', ', $option['values']),
-//                        ]),
-//                    ]);
-//                })
-//                ->join(', ');
-//        }
-//
-//        // Tags
-//        if (count($product->tags) > 0) {
-//            $tags = collect($product->tags)
-//                ->map(function($tag) {
-//                    return Html::tag('span', $tag, [
-//                        'class' => 'token',
-//                    ]);
-//                })
-//                ->join(' ');
-//
-//            $meta[Craft::t('shopify', 'Tags')] = Html::tag('div', $tags);
-//        }
-//
-//        // Variants
-//        if (count($product->getVariants()) > 0) {
-//            $meta[Craft::t('shopify', 'Variants')] = collect($product->getVariants())
-//                ->pluck('title')
-//                ->join(', ');
-//        }
-//
-//        // Metafields
-//        if (count($product->getMetaFields()) > 0) {
-//            $meta[Craft::t('shopify', 'Metafields')] = collect($product->getMetaFields())
-//                ->keys()
-//                ->join(', ');
-//        }
-
         $meta[Craft::t('stripe', 'Stripe ID')] = Html::tag('code', (string)$product->stripeId);
 
-//        $meta[Craft::t('stripe', 'Created at')] = $formatter->asDatetime($product->createdAt, Formatter::FORMAT_WIDTH_SHORT);
-//        $meta[Craft::t('stripe', 'Published at')] = $formatter->asDatetime($product->publishedAt, Formatter::FORMAT_WIDTH_SHORT);
-//        $meta[Craft::t('stripe', 'Updated at')] = $formatter->asDatetime($product->updatedAt, Formatter::FORMAT_WIDTH_SHORT);
+        // Data
+        $dataAttributesToDisplay = [
+            'url',
+            'type',
+            'images',
+//            'created',
+//            'updated',
+            'features',
+            'metadata',
+            'tax_code',
+            'shippable',
+            'attributes',
+            'unit_label',
+            'description',
+            'default_price',
+            'package_dimensions',
+            'statement_descriptor',
+        ];
+
+        if (count($product->getData()) > 0) {
+            foreach ($product->getData() as $key => $value) {
+                $label = StringHelper::titleize(implode(' ', StringHelper::toWords($key, false, true)));
+                if (in_array($key, $dataAttributesToDisplay)) {
+                    if (!is_array($value)) {
+                        $meta[Craft::t('stripe', $label)] = $value;
+                    }
+                    else {
+                        switch ($key) {
+                            case 'images':
+                                // despite it being called "images" it looks like you can only have one?
+                                $meta[Craft::t('stripe', $label)] = collect($product->data[$key])
+                                    ->map(function($img) {
+                                        return Html::a(Html::img($img, ['width' => 64]), $img, ['target' => '_blank']);
+                                    })
+                                    ->join(' ');
+                                break;
+                            case 'features':
+                                $meta[Craft::t('stripe', $label)] = collect($product->data[$key])
+                                    ->pluck('name')
+                                    ->filter()
+                                    ->join(', ');
+                                break;
+                            case 'metadata':
+                                $meta[Craft::t('stripe', $label)] = collect($product->data[$key])
+                                    ->map(function($val, $i) {
+                                        // todo: style me!
+                                        return Html::beginTag('div', ['class' => 'fullwidth']) .
+                                            Html::tag('em', $i . ': ') .
+                                            $val .
+                                            Html::endTag('div');
+                                    })
+                                    ->join(' ');
+                                break;
+                            case 'default_price':
+                                $meta[Craft::t('stripe', $label)] = Html::tag(
+                                    'span',
+                                    $value['id'],
+                                    [
+                                        'class' => 'break-word no-scroll',
+                                    ]
+                                );
+                                break;
+                            default:
+                                $meta[Craft::t('stripe', $label)] = collect($product->data[$key])
+                                    ->join('; ');
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
+        $meta[Craft::t('stripe', 'Created at')] = $formatter->asDatetime($product->data['created'], Formatter::FORMAT_WIDTH_SHORT);
+        $meta[Craft::t('stripe', 'Updated at')] = $formatter->asDatetime($product->data['updated'], Formatter::FORMAT_WIDTH_SHORT);
 
         $metadataHtml = Cp::metadataHtml($meta);
 
@@ -116,10 +145,7 @@ class Product
         ]);
 
         // This is the date updated in the database which represents the last time it was updated from a Stripe webhook or sync.
-        /** @var ProductData $productData */
-        $productData = ProductData::find()->where(['stripeId' => $product->stripeId])->one();
-        //$dateUpdated = DateTimeHelper::toDateTime($productData->dateUpdated);
-        $dateUpdated = DateTimeHelper::toDateTime($product->dateUpdated);
+        $dateUpdated = DateTimeHelper::toDateTime($product->data['updated']);
         $now = new \DateTime();
         $diff = $now->diff($dateUpdated);
         $duration = DateTimeHelper::humanDuration($diff, false);
@@ -131,7 +157,7 @@ class Product
             'class' => 'meta proxy-element-card',
             'id' => 'pec-' . $product->id,
             'hx' => [
-                'get' => UrlHelper::actionUrl('stripe/products/render-card-html', [
+                'get' => UrlHelper::actionUrl('stripe/products/render-meta-card-html', [
                     'id' => $product->id,
                 ]),
                 'swap' => 'outerHTML',

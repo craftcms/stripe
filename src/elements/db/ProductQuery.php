@@ -6,7 +6,7 @@ use Craft;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
-use craft\shopify\elements\Product;
+use craft\stripe\elements\Product;
 
 /**
  * Product query
@@ -14,11 +14,15 @@ use craft\shopify\elements\Product;
 class ProductQuery extends ElementQuery
 {
     /**
-     * @var mixed The Shopify product ID(s) that the resulting products must have.
+     * @var mixed The Stripe product ID(s) that the resulting products must have.
      */
-    public mixed $stripeId = null;
+    public ?string $stripeId = null;
 
-//    public mixed $shopifyStatus = null;
+    /**
+     * @var string|null
+     */
+    public ?string $stripeStatus = null;
+
 //    public mixed $handle = null;
 //    public mixed $productType = null;
 //    public mixed $publishedScope = null;
@@ -63,14 +67,14 @@ class ProductQuery extends ElementQuery
 //        return $this;
 //    }
 
-//    /**
-//     * Narrows the query results based on the Shopify status
-//     */
-//    public function shopifyStatus(mixed $value): self
-//    {
-//        $this->shopifyStatus = $value;
-//        return $this;
-//    }
+    /**
+     * Narrows the query results based on the Stripe status
+     */
+    public function stripeStatus(mixed $value): self
+    {
+        $this->stripeStatus = $value;
+        return $this;
+    }
 
 //    /**
 //     * Narrows the query results based on the Shopify product handle
@@ -142,32 +146,27 @@ class ProductQuery extends ElementQuery
         return $this;
     }
 
-//    /**
-//     * @inheritdoc
-//     */
-//    protected function statusCondition(string $status): mixed
-//    {
-//        $res = match ($status) {
-//            strtolower(Product::STATUS_LIVE) => [
-//                'elements.enabled' => true,
-//                'elements_sites.enabled' => true,
-//                'shopify_productdata.shopifyStatus' => 'active',
-//            ],
-//            strtolower(Product::STATUS_SHOPIFY_DRAFT) => [
-//                'elements.enabled' => true,
-//                'elements_sites.enabled' => true,
-//                'shopify_productdata.shopifyStatus' => 'draft',
-//            ],
-//            strtolower(Product::STATUS_SHOPIFY_ARCHIVED) => [
-//                'elements.enabled' => true,
-//                'elements_sites.enabled' => true,
-//                'shopify_productdata.shopifyStatus' => 'archived',
-//            ],
-//            default => parent::statusCondition($status),
-//        };
-//
-//        return $res;
-//    }
+    /**
+     * @inheritdoc
+     */
+    protected function statusCondition(string $status): mixed
+    {
+        $res = match ($status) {
+            strtolower(Product::STATUS_LIVE) => [
+                'elements.enabled' => true,
+                'elements_sites.enabled' => true,
+                'stripe_productdata.stripeStatus' => 'active',
+            ],
+            strtolower(Product::STATUS_STRIPE_ARCHIVED) => [
+                'elements.enabled' => true,
+                'elements_sites.enabled' => true,
+                'stripe_productdata.stripeStatus' => 'archived',
+            ],
+            default => parent::statusCondition($status),
+        };
+
+        return $res;
+    }
 
     /**
      * @inheritdoc
@@ -191,6 +190,7 @@ class ProductQuery extends ElementQuery
 
         $this->query->select([
             'stripe_products.stripeId',
+            'stripe_productdata.stripeStatus',
             'stripe_productdata.data',
         ]);
 
@@ -210,9 +210,9 @@ class ProductQuery extends ElementQuery
 //            $this->subQuery->andWhere(Db::parseParam('shopify_productdata.publishedScope', $this->publishedScope));
 //        }
 //
-//        if (isset($this->shopifyStatus)) {
-//            $this->subQuery->andWhere(Db::parseParam('shopify_productdata.shopifyStatus', $this->shopifyStatus));
-//        }
+        if (isset($this->stripeStatus)) {
+            $this->subQuery->andWhere(Db::parseParam('stripe_productdata.stripeStatus', $this->stripeStatus));
+        }
 //
 //        if (isset($this->handle)) {
 //            $this->subQuery->andWhere(Db::parseParam('shopify_productdata.handle', $this->handle));

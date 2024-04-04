@@ -151,7 +151,7 @@ class Product extends Element
     public static function statuses(): array
     {
         return [
-            self::STATUS_LIVE => Craft::t('stripe', 'Live'),
+            self::STATUS_LIVE => Craft::t('app', 'Live'),
             self::STATUS_STRIPE_ARCHIVED => ['label' => Craft::t('stripe', 'Archived in Stripe'), 'color' => 'red'],
             self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
         ];
@@ -310,6 +310,31 @@ class Product extends Element
         return $previewTargets;
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected function route(): array|string|null
+    {
+        if (!$this->previewing && $this->getStatus() != self::STATUS_LIVE) {
+            return null;
+        }
+
+        $settings = Plugin::getInstance()->getSettings();
+
+        if ($settings->uriFormat) {
+            return [
+                'templates/render', [
+                    'template' => $settings->template,
+                    'variables' => [
+                        'product' => $this,
+                    ],
+                ],
+            ];
+        }
+
+        return null;
+    }
+
     public function canView(User $user): bool
     {
         if (parent::canView($user)) {
@@ -459,8 +484,9 @@ class Product extends Element
      */
     public function getStripeEditUrl(): string
     {
+        $dashboardUrl = Plugin::getInstance()->dashboardUrl;
         $mode = Plugin::getInstance()->stripeMode;
-        return "https://dashboard.stripe.com/{$mode}/products/{$this->stripeId}";
+        return "{$dashboardUrl}/{$mode}/products/{$this->stripeId}";
     }
 
     /**

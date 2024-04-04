@@ -1,4 +1,13 @@
-{% extends '_layouts/elementindex' %}
-{% set title = 'Products'|t('app') %}
+{% extends "_layouts/elementindex" %}
+{% set title = "Stripe Products"|t('shopify') %}
 {% set elementType = 'craft\\stripe\\elements\\Product' %}
 {% set canHaveDrafts = true %}
+
+{% block toolbar %}
+    {{ parent() }}
+
+    {% if newProductUrl %}
+        <a data-icon="external" class="btn submit" href="{{ newProductUrl }}"
+           target="_blank">{{ 'New Product'|t('stripe') }}</a>
+    {% endif %}
+{% endblock %}
