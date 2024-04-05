@@ -4,17 +4,21 @@ namespace craft\stripe\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\elements\Address;
-use craft\elements\db\AddressQuery;
-use craft\elements\NestedElementManager;
+use craft\base\NestedElementInterface;
+use craft\base\NestedElementTrait;
+use craft\db\Query;
+use craft\db\Table as CraftTable;
+use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\enums\PropagationMethod;
+use craft\helpers\Cp;
+use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use craft\stripe\db\Table;
 use craft\stripe\Plugin;
 use craft\stripe\elements\conditions\products\ProductCondition;
 use craft\stripe\elements\db\PriceQuery;
@@ -27,9 +31,13 @@ use yii\web\Response;
 
 /**
  * Price element type
+ *
+ * @property-read Product|null $product the product this price belongs to
  */
-class Price extends Element
+class Price extends Element implements NestedElementInterface
 {
+    use NestedElementTrait;
+
     // Constants
     // -------------------------------------------------------------------------
 
@@ -41,7 +49,6 @@ class Price extends Element
 
     /**
      * Stripe Statuses
-     * @since 3.0
      */
     public const STRIPE_STATUS_ACTIVE = 'active';
     public const STRIPE_STATUS_ARCHIVED = 'archived';
@@ -50,19 +57,25 @@ class Price extends Element
     // -------------------------------------------------------------------------
 
     /**
-     * @var string
-     */
-    public string $stripeStatus = 'active';
-
-    /**
      * @var string|null
      */
     public ?string $stripeId = null;
 
     /**
+     * @var string
+     */
+    public string $stripeStatus = 'active';
+
+    /**
      * @var array|null
      */
     private ?array $_data = null;
+
+    /**
+     * @var Product|null Product
+     * @see getProduct()
+     */
+    private ?Product $_product;
 
 
     // Methods
@@ -394,20 +407,6 @@ class Price extends Element
     /**
      * @inheritdoc
      */
-    public function prepareEditScreen(Response $response, string $containerId): void
-    {
-        /** @var Response|CpScreenResponseBehavior $response */
-        $response->crumbs([
-            [
-                'label' => self::pluralDisplayName(),
-                'url' => UrlHelper::cpUrl('stripe/prices'),
-            ],
-        ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function afterSave(bool $isNew): void
     {
         if (!$isNew) {
@@ -422,12 +421,71 @@ class Price extends Element
         }
 
         $record->stripeId = $this->stripeId;
+        $record->primaryOwnerId = $this->getPrimaryOwnerId();
 
         // We want to always have the same date as the element table, based on the logic for updating these in the element service i.e re-saving
         $record->dateUpdated = $this->dateUpdated;
         $record->dateCreated = $this->dateCreated;
 
+        // Capture the dirty attributes from the record
+        $dirtyAttributes = array_keys($record->getDirtyAttributes());
+
         $record->save(false);
+
+        $ownerId = $this->getOwnerId();
+        if ($ownerId && $this->saveOwnership) {
+            if (!isset($this->sortOrder) && (!$isNew || $this->duplicateOf)) {
+                // figure out if we should proceed this way
+                // if we're dealing with an element that's being duplicated, and it has a draftId
+                // it means we're creating a draft of something
+                // if we're duplicating element via duplicate action - draftId would be empty
+                $elementId = null;
+                if ($this->duplicateOf) {
+                    if ($this->draftId) {
+                        $elementId = $this->duplicateOf->id;
+                    }
+                } else {
+                    // if we're not duplicating - use element's id
+                    $elementId = $this->id;
+                }
+                if ($elementId) {
+                    $this->sortOrder = (new Query())
+                        ->select('sortOrder')
+                        ->from(CraftTable::ELEMENTS_OWNERS)
+                        ->where([
+                            'elementId' => $elementId,
+                            'ownerId' => $ownerId,
+                        ])
+                        ->scalar() ?: null;
+                }
+            }
+            if (!isset($this->sortOrder)) {
+                $max = (new Query())
+                    ->from(['eo' => CraftTable::ELEMENTS_OWNERS])
+                    ->innerJoin(['a' => Table::PRICES], '[[a.id]] = [[eo.elementId]]')
+                    ->where([
+                        'eo.ownerId' => $ownerId,
+                    ])
+                    ->max('[[eo.sortOrder]]');
+                $this->sortOrder = $max ? $max + 1 : 1;
+            }
+            if ($isNew) {
+                Db::insert(CraftTable::ELEMENTS_OWNERS, [
+                    'elementId' => $this->id,
+                    'ownerId' => $ownerId,
+                    'sortOrder' => $this->sortOrder,
+                ]);
+            } else {
+                Db::update(CraftTable::ELEMENTS_OWNERS, [
+                    'sortOrder' => $this->sortOrder,
+                ], [
+                    'elementId' => $this->id,
+                    'ownerId' => $ownerId,
+                ]);
+            }
+        }
+
+        $this->setDirtyAttributes($dirtyAttributes);
 
         parent::afterSave($isNew);
     }
@@ -511,5 +569,23 @@ class Price extends Element
     public function getData(): array
     {
         return $this->_data ?? [];
+    }
+
+    /**
+     * Gets the product this price belongs to
+     *
+     * @return Product|null
+     */
+    public function getProduct(): Product|null
+    {
+        if (!isset($this->_product)) {
+            if (!$this->getPrimaryOwnerId()) {
+                return null;
+            }
+
+            $this->_product = $this->getOwner();
+        }
+
+        return $this->_product;
     }
 }

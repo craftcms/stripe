@@ -3,10 +3,15 @@
 namespace craft\stripe\elements\db;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\db\QueryAbortedException;
+use craft\db\Table;
 use craft\elements\db\ElementQuery;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\stripe\elements\Product;
+use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 
 /**
  * Price query
@@ -23,13 +28,37 @@ class PriceQuery extends ElementQuery
      */
     public mixed $stripeStatus = null;
 
-//    public mixed $handle = null;
-//    public mixed $productType = null;
-//    public mixed $publishedScope = null;
-//    public mixed $tags = null;
-//    public mixed $vendor = null;
-//    public mixed $images = null;
-//    public mixed $options = null;
+    /**
+     * @var mixed The primary owner element ID(s) that the resulting addresses must belong to.
+     * @used-by primaryOwner()
+     * @used-by primaryOwnerId()
+     */
+    public mixed $primaryOwnerId = null;
+
+    /**
+     * @var mixed The owner element ID(s) that the resulting addresses must belong to.
+     * @used-by owner()
+     * @used-by ownerId()
+     */
+    public mixed $ownerId = null;
+
+    /**
+     * @var bool|null Whether the owner elements can be drafts.
+     * @used-by allowOwnerDrafts()
+     */
+    public ?bool $allowOwnerDrafts = null;
+
+    /**
+     * @var bool|null Whether the owner elements can be revisions.
+     * @used-by allowOwnerRevisions()
+     */
+    public ?bool $allowOwnerRevisions = null;
+
+    /**
+     * @var ElementInterface|null The owner element specified by [[owner()]].
+     * @used-by owner()
+     */
+    private ?ElementInterface $_owner = null;
 
     /**
      * @inheritdoc
@@ -48,24 +77,6 @@ class PriceQuery extends ElementQuery
 
         parent::__construct($elementType, $config);
     }
-
-//    /**
-//     * Narrows the query results based on the Stripe product type
-//     */
-//    public function productType(mixed $value): self
-//    {
-//        $this->productType = $value;
-//        return $this;
-//    }
-
-//    /**
-//     * Narrows the query results based on the Stripe product type
-//     */
-//    public function publishedScope(mixed $value): self
-//    {
-//        $this->publishedScope = $value;
-//        return $this;
-//    }
 
     /**
      * Narrows the query results based on the Stripe status
@@ -142,14 +153,206 @@ class PriceQuery extends ElementQuery
     }
 
     /**
+     * Narrows the query results based on the primary owner element of the addresses, per the owners’ IDs.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches addresses…
+     * | - | -
+     * | `1` | created for an element with an ID of 1.
+     * | `'not 1'` | not created for an element with an ID of 1.
+     * | `[1, 2]` | created for an element with an ID of 1 or 2.
+     * | `['not', 1, 2]` | not created for an element with an ID of 1 or 2.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch addresses created for an element with an ID of 1 #}
+     * {% set {elements-var} = {twig-method}
+     *   .primaryOwnerId(1)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch addresses created for an element with an ID of 1
+     * ${elements-var} = {php-method}
+     *     ->primaryOwnerId(1)
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value The property value
+     * @return static self reference
+     * @uses $primaryOwnerId
+     */
+    public function primaryOwnerId(mixed $value): static
+    {
+        $this->primaryOwnerId = $value;
+        return $this;
+    }
+
+    /**
+     * Sets the [[primaryOwnerId()]] and [[siteId()]] parameters based on a given element.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch addresses created for this entry #}
+     * {% set {elements-var} = {twig-method}
+     *   .primaryOwner(myEntry)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch addresses created for this entry
+     * ${elements-var} = {php-method}
+     *     ->primaryOwner($myEntry)
+     *     ->all();
+     * ```
+     *
+     * @param ElementInterface $primaryOwner The primary owner element
+     * @return static self reference
+     * @uses $primaryOwnerId
+     */
+    public function primaryOwner(ElementInterface $primaryOwner): static
+    {
+        $this->primaryOwnerId = [$primaryOwner->id];
+        $this->siteId = $primaryOwner->siteId;
+        return $this;
+    }
+
+    /**
+     * Sets the [[ownerId()]] parameter based on a given owner element.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch addresses for the current user #}
+     * {% set {elements-var} = {twig-method}
+     *   .owner(currentUser)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch addresses created for the current user
+     * ${elements-var} = {php-method}
+     *     ->owner(Craft::$app->user->identity)
+     *     ->all();
+     * ```
+     *
+     * @param ElementInterface $owner The owner element
+     * @return static self reference
+     * @uses $ownerId
+     */
+    public function owner(ElementInterface $owner): static
+    {
+        $this->ownerId = [$owner->id];
+        $this->_owner = $owner;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the addresses’ owner elements, per their IDs.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches addresses…
+     * | - | -
+     * | `1` | created for an element with an ID of 1.
+     * | `[1, 2]` | created for an element with an ID of 1 or 2.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch addresses created for an element with an ID of 1 #}
+     * {% set {elements-var} = {twig-method}
+     *   .ownerId(1)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch addresses created for an element with an ID of 1
+     * ${elements-var} = {php-method}
+     *     ->ownerId(1)
+     *     ->all();
+     * ```
+     *
+     * @param int|int[]|null $value The property value
+     * @return static self reference
+     * @uses $ownerId
+     */
+    public function ownerId(array|int|null $value): static
+    {
+        $this->ownerId = $value;
+        $this->_owner = null;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on whether the addresses’ owners are drafts.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches addresses…
+     * | - | -
+     * | `true` | which can belong to a draft.
+     * | `false` | which cannot belong to a draft.
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     * @uses $allowOwnerDrafts
+     */
+    public function allowOwnerDrafts(?bool $value = true): static
+    {
+        $this->allowOwnerDrafts = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on whether the addresses’ owners are revisions.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches addresses…
+     * | - | -
+     * | `true` | which can belong to a revision.
+     * | `false` | which cannot belong to a revision.
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     * @uses $allowOwnerRevisions
+     */
+    public function allowOwnerRevisions(?bool $value = true): static
+    {
+        $this->allowOwnerRevisions = $value;
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      * @throws QueryAbortedException
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         if ($this->stripeId === []) {
             return false;
         }
+
+        try {
+            $this->primaryOwnerId = $this->_normalizeOwnerId($this->primaryOwnerId);
+        } catch (InvalidArgumentException) {
+            throw new InvalidConfigException('Invalid primaryOwnerId param value');
+        }
+
+        try {
+            $this->ownerId = $this->_normalizeOwnerId($this->ownerId);
+        } catch (InvalidArgumentException) {
+            throw new InvalidConfigException('Invalid ownerId param value');
+        }
+
 
         $priceTable = 'stripe_prices';
         $priceDataTable = 'stripe_pricedata';
@@ -163,6 +366,7 @@ class PriceQuery extends ElementQuery
 
         $this->query->select([
             'stripe_prices.stripeId',
+            'stripe_prices.primaryOwnerId',
             'stripe_pricedata.stripeStatus',
             'stripe_pricedata.data',
         ]);
@@ -170,6 +374,54 @@ class PriceQuery extends ElementQuery
         //$t = $this->query->getRawSql();
         //$t1 = $this->subQuery->getRawSql();
 
+        if (!empty($this->ownerId) || !empty($this->primaryOwnerId)) {
+            // Join in the elements_owners table
+            $ownersCondition = [
+                'and',
+                '[[elements_owners.elementId]] = [[elements.id]]',
+                $this->ownerId ? ['elements_owners.ownerId' => $this->ownerId] : '[[elements_owners.ownerId]] = [[prices.primaryOwnerId]]',
+            ];
+
+            $this->query
+                ->addSelect([
+                    'elements_owners.ownerId',
+                    'elements_owners.sortOrder',
+                ])
+                ->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
+            $this->subQuery->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
+
+            //$this->subQuery->andWhere(['addresses.fieldId' => $this->fieldId]);
+
+            if ($this->primaryOwnerId) {
+                $this->subQuery->andWhere(['prices.primaryOwnerId' => $this->primaryOwnerId]);
+            }
+
+            // Ignore revision/draft blocks by default
+            $allowOwnerDrafts = $this->allowOwnerDrafts ?? ($this->id || $this->primaryOwnerId || $this->ownerId);
+            $allowOwnerRevisions = $this->allowOwnerRevisions ?? ($this->id || $this->primaryOwnerId || $this->ownerId);
+
+            if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
+                $this->subQuery->innerJoin(
+                    ['owners' => Table::ELEMENTS],
+                    $this->ownerId ? '[[owners.id]] = [[elements_owners.ownerId]]' : '[[owners.id]] = [[prices.primaryOwnerId]]'
+                );
+
+                if (!$allowOwnerDrafts) {
+                    $this->subQuery->andWhere(['owners.draftId' => null]);
+                }
+
+                if (!$allowOwnerRevisions) {
+                    $this->subQuery->andWhere(['owners.revisionId' => null]);
+                }
+            }
+
+            $this->defaultOrderBy = ['elements_owners.sortOrder' => SORT_ASC];
+        } elseif (isset($this->primaryOwnerId) || isset($this->ownerId)) {
+            if (!$this->primaryOwnerId && !$this->ownerId) {
+                throw new QueryAbortedException();
+            }
+            $this->subQuery->andWhere(['prices.primaryOwnerId' => $this->primaryOwnerId ?? $this->ownerId]);
+        }
 
         if (isset($this->stripeId)) {
             $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.stripeId', $this->stripeId));
@@ -200,5 +452,26 @@ class PriceQuery extends ElementQuery
 //        }
 
         return parent::beforePrepare();
+    }
+
+    /**
+     * Normalizes the ownerId param to an array of IDs or null
+     *
+     * @param mixed $value
+     * @return int[]|null
+     * @throws InvalidArgumentException
+     */
+    private function _normalizeOwnerId(mixed $value): ?array
+    {
+        if (empty($value)) {
+            return null;
+        }
+        if (is_numeric($value)) {
+            return [$value];
+        }
+        if (!is_array($value) || !ArrayHelper::isNumeric($value)) {
+            throw new InvalidArgumentException();
+        }
+        return $value;
     }
 }

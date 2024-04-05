@@ -58,7 +58,11 @@ class Product
         $meta = [];
 
         $meta[Craft::t('stripe', 'Status')] = $product->getStripeStatusHtml();
-        $meta[Craft::t('stripe', 'Stripe ID')] = Html::tag('code', (string)$product->stripeId);
+        $meta[Craft::t('stripe', 'Stripe ID')] = Html::tag(
+            'code',
+            (string)$product->stripeId,
+            ['class' => 'break-word no-scroll'],
+        );
 
         // Data
         $dataAttributesToDisplay = [

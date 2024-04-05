@@ -43,7 +43,7 @@ class Api extends Component
      */
     public function getAllPrices(): array
     {
-        return $this->getAll('prices', ['expand' => ['data.product']]);
+        return $this->getAll('prices'/*, ['expand' => ['data.product']]*/);
     }
 
     /**

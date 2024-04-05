@@ -4,12 +4,15 @@ namespace craft\stripe\services;
 
 use Craft;
 use craft\events\ConfigEvent;
+use craft\fieldlayoutelements\BaseNativeField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
 use craft\stripe\elements\Price as PriceElement;
+use craft\stripe\elements\Product as ProductElement;
 use craft\stripe\events\StripePriceSyncEvent;
+use craft\stripe\fieldlayoutelements\PricesField;
 use craft\stripe\records\PriceData as PriceDataRecord;
 use craft\stripe\Plugin;
 use Stripe\Price as StripePrice;
@@ -104,6 +107,18 @@ class Prices extends Component
         if ($priceElement === null) {
             /** @var PriceElement $priceElement */
             $priceElement = new PriceElement();
+        }
+
+        // get the product for this price
+        $productElement = ProductElement::find()
+            ->stripeId($price->product)
+            ->status(null)
+            ->one();
+
+        if ($productElement) {
+            //$pricesField = $productElement->getFieldLayout()->getField(fn($field) => $field instanceof PricesField);
+            $attributes['ownerId'] = $productElement->id;
+            $attributes['primaryOwnerId'] = $productElement->id;
         }
 
         // Set attributes on the element to emulate it having been loaded with JOINed data:

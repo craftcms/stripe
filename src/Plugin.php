@@ -5,13 +5,16 @@ namespace craft\stripe;
 use Craft;
 use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
+use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\App;
+use craft\models\FieldLayout;
 use craft\services\Elements;
 use craft\services\Fields;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
+use craft\stripe\fieldlayoutelements\PricesField;
 use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\models\Settings;
 use craft\stripe\services\Api;
@@ -90,6 +93,7 @@ class Plugin extends BasePlugin
             $this->_registerElementTypes();
 //            $this->_registerUtilityTypes();
             $this->_registerFieldTypes();
+            $this->_registerFieldLayoutElements();
 //            $this->_registerVariables();
 //            $this->_registerResaveCommands();
 
@@ -207,12 +211,32 @@ class Plugin extends BasePlugin
     }
 
     /**
-     * Register Stripe Product Relation field
+     * Register Field Types
+     *
+     * @return void
      */
     private function _registerFieldTypes(): void
     {
         Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, static function(RegisterComponentTypesEvent $event) {
             $event->types[] = ProductsField::class;
+        });
+    }
+
+    /**
+     * Register field layout elements
+     *
+     * @return void
+     */
+    private function _registerFieldLayoutElements(): void {
+        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
+            /** @var FieldLayout $fieldLayout */
+            $fieldLayout = $event->sender;
+
+            switch ($fieldLayout->type) {
+                case Product::class:
+                    $event->fields[] = PricesField::class;
+                    break;
+            }
         });
     }
 
@@ -256,6 +280,8 @@ class Plugin extends BasePlugin
             $event->rules['stripe/products'] = 'stripe/products/product-index';
             $event->rules['stripe/products/<elementId:\\d+>'] = 'elements/edit';
             $event->rules['stripe/settings'] = 'stripe/settings';
+
+            $event->rules['stripe/prices/<elementId:\\d+>'] = 'elements/edit';
 
 //            $event->rules['stripe/sync-products'] = 'stripe/products/sync';
 //            $event->rules['stripe/webhooks'] = 'stripe/webhooks/edit';

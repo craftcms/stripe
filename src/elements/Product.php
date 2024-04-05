@@ -4,17 +4,23 @@ namespace craft\stripe\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\db\Query;
+use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\enums\PropagationMethod;
+use craft\helpers\Cp;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\stripe\Plugin;
+use craft\stripe\db\Table;
 use craft\stripe\elements\conditions\products\ProductCondition;
+use craft\stripe\elements\db\PriceQuery;
 use craft\stripe\elements\db\ProductQuery;
 use craft\stripe\helpers\Product as ProductHelper;
 use craft\stripe\records\Product as ProductRecord;
@@ -25,6 +31,8 @@ use yii\web\Response;
 
 /**
  * Product element type
+ *
+ * @property-read Price[]|null $prices the product’s prices
  */
 class Product extends Element
 {
@@ -66,6 +74,12 @@ class Product extends Element
      * @see getPricesManager()
      */
     private NestedElementManager $_priceManager;
+
+    /**
+     * @var ElementCollection<Price> Prices
+     * @see getPrices()
+     */
+    private ElementCollection $_prices;
 
 
     // Methods
@@ -280,6 +294,38 @@ class Product extends Element
     /**
      * @inheritdoc
      */
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
+    {
+        // Get the source element IDs
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
+
+        if ($handle == 'prices') {
+            $map = (new Query())
+                ->select([
+                    'source' => 'ownerId',
+                    'target' => 'id',
+                ])
+                ->from([Table::PRICES])
+                ->where(['ownerId' => $sourceElementIds])
+                ->all();
+
+            return [
+                'elementType' => Price::class,
+                'map' => $map,
+                'createElement' => function(PriceQuery $query, array $result, self $source) {
+                    // set the addresses' owners to the source user elements
+                    // (must get set before behaviors - see https://github.com/craftcms/cms/issues/13400)
+                    return $query->createElement(['owner' => $source] + $result);
+                },
+            ];
+        }
+
+        return parent::eagerLoadingMap($sourceElements, $handle);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getUriFormat(): ?string
     {
         return Plugin::getInstance()->getSettings()->productUriFormat;
@@ -397,15 +443,24 @@ class Product extends Element
     /**
      * @inheritdoc
      */
-    public function prepareEditScreen(Response $response, string $containerId): void
+    public function extraFields(): array
     {
-        /** @var Response|CpScreenResponseBehavior $response */
-        $response->crumbs([
+        $names = parent::extraFields();
+        $names[] = 'prices';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function crumbs(): array
+    {
+        return [
             [
                 'label' => self::pluralDisplayName(),
                 'url' => UrlHelper::cpUrl('stripe/products'),
             ],
-        ]);
+        ];
     }
 
     /**
@@ -433,6 +488,20 @@ class Product extends Element
         $record->save(false);
 
         parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDelete(): bool
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
+        $this->getPriceManager()->deleteNestedElements($this, $this->hardDelete);
+
+        return true;
     }
 
     /**
@@ -516,31 +585,51 @@ class Product extends Element
         return $this->_data ?? [];
     }
 
-//    /**
-//     * Returns a nested element manager for the product’s prices.
-//     *
-//     * @return NestedElementManager
-//     */
-//    public function getPriceManager(): NestedElementManager
-//    {
-//        if (!isset($this->_priceManager)) {
-//            $this->_priceManager = new NestedElementManager(
-//                Price::class,
-//                fn() => $this->createPriceQuery(),
-//                [
-//                    'attribute' => 'addresses',
-//                    'propagationMethod' => PropagationMethod::None,
-//                ],
-//            );
-//        }
-//
-//        return $this->_priceManager;
-//    }
-//
-//    private function createPriceQuery(): PriceQuery
-//    {
-//        return Price::find()
-//            ->owner($this)
-//            ->orderBy(['id' => SORT_ASC]);
-//    }
+
+    /**
+     * Gets the product’s prices.
+     *
+     * @return ElementCollection<Price>
+     */
+    public function getPrices(): ElementCollection
+    {
+        if (!isset($this->_prices)) {
+            if (!$this->id) {
+                /** @var ElementCollection<Price> */
+                return ElementCollection::make();
+            }
+
+            $this->_prices = $this->createPriceQuery()->collect();
+        }
+
+        return $this->_prices;
+    }
+
+    /**
+     * Returns a nested element manager for the product’s prices.
+     *
+     * @return NestedElementManager
+     */
+    public function getPriceManager(): NestedElementManager
+    {
+        if (!isset($this->_priceManager)) {
+            $this->_priceManager = new NestedElementManager(
+                Price::class,
+                fn() => $this->createPriceQuery(),
+                [
+                    'attribute' => 'prices',
+                    'propagationMethod' => PropagationMethod::None,
+                ],
+            );
+        }
+
+        return $this->_priceManager;
+    }
+
+    private function createPriceQuery(): PriceQuery
+    {
+        return Price::find()
+            ->owner($this)
+            ->orderBy(['id' => SORT_ASC]);
+    }
 }

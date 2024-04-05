@@ -58,25 +58,25 @@ class Price
         $meta = [];
 
         $meta[Craft::t('stripe', 'Status')] = $price->getStripeStatusHtml();
-        $meta[Craft::t('stripe', 'Stripe ID')] = Html::tag('code', (string)$price->stripeId);
+        $meta[Craft::t('stripe', 'Stripe ID')] = Html::tag(
+            'code',
+            (string)$price->stripeId,
+            ['class' => 'break-word no-scroll'],
+        );
+        $meta[Craft::t('stripe', 'Product')] =
+            Cp::elementChipHtml($price->product, ['size' => Cp::CHIP_SIZE_SMALL]);
 
-        /*// Data
+        // Data
         $dataAttributesToDisplay = [
-            'url',
+            'currency',
+            'nickname',
+            'recurring',
             'type',
-            'images',
-//            'created',
-//            'updated',
-            'features',
-            'metadata',
-            'tax_code',
-            'shippable',
-            'attributes',
-            'unit_label',
-            'description',
-            'default_price',
-            'package_dimensions',
-            'statement_descriptor',
+            'unit_amount',
+            'billing_scheme',
+            'lookup_key',
+            'tax_behavior',
+            'tiers_mode',
         ];
 
         if (count($price->getData()) > 0) {
@@ -88,20 +88,6 @@ class Price
                     }
                     else {
                         switch ($key) {
-                            case 'images':
-                                // despite it being called "images" it looks like you can only have one?
-                                $meta[Craft::t('stripe', $label)] = collect($price->data[$key])
-                                    ->map(function($img) {
-                                        return Html::a(Html::img($img, ['width' => 64]), $img, ['target' => '_blank']);
-                                    })
-                                    ->join(' ');
-                                break;
-                            case 'features':
-                                $meta[Craft::t('stripe', $label)] = collect($price->data[$key])
-                                    ->pluck('name')
-                                    ->filter()
-                                    ->join(', ');
-                                break;
                             case 'metadata':
                                 $meta[Craft::t('stripe', $label)] = collect($price->data[$key])
                                     ->map(function($val, $i) {
@@ -113,10 +99,10 @@ class Price
                                     })
                                     ->join(' ');
                                 break;
-                            case 'default_price':
+                            case 'recurring':
                                 $meta[Craft::t('stripe', $label)] = Html::tag(
                                     'span',
-                                    $value['id'],
+                                    $value['interval_count'] . ' ' . $value['interval'],
                                     [
                                         'class' => 'break-word no-scroll',
                                     ]
@@ -130,10 +116,9 @@ class Price
                     }
                 }
             }
-        }*/
+        }
 
         $meta[Craft::t('stripe', 'Created at')] = $formatter->asDatetime($price->data['created'], Formatter::FORMAT_WIDTH_SHORT);
-        $meta[Craft::t('stripe', 'Updated at')] = $formatter->asDatetime($price->data['updated'], Formatter::FORMAT_WIDTH_SHORT);
 
         $metadataHtml = Cp::metadataHtml($meta);
 
@@ -145,11 +130,11 @@ class Price
         ]);
 
         // This is the date updated in the database which represents the last time it was updated from a Stripe webhook or sync.
-        $dateUpdated = DateTimeHelper::toDateTime($price->data['updated']);
+        $dateCreated = DateTimeHelper::toDateTime($price->data['created']);
         $now = new \DateTime();
-        $diff = $now->diff($dateUpdated);
+        $diff = $now->diff($dateCreated);
         $duration = DateTimeHelper::humanDuration($diff, false);
-        $footer = Html::tag('div', 'Updated ' . $duration . ' ago.' . $spinner, [
+        $footer = Html::tag('div', 'Created ' . $duration . ' ago.' . $spinner, [
             'class' => 'pec-footer',
         ]);
 
@@ -161,7 +146,7 @@ class Price
                     'id' => $price->id,
                 ]),
                 'swap' => 'outerHTML',
-                'trigger' => 'every 15s',
+                'trigger' => 'every 60s',
             ],
         ]);
     }

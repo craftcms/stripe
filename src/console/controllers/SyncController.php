@@ -29,14 +29,8 @@ class SyncController extends Controller
         $time = microtime(true) - $start;
 
         $this->stdout('Finished syncing ' . Product::find()->count() . ' product(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
-        return ExitCode::OK;
-    }
 
-    /**
-     * stripe/sync/prices command
-     */
-    public function actionPrices(): int
-    {
+
         $this->stdout('Syncing Stripe prices…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
         $start = microtime(true);
@@ -44,6 +38,22 @@ class SyncController extends Controller
         $time = microtime(true) - $start;
 
         $this->stdout('Finished syncing ' . Price::find()->count() . ' price(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+
         return ExitCode::OK;
     }
+
+//    /**
+//     * stripe/sync/prices command
+//     */
+//    public function actionPrices(): int
+//    {
+//        $this->stdout('Syncing Stripe prices…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+//
+//        $start = microtime(true);
+//        Plugin::getInstance()->getPrices()->syncAllPrices();
+//        $time = microtime(true) - $start;
+//
+//        $this->stdout('Finished syncing ' . Price::find()->count() . ' price(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+//        return ExitCode::OK;
+//    }
 }

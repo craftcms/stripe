@@ -56,6 +56,7 @@ class Install extends Migration
         $this->archiveTableIfExists(Table::PRICES);
         $this->createTable(Table::PRICES, [
             'id' => $this->integer()->notNull(),
+            'primaryOwnerId' => $this->integer()->defaultValue(NULL),
             'stripeId' => $this->string(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -92,6 +93,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::PRODUCTS, ['stripeId'], Table::PRODUCTDATA, ['stripeId'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::PRODUCTS, ['id'], CraftTable::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
 
+        $this->addForeignKey(null, Table::PRICES, ['primaryOwnerId'], Table::PRODUCTS, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::PRICES, ['stripeId'], Table::PRICEDATA, ['stripeId'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::PRICES, ['id'], CraftTable::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
     }
