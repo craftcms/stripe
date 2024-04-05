@@ -37,6 +37,16 @@ class Api extends Component
     }
 
     /**
+     * Retrieve all prices.
+     *
+     * @return array
+     */
+    public function getAllPrices(): array
+    {
+        return $this->getAll('prices', ['expand' => ['data.product']]);
+    }
+
+    /**
      * Iteratively retrieves a paginated collection of API resource.
      *
      * @param string $type name of the Stripe resource

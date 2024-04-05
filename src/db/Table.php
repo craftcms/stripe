@@ -17,4 +17,6 @@ abstract class Table
 {
     public const PRODUCTDATA = '{{%stripe_productdata}}';
     public const PRODUCTS = '{{%stripe_products}}';
+    public const PRICEDATA = '{{%stripe_pricedata}}';
+    public const PRICES = '{{%stripe_prices}}';
 }

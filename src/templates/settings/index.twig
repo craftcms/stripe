@@ -20,14 +20,14 @@
             id: 'routing',
             name: 'settings',
             cols: {
-                uriFormat: {
+                productUriFormat: {
                     type: 'singleline',
                     heading: "Product URI Format"|t('stripe'),
                     info: "What product URIs should look like."|t('stripe'),
                     placeholder: "Leave blank if products don’t have URLs"|t('stripe'),
                     code: true
                 },
-                template: not headlessMode ? {
+                productTemplate: not headlessMode ? {
                     type: 'template',
                     heading: "Template"|t('app'),
                     info: "Which template should be loaded when a product’s URL is requested."|t('stripe'),
@@ -36,13 +36,13 @@
             }|filter,
             rows: {
                 'routing': {
-                    uriFormat: {
-                        value: settings.uriFormat ?? null,
-                        hasErrors: settings.hasErrors('uriFormat') ?? false
+                    productUriFormat: {
+                        value: settings.productUriFormat ?? null,
+                        hasErrors: settings.hasErrors('productUriFormat') ?? false
                     },
-                    template: not headlessMode ? {
-                        value: settings.template ?? null,
-                        hasErrors: settings.hasErrors('template') ?? false,
+                    productTemplate: not headlessMode ? {
+                        value: settings.productTemplate ?? null,
+                        hasErrors: settings.hasErrors('productTemplate') ?? false,
                     }
                 }
             },

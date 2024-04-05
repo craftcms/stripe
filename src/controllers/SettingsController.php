@@ -62,13 +62,13 @@ class SettingsController extends Controller
         /** @var Settings $pluginSettings */
         $pluginSettings = $plugin->getSettings();
 
-        $originalUriFormat = $pluginSettings->uriFormat;
+        $originalUriFormat = $pluginSettings->productUriFormat;
 
         // Remove from editable table namespace
-        $settings['uriFormat'] = $settings['routing']['uriFormat'];
+        $settings['productUriFormat'] = $settings['routing']['productUriFormat'];
         // Could be blank if in headless mode
-        if (isset($settings['routing']['template'])) {
-            $settings['template'] = $settings['routing']['template'];
+        if (isset($settings['routing']['productTemplate'])) {
+            $settings['productTemplate'] = $settings['routing']['productTemplate'];
         }
         unset($settings['routing']);
 
@@ -93,7 +93,7 @@ class SettingsController extends Controller
         }
 
         // Resave all products if the URI format changed
-        if ($originalUriFormat != $settings['uriFormat']) {
+        if ($originalUriFormat != $settings['productUriFormat']) {
             Craft::$app->getQueue()->push(new ResaveElements([
                 'elementType' => Product::class,
                 'criteria' => [

@@ -52,6 +52,27 @@ class Install extends Migration
             'uid' => $this->string(),
             'PRIMARY KEY([[stripeId]])',
         ]);
+
+        $this->archiveTableIfExists(Table::PRICES);
+        $this->createTable(Table::PRICES, [
+            'id' => $this->integer()->notNull(),
+            'stripeId' => $this->string(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+            'PRIMARY KEY([[id]])',
+        ]);
+
+        $this->archiveTableIfExists(Table::PRICEDATA);
+        $this->createTable(Table::PRICEDATA, [
+            'stripeId' => $this->string(),
+            'stripeStatus' => $this->string()->notNull(),
+            'data' => $this->json(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->string(),
+            'PRIMARY KEY([[stripeId]])',
+        ]);
     }
 
     /**
@@ -60,6 +81,7 @@ class Install extends Migration
     public function createIndexes(): void
     {
         $this->createIndex(null, Table::PRODUCTDATA, ['stripeId'], true);
+        $this->createIndex(null, Table::PRICEDATA, ['stripeId'], true);
     }
 
     /**
@@ -69,6 +91,9 @@ class Install extends Migration
     {
         $this->addForeignKey(null, Table::PRODUCTS, ['stripeId'], Table::PRODUCTDATA, ['stripeId'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::PRODUCTS, ['id'], CraftTable::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
+
+        $this->addForeignKey(null, Table::PRICES, ['stripeId'], Table::PRICEDATA, ['stripeId'], 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, Table::PRICES, ['id'], CraftTable::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
     }
 
     /**
@@ -79,7 +104,7 @@ class Install extends Migration
         $this->dropForeignKeys();
         $this->dropTables();
 
-        //$this->delete(CraftTable::FIELDLAYOUTS, ['type' => [ProductElement::class]]);
+        $this->delete(CraftTable::FIELDLAYOUTS, ['type' => [ProductElement::class]]);
 
         return true;
     }

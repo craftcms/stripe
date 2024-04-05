@@ -10,10 +10,12 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\App;
 use craft\services\Elements;
 use craft\services\Fields;
+use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
 use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\models\Settings;
 use craft\stripe\services\Api;
+use craft\stripe\services\Prices;
 use craft\stripe\services\Products;
 use craft\web\UrlManager;
 use yii\base\Event;
@@ -70,6 +72,7 @@ class Plugin extends BasePlugin
         return [
             'components' => [
                 'api' => ['class' => Api::class],
+                'prices' => ['class' => Prices::class],
                 'products' => ['class' => Products::class],
                 //'store' => ['class' => Store::class],
             ],
@@ -141,6 +144,17 @@ class Plugin extends BasePlugin
     }
 
     /**
+     * Returns the Prices service
+     *
+     * @return Prices The Prices service
+     * @throws InvalidConfigException
+     */
+    public function getPrices(): Prices
+    {
+        return $this->get('prices');
+    }
+
+    /**
      * Returns the Products service
      *
      * @return Products The Products service
@@ -188,6 +202,7 @@ class Plugin extends BasePlugin
     {
         Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, function (RegisterComponentTypesEvent $event) {
             $event->types[] = Product::class;
+            $event->types[] = Price::class;
         });
     }
 

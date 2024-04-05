@@ -4,6 +4,8 @@ namespace craft\stripe\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\elements\Address;
+use craft\elements\db\AddressQuery;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
 use craft\elements\conditions\ElementConditionInterface;
@@ -15,18 +17,18 @@ use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\stripe\Plugin;
 use craft\stripe\elements\conditions\products\ProductCondition;
-use craft\stripe\elements\db\ProductQuery;
-use craft\stripe\helpers\Product as ProductHelper;
-use craft\stripe\records\Product as ProductRecord;
+use craft\stripe\elements\db\PriceQuery;
+use craft\stripe\helpers\Price as PriceHelper;
+use craft\stripe\records\Price as PriceRecord;
 use craft\stripe\web\assets\stripecp\StripeCpAsset;
 use craft\web\CpScreenResponseBehavior;
 use yii\helpers\Html as HtmlHelper;
 use yii\web\Response;
 
 /**
- * Product element type
+ * Price element type
  */
-class Product extends Element
+class Price extends Element
 {
     // Constants
     // -------------------------------------------------------------------------
@@ -62,11 +64,6 @@ class Product extends Element
      */
     private ?array $_data = null;
 
-    /**
-     * @see getPricesManager()
-     */
-    private NestedElementManager $_priceManager;
-
 
     // Methods
     // -------------------------------------------------------------------------
@@ -76,7 +73,7 @@ class Product extends Element
      */
     public static function displayName(): string
     {
-        return Craft::t('stripe', 'Stripe Product');
+        return Craft::t('stripe', 'Stripe Price');
     }
 
     /**
@@ -84,7 +81,7 @@ class Product extends Element
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('stripe', 'stripe product');
+        return Craft::t('stripe', 'stripe price');
     }
 
     /**
@@ -92,7 +89,7 @@ class Product extends Element
      */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('stripe', 'Stripe Products');
+        return Craft::t('stripe', 'Stripe Prices');
     }
 
     /**
@@ -100,7 +97,7 @@ class Product extends Element
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('stripe', 'stripe products');
+        return Craft::t('stripe', 'stripe prices');
     }
 
     /**
@@ -108,7 +105,7 @@ class Product extends Element
      */
     public static function refHandle(): ?string
     {
-        return 'stripeproduct';
+        return 'stripeprice';
     }
 
     /**
@@ -132,7 +129,7 @@ class Product extends Element
      */
     public static function hasUris(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -159,7 +156,7 @@ class Product extends Element
         return [
             self::STATUS_LIVE => Craft::t('app', 'Live'),
             self::STATUS_STRIPE_ARCHIVED => ['label' => Craft::t('stripe', 'Archived in Stripe'), 'color' => 'red'],
-            self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
+            //self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
         ];
     }
 
@@ -185,24 +182,24 @@ class Product extends Element
      */
     public static function find(): ElementQueryInterface
     {
-        return Craft::createObject(ProductQuery::class, [static::class]);
+        return Craft::createObject(PriceQuery::class, [static::class]);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function createCondition(): ElementConditionInterface
-    {
-        return Craft::createObject(ProductCondition::class, [static::class]);
-    }
+//    /**
+//     * @inheritdoc
+//     */
+//    public static function createCondition(): ElementConditionInterface
+//    {
+//        return Craft::createObject(ProductCondition::class, [static::class]);
+//    }
 
-    /**
-     * @inheritdoc
-     */
-    public function getFieldLayout(): ?FieldLayout
-    {
-        return Craft::$app->fields->getLayoutByType(Product::class);
-    }
+//    /**
+//     * @inheritdoc
+//     */
+//    public function getFieldLayout(): ?FieldLayout
+//    {
+//        return Craft::$app->fields->getLayoutByType(Product::class);
+//    }
 
     /**
      * @inheritdoc
@@ -211,8 +208,8 @@ class Product extends Element
     {
         /** @noinspection PhpUnhandledExceptionInspection */
         Craft::$app->getView()->registerAssetBundle(StripeCpAsset::class);
-        $productCard = ProductHelper::renderCardHtml($this);
-        return $productCard . parent::getSidebarHtml($static);
+        $priceCard = PriceHelper::renderCardHtml($this);
+        return $priceCard . parent::getSidebarHtml($static);
     }
 
     /**
@@ -220,12 +217,12 @@ class Product extends Element
      */
     protected static function defineSources(string $context): array
     {
-        return [
+        return [/*
             [
                 'key' => '*',
-                'label' => Craft::t('stripe', 'All products'),
+                'label' => Craft::t('stripe', 'All prices'),
             ],
-        ];
+        */];
     }
 
     /**
@@ -245,13 +242,13 @@ class Product extends Element
 
         $sortOptions['stripeId'] = [
             'label' => Craft::t('stripe', 'Stripe ID'),
-            'orderBy' => 'stripe_productdata.stripeId',
+            'orderBy' => 'stripe_pricedata.stripeId',
             'defaultDir' => SORT_DESC,
         ];
 
         $sortOptions['stripeStatus'] = [
             'label' => Craft::t('stripe', 'Stripe Status'),
-            'orderBy' => 'stripe_productdata.stripeStatus',
+            'orderBy' => 'stripe_pricedata.stripeStatus',
             'defaultDir' => SORT_DESC,
         ];
 
@@ -277,56 +274,56 @@ class Product extends Element
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getUriFormat(): ?string
-    {
-        return Plugin::getInstance()->getSettings()->productUriFormat;
-    }
+//    /**
+//     * @inheritdoc
+//     */
+//    public function getUriFormat(): ?string
+//    {
+//        return Plugin::getInstance()->getSettings()->uriFormat;
+//    }
+//
+//    /**
+//     * @inheritdoc
+//     */
+//    protected function previewTargets(): array
+//    {
+//        $previewTargets = [];
+//        $url = $this->getUrl();
+//        if ($url) {
+//            $previewTargets[] = [
+//                'label' => Craft::t('app', 'Primary {type} page', [
+//                    'type' => self::lowerDisplayName(),
+//                ]),
+//                'url' => $url,
+//            ];
+//        }
+//        return $previewTargets;
+//    }
 
-    /**
-     * @inheritdoc
-     */
-    protected function previewTargets(): array
-    {
-        $previewTargets = [];
-        $url = $this->getUrl();
-        if ($url) {
-            $previewTargets[] = [
-                'label' => Craft::t('app', 'Primary {type} page', [
-                    'type' => self::lowerDisplayName(),
-                ]),
-                'url' => $url,
-            ];
-        }
-        return $previewTargets;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function route(): array|string|null
-    {
-        if (!$this->previewing && $this->getStatus() != self::STATUS_LIVE) {
-            return null;
-        }
-
-        $settings = Plugin::getInstance()->getSettings();
-
-        if ($settings->productUriFormat) {
-            return [
-                'templates/render', [
-                    'template' => $settings->productTemplate,
-                    'variables' => [
-                        'product' => $this,
-                    ],
-                ],
-            ];
-        }
-
-        return null;
-    }
+//    /**
+//     * @inheritdoc
+//     */
+//    protected function route(): array|string|null
+//    {
+//        if (!$this->previewing && $this->getStatus() != self::STATUS_LIVE) {
+//            return null;
+//        }
+//
+//        $settings = Plugin::getInstance()->getSettings();
+//
+//        if ($settings->uriFormat) {
+//            return [
+//                'templates/render', [
+//                    'template' => $settings->template,
+//                    'variables' => [
+//                        'product' => $this,
+//                    ],
+//                ],
+//            ];
+//        }
+//
+//        return null;
+//    }
 
     public function canView(User $user): bool
     {
@@ -383,7 +380,7 @@ class Product extends Element
      */
     protected function cpEditUrl(): ?string
     {
-        return sprintf('stripe/products/%s', $this->getCanonicalId());
+        return sprintf('stripe/prices/%s', $this->getCanonicalId());
     }
 
     /**
@@ -391,7 +388,7 @@ class Product extends Element
      */
     public function getPostEditUrl(): ?string
     {
-        return UrlHelper::cpUrl('stripe/products');
+        return UrlHelper::cpUrl('stripe/prices');
     }
 
     /**
@@ -403,7 +400,7 @@ class Product extends Element
         $response->crumbs([
             [
                 'label' => self::pluralDisplayName(),
-                'url' => UrlHelper::cpUrl('stripe/products'),
+                'url' => UrlHelper::cpUrl('stripe/prices'),
             ],
         ]);
     }
@@ -414,13 +411,13 @@ class Product extends Element
     public function afterSave(bool $isNew): void
     {
         if (!$isNew) {
-            $record = ProductRecord::findOne($this->id);
+            $record = PriceRecord::findOne($this->id);
 
             if (!$record) {
-                throw new \Exception('Invalid product ID: ' . $this->id);
+                throw new \Exception('Invalid price ID: ' . $this->id);
             }
         } else {
-            $record = new ProductRecord();
+            $record = new PriceRecord();
             $record->id = $this->id;
         }
 
@@ -471,7 +468,7 @@ class Product extends Element
 
 
     /**
-     * Return URL to edit the product in Stripe Dashboard
+     * Return URL to edit the price in Stripe Dashboard
      *
      * @return string
      */
@@ -479,7 +476,7 @@ class Product extends Element
     {
         $dashboardUrl = Plugin::getInstance()->dashboardUrl;
         $mode = Plugin::getInstance()->stripeMode;
-        return "{$dashboardUrl}/{$mode}/products/{$this->stripeId}";
+        return "{$dashboardUrl}/{$mode}/prices/{$this->stripeId}";
     }
 
     /**
@@ -515,32 +512,4 @@ class Product extends Element
     {
         return $this->_data ?? [];
     }
-
-//    /**
-//     * Returns a nested element manager for the product’s prices.
-//     *
-//     * @return NestedElementManager
-//     */
-//    public function getPriceManager(): NestedElementManager
-//    {
-//        if (!isset($this->_priceManager)) {
-//            $this->_priceManager = new NestedElementManager(
-//                Price::class,
-//                fn() => $this->createPriceQuery(),
-//                [
-//                    'attribute' => 'addresses',
-//                    'propagationMethod' => PropagationMethod::None,
-//                ],
-//            );
-//        }
-//
-//        return $this->_priceManager;
-//    }
-//
-//    private function createPriceQuery(): PriceQuery
-//    {
-//        return Price::find()
-//            ->owner($this)
-//            ->orderBy(['id' => SORT_ASC]);
-//    }
 }

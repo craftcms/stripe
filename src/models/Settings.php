@@ -26,12 +26,12 @@ class Settings extends Model
     /**
      * @var string
      */
-    public string $uriFormat = '';
+    public string $productUriFormat = '';
 
     /**
      * @var string
      */
-    public string $template = '';
+    public string $productTemplate = '';
 
     /**
      * @var mixed
@@ -56,8 +56,8 @@ class Settings extends Model
         return [
             'secretKey' => Craft::t('stripe', 'Stripe Secret Key'),
             'publicKey' => Craft::t('stripe', 'Stripe Public Key'),
-            'uriFormat' => Craft::t('stripe', 'Product URI format'),
-            'template' => Craft::t('stripe', 'Product Template'),
+            'productUriFormat' => Craft::t('stripe', 'Product URI format'),
+            'productTemplate' => Craft::t('stripe', 'Product Template'),
         ];
     }
 
