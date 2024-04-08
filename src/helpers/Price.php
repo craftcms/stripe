@@ -11,11 +11,9 @@ use Craft;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\stripe\elements\Price as PriceElement;
-use craft\stripe\records\PriceData;
 
 /**
  * Stipe Price Helper.
@@ -31,20 +29,33 @@ class Price
     {
         $formatter = Craft::$app->getFormatter();
 
+        /** @var \Stripe\Price $stripePrice */
+        $stripePrice = $price->getData();
+
+        $properties = [
+            'unitPrice',
+            //'type',
+            'currency',
+            'interval',
+            'presetAmount',
+            'minAmount',
+            'maxAmount',
+            'pricePerUnit',
+            'partialPackages',
+            'isDefaultPrice',
+        ];
+
         $title = Html::tag('h3', $price->title, [
             'class' => 'pec-title',
         ]);
 
-//        $subTitle = Html::tag('p', $product->productType, [
-//            'class' => 'pec-subtitle',
-//        ]);
         $externalLink = Html::tag('div', '&nbsp;', [
             'class' => 'pec-external-icon',
             'data' => [
                 'icon' => 'external',
             ],
         ]);
-        $cardHeader = Html::a($title . /*$subTitle .*/ $externalLink, $price->getStripeEditUrl(), [
+        $cardHeader = Html::a($title . $externalLink, $price->getStripeEditUrl(), [
             'style' => '',
             'class' => 'pec-header',
             'target' => '_blank',
@@ -66,59 +77,91 @@ class Price
         $meta[Craft::t('stripe', 'Product')] =
             Cp::elementChipHtml($price->product, ['size' => Cp::CHIP_SIZE_SMALL]);
 
-        // Data
-        $dataAttributesToDisplay = [
-            'currency',
-            'nickname',
-            'recurring',
-            'type',
-            'unit_amount',
-            'billing_scheme',
-            'lookup_key',
-            'tax_behavior',
-            'tiers_mode',
-        ];
 
-        if (count($price->getData()) > 0) {
-            foreach ($price->getData() as $key => $value) {
-                $label = StringHelper::titleize(implode(' ', StringHelper::toWords($key, false, true)));
-                if (in_array($key, $dataAttributesToDisplay)) {
-                    if (!is_array($value)) {
-                        $meta[Craft::t('stripe', $label)] = $value;
-                    }
-                    else {
-                        switch ($key) {
-                            case 'metadata':
-                                $meta[Craft::t('stripe', $label)] = collect($price->data[$key])
-                                    ->map(function($val, $i) {
-                                        // todo: style me!
-                                        return Html::beginTag('div', ['class' => 'fullwidth']) .
-                                            Html::tag('em', $i . ': ') .
-                                            $val .
-                                            Html::endTag('div');
-                                    })
-                                    ->join(' ');
-                                break;
-                            case 'recurring':
-                                $meta[Craft::t('stripe', $label)] = Html::tag(
-                                    'span',
-                                    $value['interval_count'] . ' ' . $value['interval'],
-                                    [
-                                        'class' => 'break-word no-scroll',
-                                    ]
-                                );
-                                break;
-                            default:
-                                $meta[Craft::t('stripe', $label)] = collect($price->data[$key])
-                                    ->join('; ');
-                                break;
+        if (count($stripePrice) > 0) {
+            $unitPrice = $formatter->asCurrency($stripePrice['unit_amount'] / 100, $stripePrice['currency']);
+
+            if ($stripePrice['recurring'] === null) {
+                $interval = Craft::t('stripe', 'One-time');
+            } else {
+                $interval = "Every {$stripePrice['recurring']['interval_count']} {$stripePrice['recurring']['interval']}";
+            }
+
+            if ($stripePrice['transform_quantity'] === null) {
+                $pricePerUnit = $unitPrice;
+            } else {
+                $pricePerUnit = $unitPrice . " per group of " . $stripePrice['transform_quantity']['divide_by'];
+            }
+
+            foreach ($properties as $property) {
+                switch ($property) {
+                    case 'unitPrice':
+                        if (isset($stripePrice['custom_unit_amount'])) {
+                            $unitPrice = Craft::t('stripe', 'Customer input price');
                         }
-                    }
+                        if ($stripePrice['recurring'] !== null) {
+                            if ($stripePrice['recurring']['interval_count'] == 1) {
+                                $unitPrice = "$pricePerUnit/{$stripePrice['recurring']['interval']}";
+                            } else {
+                                $unitPrice = $pricePerUnit . ' ' . lcfirst($interval);
+                            }
+                        }
+                        $meta[Craft::t('stripe', 'Unit price')] = $unitPrice;
+                        break;
+                    case 'currency':
+                        $meta[Craft::t('stripe', 'Currency')] = strtoupper($stripePrice['currency']);
+                        break;
+                    case 'interval':
+                        $meta[Craft::t('stripe', 'Interval')] = $interval;
+                        break;
+                    case 'presetAmount':
+                        if ($stripePrice['custom_unit_amount']) {
+                            $meta[Craft::t('stripe', 'Preset Amount')] =
+                                $formatter->asCurrency($stripePrice['custom_unit_amount']['preset']/100, $stripePrice['currency']);
+                        }
+                        break;
+                    case 'minAmount':
+                        if ($stripePrice['custom_unit_amount']) {
+                            $meta[Craft::t('stripe', 'Min Amount')] =
+                                $formatter->asCurrency($stripePrice['custom_unit_amount']['minimum']/100, $stripePrice['currency']);
+                        }
+                        break;
+                    case 'maxAmount':
+                        if ($stripePrice['custom_unit_amount']) {
+                            $meta[Craft::t('stripe', 'Max Amount')] =
+                                $formatter->asCurrency($stripePrice['custom_unit_amount']['maximum']/100, $stripePrice['currency']);
+                        }
+                        break;
+                    case 'pricePerUnit':
+                        if ($stripePrice['custom_unit_amount']) {
+                            $pricePerUnit = Craft::t('stripe', 'Customer chooses');
+                        }
+
+                        $meta[Craft::t('stripe', 'Price per Unit')] = $pricePerUnit;
+                        break;
+                    case 'partialPackages':
+                        if ($stripePrice['transform_quantity'] !== null) {
+                            $meta[Craft::t('stripe', 'Partial packages')] =
+                                Craft::t('stripe', 'Round {roundDirection} to nearest complete package', [
+                                    'roundDirection' => $stripePrice['transform_quantity']['round'],
+                                ]);
+                            break;
+                        }
                 }
             }
+
+            $meta[Craft::t('stripe', 'Metadata')] = collect($stripePrice['metadata'])
+                ->map(function($value, $key) {
+                    // todo: style me!
+                    return Html::beginTag('div', ['class' => 'fullwidth']) .
+                        Html::tag('em', $key . ': ') .
+                        $value .
+                        Html::endTag('div');
+                })
+                ->join(' ');
         }
 
-        $meta[Craft::t('stripe', 'Created at')] = $formatter->asDatetime($price->data['created'], Formatter::FORMAT_WIDTH_SHORT);
+        $meta[Craft::t('stripe', 'Created at')] = $formatter->asDatetime($stripePrice['created'], Formatter::FORMAT_WIDTH_SHORT);
 
         $metadataHtml = Cp::metadataHtml($meta);
 
@@ -129,8 +172,7 @@ class Price
             ],
         ]);
 
-        // This is the date updated in the database which represents the last time it was updated from a Stripe webhook or sync.
-        $dateCreated = DateTimeHelper::toDateTime($price->data['created']);
+        $dateCreated = DateTimeHelper::toDateTime($stripePrice['created']);
         $now = new \DateTime();
         $diff = $now->diff($dateCreated);
         $duration = DateTimeHelper::humanDuration($diff, false);

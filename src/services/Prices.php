@@ -185,4 +185,9 @@ class Prices extends Component
     {
         Craft::$app->getFields()->deleteLayoutsByType(PriceElement::class);
     }
+
+    public function getPriceByStripeId(string $stripeId): ?PriceElement
+    {
+        return PriceElement::find()->stripeId($stripeId)->one();
+    }
 }

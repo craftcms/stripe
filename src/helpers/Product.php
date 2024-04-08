@@ -35,16 +35,13 @@ class Product
             'class' => 'pec-title',
         ]);
 
-//        $subTitle = Html::tag('p', $product->productType, [
-//            'class' => 'pec-subtitle',
-//        ]);
         $externalLink = Html::tag('div', '&nbsp;', [
             'class' => 'pec-external-icon',
             'data' => [
                 'icon' => 'external',
             ],
         ]);
-        $cardHeader = Html::a($title . /*$subTitle .*/ $externalLink, $product->getStripeEditUrl(), [
+        $cardHeader = Html::a($title . $externalLink, $product->getStripeEditUrl(), [
             'style' => '',
             'class' => 'pec-header',
             'target' => '_blank',
@@ -66,11 +63,7 @@ class Product
 
         // Data
         $dataAttributesToDisplay = [
-            'url',
-            'type',
             'images',
-//            'created',
-//            'updated',
             'features',
             'metadata',
             'tax_code',
@@ -79,8 +72,6 @@ class Product
             'unit_label',
             'description',
             'default_price',
-            'package_dimensions',
-            'statement_descriptor',
         ];
 
         if (count($product->getData()) > 0) {
@@ -118,13 +109,16 @@ class Product
                                     ->join(' ');
                                 break;
                             case 'default_price':
-                                $meta[Craft::t('stripe', $label)] = Html::tag(
-                                    'span',
-                                    $value['id'],
-                                    [
-                                        'class' => 'break-word no-scroll',
-                                    ]
-                                );
+                                $meta[Craft::t('stripe', $label)] =
+                                    Cp::elementChipHtml($product->defaultPrice, ['size' => Cp::CHIP_SIZE_SMALL]);
+
+//                                $meta[Craft::t('stripe', $label)] = Html::tag(
+//                                    'span',
+//                                    $value['id'],
+//                                    [
+//                                        'class' => 'break-word no-scroll',
+//                                    ]
+//                                );
                                 break;
                             default:
                                 $meta[Craft::t('stripe', $label)] = collect($product->data[$key])

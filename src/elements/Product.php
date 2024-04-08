@@ -81,6 +81,12 @@ class Product extends Element
      */
     private ElementCollection $_prices;
 
+    /**
+     * @var Price|null Price
+     * @see getDefaultPrice()
+     */
+    private ?Price $_defaultPrice;
+
 
     // Methods
     // -------------------------------------------------------------------------
@@ -585,6 +591,31 @@ class Product extends Element
         return $this->_data ?? [];
     }
 
+    /**
+     * Gets the default price for the product
+     *
+     * @return Price|null
+     */
+    public function getDefaultPrice(): Price|null
+    {
+        if (!isset($this->_defaultPrice)) {
+            $defaultPriceId = $this->getData()['default_price']['id'];
+
+            if (!$defaultPriceId) {
+                return null;
+            }
+
+            $price = Plugin::getInstance()->getPrices()->getPriceByStripeId($defaultPriceId);
+
+            if (!$price) {
+                return null;
+            }
+
+            $this->_defaultPrice = $price;
+        }
+
+        return $this->_defaultPrice;
+    }
 
     /**
      * Gets the product’s prices.
