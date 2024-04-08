@@ -92,18 +92,18 @@ class Plugin extends BasePlugin
         Craft::$app->onInit(function() {
             $request = Craft::$app->getRequest();
             
-            $this->_registerElementTypes();
-//            $this->_registerUtilityTypes();
-            $this->_registerFieldTypes();
-            $this->_registerFieldLayoutElements();
-//            $this->_registerVariables();
-//            $this->_registerResaveCommands();
+            $this->registerElementTypes();
+//            $this->registerUtilityTypes();
+            $this->registerFieldTypes();
+            $this->registerFieldLayoutElements();
+//            $this->registerVariables();
+//            $this->registerResaveCommands();
 
             if (!$request->getIsConsoleRequest()) {
                 if ($request->getIsCpRequest()) {
-                    $this->_registerCpRoutes();
+                    $this->registerCpRoutes();
                 } /*else {
-                    $this->_registerSiteRoutes();
+                    $this->registerSiteRoutes();
                 }*/
             }
 //
@@ -126,10 +126,13 @@ class Plugin extends BasePlugin
 //            Registry::addHandler(Topics::INVENTORY_LEVELS_UPDATE, new ProductHandler());
 
             // get stripe environment from the secret key
-            $this->stripeMode = $this->_getStripeMode();
+            $this->stripeMode = $this->getStripeMode();
         });
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function createSettingsModel(): ?Model
     {
         return Craft::createObject(Settings::class);
@@ -143,6 +146,9 @@ class Plugin extends BasePlugin
         return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('stripe/settings'));
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function settingsHtml(): ?string
     {
         return Craft::$app->view->renderTemplate('stripe/settings/index.twig', [
@@ -201,7 +207,7 @@ class Plugin extends BasePlugin
 //     *
 //     * @since 3.0
 //     */
-//    private function _registerUtilityTypes(): void
+//    private function registerUtilityTypes(): void
 //    {
 //        Event::on(
 //            Utilities::class,
@@ -215,9 +221,9 @@ class Plugin extends BasePlugin
     /**
      * Register the element types supplied by Stripe
      *
-     * @since 3.0
+     * @return void
      */
-    private function _registerElementTypes(): void
+    private function registerElementTypes(): void
     {
         Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, function (RegisterComponentTypesEvent $event) {
             $event->types[] = Product::class;
@@ -230,7 +236,7 @@ class Plugin extends BasePlugin
      *
      * @return void
      */
-    private function _registerFieldTypes(): void
+    private function registerFieldTypes(): void
     {
         Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, static function(RegisterComponentTypesEvent $event) {
             $event->types[] = ProductsField::class;
@@ -242,7 +248,7 @@ class Plugin extends BasePlugin
      *
      * @return void
      */
-    private function _registerFieldLayoutElements(): void {
+    private function registerFieldLayoutElements(): void {
         Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
             /** @var FieldLayout $fieldLayout */
             $fieldLayout = $event->sender;
@@ -260,7 +266,7 @@ class Plugin extends BasePlugin
 //     *
 //     * @since 3.0
 //     */
-//    private function _registerVariables(): void
+//    private function registerVariables(): void
 //    {
 //        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, static function(Event $event) {
 //            $variable = $event->sender;
@@ -268,7 +274,7 @@ class Plugin extends BasePlugin
 //        });
 //    }
 
-//    public function _registerResaveCommands(): void
+//    public function registerResaveCommands(): void
 //    {
 //        Event::on(ResaveController::class, Controller::EVENT_DEFINE_ACTIONS, static function(DefineConsoleActionsEvent $e) {
 //            $e->actions['stripe-products'] = [
@@ -285,8 +291,10 @@ class Plugin extends BasePlugin
 
     /**
      * Register the CP routes
+     *
+     * @return void
      */
-    private function _registerCpRoutes(): void
+    private function registerCpRoutes(): void
     {
         Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
             //$session = Plugin::getInstance()->getApi()->getSession();
@@ -310,7 +318,7 @@ class Plugin extends BasePlugin
 //     *
 //     * @since 3.0
 //     */
-//    private function _registerSiteRoutes(): void
+//    private function registerSiteRoutes(): void
 //    {
 //        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function(RegisterUrlRulesEvent $event) {
 //            $event->rules['stripe/webhook/handle'] = 'stripe/webhook/handle';
@@ -356,7 +364,7 @@ class Plugin extends BasePlugin
      *
      * @return string
      */
-    private function _getStripeMode(): string
+    private function getStripeMode(): string
     {
         $settings = $this->getSettings();
         $secretKey = App::parseEnv($settings->secretKey);

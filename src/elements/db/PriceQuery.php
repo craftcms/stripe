@@ -342,13 +342,13 @@ class PriceQuery extends ElementQuery
         }
 
         try {
-            $this->primaryOwnerId = $this->_normalizeOwnerId($this->primaryOwnerId);
+            $this->primaryOwnerId = $this->normalizeOwnerId($this->primaryOwnerId);
         } catch (InvalidArgumentException) {
             throw new InvalidConfigException('Invalid primaryOwnerId param value');
         }
 
         try {
-            $this->ownerId = $this->_normalizeOwnerId($this->ownerId);
+            $this->ownerId = $this->normalizeOwnerId($this->ownerId);
         } catch (InvalidArgumentException) {
             throw new InvalidConfigException('Invalid ownerId param value');
         }
@@ -461,7 +461,7 @@ class PriceQuery extends ElementQuery
      * @return int[]|null
      * @throws InvalidArgumentException
      */
-    private function _normalizeOwnerId(mixed $value): ?array
+    private function normalizeOwnerId(mixed $value): ?array
     {
         if (empty($value)) {
             return null;

@@ -116,7 +116,7 @@ class Install extends Migration
      */
     public function dropTables(): void
     {
-        $tables = $this->_getAllTableNames();
+        $tables = $this->getAllTableNames();
         foreach ($tables as $table) {
             $this->dropTableIfExists($table);
         }
@@ -128,10 +128,10 @@ class Install extends Migration
      */
     public function dropForeignKeys(): void
     {
-        $tables = $this->_getAllTableNames();
+        $tables = $this->getAllTableNames();
 
         foreach ($tables as $table) {
-            $this->_dropForeignKeyToAndFromTable($table);
+            $this->dropForeignKeyToAndFromTable($table);
         }
     }
 
@@ -139,9 +139,9 @@ class Install extends Migration
      * @param $tableName
      * @throws NotSupportedException
      */
-    private function _dropForeignKeyToAndFromTable($tableName): void
+    private function dropForeignKeyToAndFromTable($tableName): void
     {
-        if ($this->_tableExists($tableName)) {
+        if ($this->tableExists($tableName)) {
             $this->dropAllForeignKeysToTable($tableName);
             //MigrationHelper::dropAllForeignKeysOnTable($tableName, $this);
         }
@@ -154,7 +154,7 @@ class Install extends Migration
      * @return bool If the table exists.
      * @throws NotSupportedException
      */
-    private function _tableExists(string $tableName): bool
+    private function tableExists(string $tableName): bool
     {
         $schema = $this->db->getSchema();
         $schema->refresh();
@@ -169,7 +169,7 @@ class Install extends Migration
     /**
      * @return string[]
      */
-    private function _getAllTableNames(): array
+    private function getAllTableNames(): array
     {
         $class = new ReflectionClass(Table::class);
         return $class->getConstants();
