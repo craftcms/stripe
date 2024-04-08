@@ -148,41 +148,41 @@ class Prices extends Component
         return true;
     }
 
-//    /**
-//     * Handle field layout change
-//     *
-//     * @throws \Throwable
-//     */
-//    public function handleChangedFieldLayout(ConfigEvent $event): void
-//    {
-//        $data = $event->newValue;
-//
-//        ProjectConfig::ensureAllFieldsProcessed();
-//        $fieldsService = Craft::$app->getFields();
-//
-//        if (empty($data) || empty(reset($data))) {
-//            // Delete the field layout
-//            $fieldsService->deleteLayoutsByType(PriceElement::class);
-//            return;
-//        }
-//
-//        // Save the field layout
-//        $layout = FieldLayout::createFromConfig(reset($data));
-//        $layout->id = $fieldsService->getLayoutByType(PriceElement::class)->id;
-//        $layout->type = PriceElement::class;
-//        $layout->uid = key($data);
-//        $fieldsService->saveLayout($layout, false);
-//
-//
-//        // Invalidate price caches
-//        Craft::$app->getElements()->invalidateCachesForElementType(PriceElement::class);
-//    }
-//
-//    /**
-//     * Handle field layout being deleted
-//     */
-//    public function handleDeletedFieldLayout(): void
-//    {
-//        Craft::$app->getFields()->deleteLayoutsByType(PriceElement::class);
-//    }
+    /**
+     * Handle field layout change
+     *
+     * @throws \Throwable
+     */
+    public function handleChangedFieldLayout(ConfigEvent $event): void
+    {
+        $data = $event->newValue;
+
+        ProjectConfig::ensureAllFieldsProcessed();
+        $fieldsService = Craft::$app->getFields();
+
+        if (empty($data) || empty(reset($data))) {
+            // Delete the field layout
+            $fieldsService->deleteLayoutsByType(PriceElement::class);
+            return;
+        }
+
+        // Save the field layout
+        $layout = FieldLayout::createFromConfig(reset($data));
+        $layout->id = $fieldsService->getLayoutByType(PriceElement::class)->id;
+        $layout->type = PriceElement::class;
+        $layout->uid = key($data);
+        $fieldsService->saveLayout($layout, false);
+
+
+        // Invalidate price caches
+        Craft::$app->getElements()->invalidateCachesForElementType(PriceElement::class);
+    }
+
+    /**
+     * Handle field layout being deleted
+     */
+    public function handleDeletedFieldLayout(): void
+    {
+        Craft::$app->getFields()->deleteLayoutsByType(PriceElement::class);
+    }
 }

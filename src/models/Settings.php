@@ -4,6 +4,7 @@ namespace craft\stripe\models;
 
 use Craft;
 use craft\base\Model;
+use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
 
 /**
@@ -37,6 +38,11 @@ class Settings extends Model
      * @var mixed
      */
     private mixed $_productFieldLayout;
+
+    /**
+     * @var mixed
+     */
+    private mixed $_priceFieldLayout;
 
     /**
      * @inheritdoc
@@ -80,5 +86,26 @@ class Settings extends Model
     public function setProductFieldLayout(mixed $fieldLayout): void
     {
         $this->_productFieldLayout = $fieldLayout;
+    }
+
+    /**
+     * @return \craft\models\FieldLayout|mixed
+     */
+    public function getPriceFieldLayout()
+    {
+        if (!isset($this->_priceFieldLayout)) {
+            $this->_priceFieldLayout = Craft::$app->fields->getLayoutByType(Price::class);
+        }
+
+        return $this->_priceFieldLayout;
+    }
+
+    /**
+     * @param mixed $fieldLayout
+     * @return void
+     */
+    public function setPriceFieldLayout(mixed $fieldLayout): void
+    {
+        $this->_priceFieldLayout = $fieldLayout;
     }
 }

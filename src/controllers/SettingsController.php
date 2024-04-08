@@ -9,7 +9,9 @@ namespace craft\stripe\controllers;
 
 use Craft;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\queue\jobs\ResaveElements;
+use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
 use craft\stripe\models\Settings;
 use craft\stripe\Plugin;
@@ -20,13 +22,13 @@ use yii\web\Response;
  * The SettingsController handles modifying and saving the general settings.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
  */
 class SettingsController extends Controller
 {
     /**
-     * Display a form to allow an administrator to update plugin settings.
+     * Display a form to allow an administrator to update plugin's API settings.
      *
+     * @param Settings|null $settings
      * @return Response
      */
     public function actionIndex(?Settings $settings = null): Response
@@ -34,19 +36,62 @@ class SettingsController extends Controller
         if ($settings == null) {
             $settings = Plugin::getInstance()->getSettings();
         }
+        $tabs = $this->getTabs();
+        $selectedTab = 'apiConnection';
 
-        $tabs = [
+        return $this->renderTemplate('stripe/settings/index', compact('settings', 'tabs', 'selectedTab'));
+    }
+
+    /**
+     * Display a form to allow an administrator to update plugin's Product settings.
+     *
+     * @param Settings|null $settings
+     * @return Response
+     */
+    public function actionProducts(?Settings $settings = null): Response
+    {
+        if ($settings == null) {
+            $settings = Plugin::getInstance()->getSettings();
+        }
+        $tabs = $this->getTabs();
+        $selectedTab = 'products';
+
+        return $this->renderTemplate('stripe/settings/products', compact('settings', 'tabs', 'selectedTab'));
+    }
+
+    /**
+     * Display a form to allow an administrator to update plugin's Price settings.
+     *
+     * @param Settings|null $settings
+     * @return Response
+     */
+    public function actionPrices(?Settings $settings = null): Response
+    {
+        if ($settings == null) {
+            $settings = Plugin::getInstance()->getSettings();
+        }
+        $tabs = $this->getTabs();
+        $selectedTab = 'prices';
+
+        return $this->renderTemplate('stripe/settings/prices', compact('settings', 'tabs', 'selectedTab'));
+    }
+
+    private function getTabs()
+    {
+        return [
             'apiConnection' => [
                 'label' => Craft::t('stripe', 'API Connection'),
-                'url' => '#api',
+                'url' => UrlHelper::cpUrl('stripe/settings'),
             ],
             'products' => [
                 'label' => Craft::t('stripe', 'Products'),
-                'url' => '#products',
+                'url' => UrlHelper::cpUrl('stripe/settings/products'),
+            ],
+            'prices' => [
+                'label' => Craft::t('stripe', 'Prices'),
+                'url' => UrlHelper::cpUrl('stripe/settings/prices'),
             ],
         ];
-
-        return $this->renderTemplate('stripe/settings/index', compact('settings', 'tabs'));
     }
 
     /**
@@ -62,27 +107,39 @@ class SettingsController extends Controller
         /** @var Settings $pluginSettings */
         $pluginSettings = $plugin->getSettings();
 
-        $originalUriFormat = $pluginSettings->productUriFormat;
+        if (isset($settings['routing'])) {
+            $originalUriFormat = $pluginSettings->productUriFormat;
 
-        // Remove from editable table namespace
-        $settings['productUriFormat'] = $settings['routing']['productUriFormat'];
-        // Could be blank if in headless mode
-        if (isset($settings['routing']['productTemplate'])) {
-            $settings['productTemplate'] = $settings['routing']['productTemplate'];
+            // Remove from editable table namespace
+            $settings['productUriFormat'] = $settings['routing']['productUriFormat'];
+            // Could be blank if in headless mode
+            if (isset($settings['routing']['productTemplate'])) {
+                $settings['productTemplate'] = $settings['routing']['productTemplate'];
+            }
+            unset($settings['routing']);
         }
-        unset($settings['routing']);
 
-        $settingsSuccess = Craft::$app->getPlugins()->savePluginSettings($plugin, $settings);
+        $settingsSuccess = true;
+        if ($settings !== null) {
+            $settingsSuccess = Craft::$app->getPlugins()->savePluginSettings($plugin, $settings);
+        }
 
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
-        $fieldLayout->type = Product::class;
+        //$fieldLayout->type = Product::class;
 
         $projectConfig = Craft::$app->getProjectConfig();
         $uid = StringHelper::UUID();
         $fieldLayoutConfig = $fieldLayout->getConfig();
-        $projectConfig->set(Plugin::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Stripe product field layout');
 
-        $pluginSettings->setProductFieldLayout($fieldLayout);
+        if ($fieldLayout->type === Product::class) {
+            $projectConfig->set(Plugin::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Stripe product field layout');
+            $pluginSettings->setProductFieldLayout($fieldLayout);
+        }
+
+        if ($fieldLayout->type === Price::class) {
+            $projectConfig->set(Plugin::PC_PATH_PRICE_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Stripe price field layout');
+            $pluginSettings->setPriceFieldLayout($fieldLayout);
+        }
 
         if (!$settingsSuccess) {
             return $this->asModelFailure(
@@ -93,7 +150,7 @@ class SettingsController extends Controller
         }
 
         // Resave all products if the URI format changed
-        if ($originalUriFormat != $settings['productUriFormat']) {
+        if (isset($originalUriFormat) && $originalUriFormat != $settings['productUriFormat']) {
             Craft::$app->getQueue()->push(new ResaveElements([
                 'elementType' => Product::class,
                 'criteria' => [

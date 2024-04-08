@@ -206,13 +206,13 @@ class Price extends Element implements NestedElementInterface
 //        return Craft::createObject(ProductCondition::class, [static::class]);
 //    }
 
-//    /**
-//     * @inheritdoc
-//     */
-//    public function getFieldLayout(): ?FieldLayout
-//    {
-//        return Craft::$app->fields->getLayoutByType(Product::class);
-//    }
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout(): ?FieldLayout
+    {
+        return Craft::$app->fields->getLayoutByType(Price::class);
+    }
 
     /**
      * @inheritdoc

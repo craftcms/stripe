@@ -1,0 +1,14 @@
+{% extends "stripe/settings/_layout" %}
+{% import '_includes/forms.twig' as forms %}
+{% set fullPageForm = true %}
+
+{% block content %}
+    {% set headlessMode = craft.app.config.general.headlessMode %}
+    {{ actionInput('stripe/settings/save-settings') }}
+    {{ redirectInput('stripe/settings/prices') }}
+
+    {{ forms.fieldLayoutDesignerField({
+        fieldLayout: settings.getPriceFieldLayout(),
+        type: 'craft\\stripe\\elements\\Price'
+    }) }}
+{% endblock %}

@@ -9,6 +9,7 @@ use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\App;
+use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\services\Elements;
 use craft\services\Fields;
@@ -38,6 +39,7 @@ use yii\base\InvalidConfigException;
 class Plugin extends BasePlugin
 {
     public const PC_PATH_PRODUCT_FIELD_LAYOUTS = 'stripe.productFieldLayout';
+    public const PC_PATH_PRICE_FIELD_LAYOUTS = 'stripe.priceFieldLayout';
 
     /**
      * @var string
@@ -107,10 +109,15 @@ class Plugin extends BasePlugin
 //
             $projectConfigService = Craft::$app->getProjectConfig();
             $productsService = $this->getProducts();
+            $pricesService = $this->getPrices();
 
             $projectConfigService->onAdd(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
                 ->onUpdate(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
                 ->onRemove(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleDeletedFieldLayout']);
+
+            $projectConfigService->onAdd(self::PC_PATH_PRICE_FIELD_LAYOUTS, [$pricesService, 'handleChangedFieldLayout'])
+                ->onUpdate(self::PC_PATH_PRICE_FIELD_LAYOUTS, [$pricesService, 'handleChangedFieldLayout'])
+                ->onRemove(self::PC_PATH_PRICE_FIELD_LAYOUTS, [$pricesService, 'handleDeletedFieldLayout']);
 
 //            // Globally register stripe webhooks registry event handlers
 //            Registry::addHandler(Topics::PRODUCTS_CREATE, new ProductHandler());
@@ -126,6 +133,14 @@ class Plugin extends BasePlugin
     protected function createSettingsModel(): ?Model
     {
         return Craft::createObject(Settings::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSettingsResponse(): mixed
+    {
+        return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('stripe/settings'));
     }
 
     protected function settingsHtml(): ?string
@@ -280,6 +295,8 @@ class Plugin extends BasePlugin
             $event->rules['stripe/products'] = 'stripe/products/product-index';
             $event->rules['stripe/products/<elementId:\\d+>'] = 'elements/edit';
             $event->rules['stripe/settings'] = 'stripe/settings';
+            $event->rules['stripe/settings/products'] = 'stripe/settings/products';
+            $event->rules['stripe/settings/prices'] = 'stripe/settings/prices';
 
             $event->rules['stripe/prices/<elementId:\\d+>'] = 'elements/edit';
 
