@@ -21,4 +21,7 @@ abstract class Table
     public const PRICES = '{{%stripe_prices}}';
     public const SUBSCRIPTIONDATA = '{{%stripe_subscriptiondata}}';
     public const SUBSCRIPTIONS = '{{%stripe_subscriptions}}';
+    public const PAYMENTMETHODDATA = '{{%stripe_paymentmethoddata}}';
+    public const CUSTOMERDATA = '{{%stripe_customerdata}}';
+    public const INVOICEDATA = '{{%stripe_invoicedata}}';
 }

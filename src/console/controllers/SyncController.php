@@ -73,4 +73,52 @@ class SyncController extends Controller
 
         return ExitCode::OK;
     }
+
+    /**
+     * stripe/sync/payment-methods command
+     */
+    public function actionPaymentMethods(): int
+    {
+        $this->stdout('Syncing Stripe payment methods…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+
+        $start = microtime(true);
+        Plugin::getInstance()->getPaymentMethods()->syncAllPaymentMethods();
+        $time = microtime(true) - $start;
+
+        $this->stdout('Finished syncing payment method(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * stripe/sync/customers command
+     */
+    public function actionCustomers(): int
+    {
+        $this->stdout('Syncing Stripe customers…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+
+        $start = microtime(true);
+        Plugin::getInstance()->getCustomers()->syncAllCustomers();
+        $time = microtime(true) - $start;
+
+        $this->stdout('Finished syncing customer(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * stripe/sync/invoices command
+     */
+    public function actionInvoices(): int
+    {
+        $this->stdout('Syncing Stripe invoices…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+
+        $start = microtime(true);
+        Plugin::getInstance()->getInvoices()->syncAllInvoices();
+        $time = microtime(true) - $start;
+
+        $this->stdout('Finished syncing invoice(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+
+        return ExitCode::OK;
+    }
 }

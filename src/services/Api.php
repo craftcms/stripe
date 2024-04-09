@@ -4,8 +4,10 @@ namespace craft\stripe\services;
 
 use Craft;
 use craft\helpers\App;
+use craft\log\MonologTarget;
 use craft\stripe\Plugin;
 use Stripe\Collection;
+use Stripe\Stripe;
 use yii\base\Component;
 use Stripe\StripeClient;
 
@@ -54,6 +56,46 @@ class Api extends Component
     public function getAllSubscriptions(): array
     {
         return $this->getAll('subscriptions', ['status' => 'all']);
+    }
+
+    /**
+     * Retrieve all payment methods.
+     *
+     * @return array
+     */
+    public function getAllPaymentMethods(): array
+    {
+        $customers = $this->getAllCustomers();
+        $paymentMethods = [];
+
+        foreach ($customers as $customer) {
+            $results = $customer->allPaymentMethods($customer->id);
+            foreach ($results as $result) {
+                $paymentMethods[] = $result;
+            }
+        }
+
+        return $paymentMethods;
+    }
+
+    /**
+     * Retrieve all customers.
+     *
+     * @return array
+     */
+    public function getAllCustomers(): array
+    {
+        return $this->getAll('customers');
+    }
+
+    /**
+     * Retrieve all customers.
+     *
+     * @return array
+     */
+    public function getAllInvoices(): array
+    {
+        return $this->getAll('invoices');
     }
 
     /**
@@ -157,15 +199,32 @@ class Api extends Component
     public function getClient(): StripeClient
     {
         if ($this->_client === null) {
-            $settings = Plugin::getInstance()->getSettings();
-            //$session = $this->getSession();
+            /** @var MonologTarget $webLogTarget */
+            $webLogTarget = Craft::$app->getLog()->targets['web'];
+
+            Stripe::setAppInfo(Plugin::getInstance()->name, Plugin::getInstance()->version, Plugin::getInstance()->documentationUrl);
+            Stripe::setApiKey($this->getApiKey());
+            Stripe::setApiVersion(self::STRIPE_API_VERSION);
+            Stripe::setMaxNetworkRetries(3);
+            Stripe::setLogger($webLogTarget->getLogger());
+
             $this->_client = new StripeClient([
-                "api_key" => App::parseEnv($settings->secretKey),
+                "api_key" => $this->getApiKey(),
                 "stripe_version" => self::STRIPE_API_VERSION,
             ]);
         }
 
         return $this->_client;
+    }
+
+    /**
+     * Get parsed secret API key
+     * @return string|null
+     */
+    public function getApiKey(): ?string
+    {
+        $settings = Plugin::getInstance()->getSettings();
+        return App::parseEnv($settings->secretKey);
     }
 
 //    /**

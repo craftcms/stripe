@@ -20,6 +20,9 @@ use craft\stripe\fieldlayoutelements\PricesField;
 use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\models\Settings;
 use craft\stripe\services\Api;
+use craft\stripe\services\Customers;
+use craft\stripe\services\Invoices;
+use craft\stripe\services\PaymentMethods;
 use craft\stripe\services\Prices;
 use craft\stripe\services\Products;
 use craft\stripe\services\Subscriptions;
@@ -80,9 +83,12 @@ class Plugin extends BasePlugin
         return [
             'components' => [
                 'api' => ['class' => Api::class],
+                'customers' => ['class' => Customers::class],
+                'invoices' => ['class' => Invoices::class],
                 'prices' => ['class' => Prices::class],
                 'products' => ['class' => Products::class],
                 'subscriptions' => ['class' => Subscriptions::class],
+                'paymentMethods' => ['class' => PaymentMethods::class],
             ],
         ];
     }
@@ -207,6 +213,39 @@ class Plugin extends BasePlugin
     public function getSubscriptions(): Subscriptions
     {
         return $this->get('subscriptions');
+    }
+
+    /**
+     * Returns the Payment Methods service
+     *
+     * @return PaymentMethods The Payment Methods service
+     * @throws InvalidConfigException
+     */
+    public function getPaymentMethods(): PaymentMethods
+    {
+        return $this->get('paymentMethods');
+    }
+
+    /**
+     * Returns the Customers service
+     *
+     * @return Customers The Customers service
+     * @throws InvalidConfigException
+     */
+    public function getCustomers(): Customers
+    {
+        return $this->get('customers');
+    }
+
+    /**
+     * Returns the Invoices service
+     *
+     * @return Invoices The Invoices service
+     * @throws InvalidConfigException
+     */
+    public function getInvoices(): Invoices
+    {
+        return $this->get('invoices');
     }
 
 //    /**
@@ -383,8 +422,7 @@ class Plugin extends BasePlugin
      */
     private function getStripeMode(): string
     {
-        $settings = $this->getSettings();
-        $secretKey = App::parseEnv($settings->secretKey);
+        $secretKey = $this->getApi()->getApiKey();
 
         if (!str_starts_with($secretKey, 'sk_test_')) {
             return 'live';

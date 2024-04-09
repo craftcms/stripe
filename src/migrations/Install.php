@@ -98,6 +98,36 @@ class Install extends Migration
             'uid' => $this->string(),
             'PRIMARY KEY([[stripeId]])',
         ]);
+
+        $this->archiveTableIfExists(Table::PAYMENTMETHODDATA);
+        $this->createTable(Table::PAYMENTMETHODDATA, [
+            'stripeId' => $this->string(),
+            'data' => $this->json(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->string(),
+            'PRIMARY KEY([[stripeId]])',
+        ]);
+
+        $this->archiveTableIfExists(Table::CUSTOMERDATA);
+        $this->createTable(Table::CUSTOMERDATA, [
+            'stripeId' => $this->string(),
+            'data' => $this->json(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->string(),
+            'PRIMARY KEY([[stripeId]])',
+        ]);
+
+        $this->archiveTableIfExists(Table::INVOICEDATA);
+        $this->createTable(Table::INVOICEDATA, [
+            'stripeId' => $this->string(),
+            'data' => $this->json(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->string(),
+            'PRIMARY KEY([[stripeId]])',
+        ]);
     }
 
     /**
