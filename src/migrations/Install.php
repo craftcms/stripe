@@ -112,6 +112,7 @@ class Install extends Migration
         $this->archiveTableIfExists(Table::CUSTOMERDATA);
         $this->createTable(Table::CUSTOMERDATA, [
             'stripeId' => $this->string(),
+            'email' => $this->string(),
             'data' => $this->json(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),

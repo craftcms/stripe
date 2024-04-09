@@ -524,7 +524,6 @@ class Price extends Element implements NestedElementInterface
         }
     }
 
-
     /**
      * Return URL to edit the price in Stripe Dashboard
      *

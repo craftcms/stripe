@@ -3,7 +3,10 @@
 namespace craft\stripe\services;
 
 use Craft;
+use craft\db\Query;
 use craft\helpers\Json;
+use craft\stripe\db\Table;
+use craft\stripe\models\Customer;
 use craft\stripe\records\CustomerData as CustomerDataRecord;
 use craft\stripe\Plugin;
 use Stripe\Customer as StripeCustomer;
@@ -40,7 +43,7 @@ class Customers extends Component
         // Build our attribute set from the Stripe payment method data:
         $attributes = [
             'stripeId' => $customer->id,
-            'title' => $customer->id,
+            'email' => $customer->email,
             'data' => Json::decode($customer->toJSON()),
         ];
 
@@ -51,5 +54,40 @@ class Customers extends Component
         $customerDataRecord->save();
 
         return true;
+    }
+
+    public function getCustomersByEmail(?string $email = null): ?array
+    {
+        $customers = [];
+
+        if ($email === null) {
+            return null;
+        }
+        $records = $this->_createCustomerQuery()->where(['email' => $email])->all();
+
+        foreach ($records as $record) {
+            $customer = new Customer();
+            $customer->setAttributes($record, false);
+
+            $customers[] = $customer;
+        }
+
+        return $customers;
+    }
+
+    /**
+     * Returns a Query object prepped for retrieving customers.
+     *
+     * @return Query The query object.
+     */
+    private function _createCustomerQuery(): Query
+    {
+        return (new Query())
+            ->select([
+                'stripeId',
+                'email',
+                'data',
+            ])
+            ->from([Table::CUSTOMERDATA]);
     }
 }

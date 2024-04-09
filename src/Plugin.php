@@ -5,6 +5,7 @@ namespace craft\stripe;
 use Craft;
 use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
+use craft\elements\User;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
@@ -16,7 +17,9 @@ use craft\services\Fields;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
 use craft\stripe\elements\Subscription;
+use craft\stripe\fieldlayoutelements\CustomersField;
 use craft\stripe\fieldlayoutelements\PricesField;
+use craft\stripe\fieldlayoutelements\StripeCustomersField;
 use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\models\Settings;
 use craft\stripe\services\Api;
@@ -303,6 +306,9 @@ class Plugin extends BasePlugin
             switch ($fieldLayout->type) {
                 case Product::class:
                     $event->fields[] = PricesField::class;
+                    break;
+                case User::class:
+                    $event->fields[] = CustomersField::class;
                     break;
             }
         });

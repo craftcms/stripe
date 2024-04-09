@@ -54,8 +54,8 @@ class Subscription extends Element
     public ?string $stripeId = null;
 
     /**
-     * @var array|null
-     */
+ * @var array|null
+ */
     private ?array $_data = null;
 
     // Methods
