@@ -7,6 +7,7 @@ use craft\console\Controller;
 use craft\helpers\Console;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
+use craft\stripe\elements\Subscription;
 use craft\stripe\Plugin;
 use yii\console\ExitCode;
 
@@ -18,7 +19,7 @@ class SyncController extends Controller
     public $defaultAction = 'products';
 
     /**
-     * stripe/sync/prices command
+     * stripe/sync/products command
      */
     public function actionProducts(): int
     {
@@ -56,4 +57,20 @@ class SyncController extends Controller
 //        $this->stdout('Finished syncing ' . Price::find()->count() . ' price(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 //        return ExitCode::OK;
 //    }
+
+    /**
+     * stripe/sync/subscriptions command
+     */
+    public function actionSubscriptions(): int
+    {
+        $this->stdout('Syncing Stripe subscriptions…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+
+        $start = microtime(true);
+        Plugin::getInstance()->getSubscriptions()->syncAllSubscriptions();
+        $time = microtime(true) - $start;
+
+        $this->stdout('Finished syncing ' . Subscription::find()->count() . ' subscription(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+
+        return ExitCode::OK;
+    }
 }

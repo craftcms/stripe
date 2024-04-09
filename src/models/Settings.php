@@ -6,6 +6,7 @@ use Craft;
 use craft\base\Model;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
+use craft\stripe\elements\Subscription;
 
 /**
  * Stripe settings
@@ -43,6 +44,11 @@ class Settings extends Model
      * @var mixed
      */
     private mixed $_priceFieldLayout;
+
+    /**
+     * @var mixed
+     */
+    private mixed $_subscriptionFieldLayout;
 
     /**
      * @inheritdoc
@@ -107,5 +113,26 @@ class Settings extends Model
     public function setPriceFieldLayout(mixed $fieldLayout): void
     {
         $this->_priceFieldLayout = $fieldLayout;
+    }
+
+    /**
+     * @return \craft\models\FieldLayout|mixed
+     */
+    public function getSubscriptionFieldLayout()
+    {
+        if (!isset($this->_subscriptionFieldLayout)) {
+            $this->_subscriptionFieldLayout = Craft::$app->fields->getLayoutByType(Subscription::class);
+        }
+
+        return $this->_subscriptionFieldLayout;
+    }
+
+    /**
+     * @param mixed $fieldLayout
+     * @return void
+     */
+    public function setSubscriptionFieldLayout(mixed $fieldLayout): void
+    {
+        $this->_subscriptionFieldLayout = $fieldLayout;
     }
 }

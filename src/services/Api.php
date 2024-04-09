@@ -47,6 +47,16 @@ class Api extends Component
     }
 
     /**
+     * Retrieve all subscriptions.
+     *
+     * @return array
+     */
+    public function getAllSubscriptions(): array
+    {
+        return $this->getAll('subscriptions', ['status' => 'all']);
+    }
+
+    /**
      * Iteratively retrieves a paginated collection of API resource.
      *
      * @param string $type name of the Stripe resource

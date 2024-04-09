@@ -15,12 +15,14 @@ use craft\services\Elements;
 use craft\services\Fields;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
+use craft\stripe\elements\Subscription;
 use craft\stripe\fieldlayoutelements\PricesField;
 use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\models\Settings;
 use craft\stripe\services\Api;
 use craft\stripe\services\Prices;
 use craft\stripe\services\Products;
+use craft\stripe\services\Subscriptions;
 use craft\web\UrlManager;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
@@ -40,6 +42,7 @@ class Plugin extends BasePlugin
 {
     public const PC_PATH_PRODUCT_FIELD_LAYOUTS = 'stripe.productFieldLayout';
     public const PC_PATH_PRICE_FIELD_LAYOUTS = 'stripe.priceFieldLayout';
+    public const PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS = 'stripe.subscriptionFieldLayout';
 
     /**
      * @var string
@@ -79,7 +82,7 @@ class Plugin extends BasePlugin
                 'api' => ['class' => Api::class],
                 'prices' => ['class' => Prices::class],
                 'products' => ['class' => Products::class],
-                //'store' => ['class' => Store::class],
+                'subscriptions' => ['class' => Subscriptions::class],
             ],
         ];
     }
@@ -110,6 +113,7 @@ class Plugin extends BasePlugin
             $projectConfigService = Craft::$app->getProjectConfig();
             $productsService = $this->getProducts();
             $pricesService = $this->getPrices();
+            $subscriptionService = $this->getSubscriptions();
 
             $projectConfigService->onAdd(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
                 ->onUpdate(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
@@ -118,6 +122,10 @@ class Plugin extends BasePlugin
             $projectConfigService->onAdd(self::PC_PATH_PRICE_FIELD_LAYOUTS, [$pricesService, 'handleChangedFieldLayout'])
                 ->onUpdate(self::PC_PATH_PRICE_FIELD_LAYOUTS, [$pricesService, 'handleChangedFieldLayout'])
                 ->onRemove(self::PC_PATH_PRICE_FIELD_LAYOUTS, [$pricesService, 'handleDeletedFieldLayout']);
+
+            $projectConfigService->onAdd(self::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$subscriptionService, 'handleChangedFieldLayout'])
+                ->onUpdate(self::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$subscriptionService, 'handleChangedFieldLayout'])
+                ->onRemove(self::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$subscriptionService, 'handleDeletedFieldLayout']);
 
 //            // Globally register stripe webhooks registry event handlers
 //            Registry::addHandler(Topics::PRODUCTS_CREATE, new ProductHandler());
@@ -190,17 +198,16 @@ class Plugin extends BasePlugin
         return $this->get('products');
     }
 
-//    /**
-//     * Returns the Store service
-//     *
-//     * @return Store The Store service
-//     * @throws InvalidConfigException
-//     * @since 3.0
-//     */
-//    public function getStore(): Store
-//    {
-//        return $this->get('store');
-//    }
+    /**
+     * Returns the Subscriptions service
+     *
+     * @return Subscriptions The Subscriptions service
+     * @throws InvalidConfigException
+     */
+    public function getSubscriptions(): Subscriptions
+    {
+        return $this->get('subscriptions');
+    }
 
 //    /**
 //     * Registers the utilities.
@@ -228,6 +235,7 @@ class Plugin extends BasePlugin
         Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, function (RegisterComponentTypesEvent $event) {
             $event->types[] = Product::class;
             $event->types[] = Price::class;
+            $event->types[] = Subscription::class;
         });
     }
 
@@ -297,16 +305,20 @@ class Plugin extends BasePlugin
     private function registerCpRoutes(): void
     {
         Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
-            //$session = Plugin::getInstance()->getApi()->getSession();
-            //$session = false;
-            $event->rules['stripe'] = ['template' => 'stripe/_index', 'variables' => [/*'hasSession' => (bool)$session*/]];
-            $event->rules['stripe/products'] = 'stripe/products/product-index';
-            $event->rules['stripe/products/<elementId:\\d+>'] = 'elements/edit';
+            $event->rules['stripe'] = ['template' => 'stripe/_index'];
+
             $event->rules['stripe/settings'] = 'stripe/settings';
             $event->rules['stripe/settings/products'] = 'stripe/settings/products';
             $event->rules['stripe/settings/prices'] = 'stripe/settings/prices';
+            $event->rules['stripe/settings/subscriptions'] = 'stripe/settings/subscriptions';
+
+            $event->rules['stripe/products'] = 'stripe/products/product-index';
+            $event->rules['stripe/products/<elementId:\\d+>'] = 'elements/edit';
 
             $event->rules['stripe/prices/<elementId:\\d+>'] = 'elements/edit';
+
+            $event->rules['stripe/subscriptions'] = 'stripe/subscriptions/subscription-index';
+            $event->rules['stripe/subscriptions/<elementId:\\d+>'] = 'elements/edit';
 
 //            $event->rules['stripe/sync-products'] = 'stripe/products/sync';
 //            $event->rules['stripe/webhooks'] = 'stripe/webhooks/edit';
@@ -337,6 +349,11 @@ class Plugin extends BasePlugin
         $ret['subnav']['products'] = [
             'label' => Craft::t('stripe', 'Products'),
             'url' => 'stripe/products',
+        ];
+
+        $ret['subnav']['subscriptions'] = [
+            'label' => Craft::t('stripe', 'Subscriptions'),
+            'url' => 'stripe/subscriptions',
         ];
 
 

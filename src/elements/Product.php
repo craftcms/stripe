@@ -47,7 +47,6 @@ class Product extends Element
 
     /**
      * Stripe Statuses
-     * @since 3.0
      */
     public const STRIPE_STATUS_ACTIVE = 'active';
     public const STRIPE_STATUS_ARCHIVED = 'archived';

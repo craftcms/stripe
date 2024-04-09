@@ -1,0 +1,13 @@
+{% extends "_layouts/elementindex" %}
+{% set title = "Stripe Subscriptions"|t('stripe') %}
+{% set elementType = 'craft\\stripe\\elements\\Subscription' %}
+{% set canHaveDrafts = true %}
+
+{% block toolbar %}
+    {{ parent() }}
+
+    {% if newSubscriptionUrl %}
+        <a data-icon="external" class="btn submit" href="{{ newSubscriptionUrl }}"
+           target="_blank">{{ 'New Subscription'|t('stripe') }}</a>
+    {% endif %}
+{% endblock %}

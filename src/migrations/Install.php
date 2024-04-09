@@ -7,6 +7,8 @@ use craft\db\Table as CraftTable;
 use craft\helpers\MigrationHelper;
 use craft\stripe\db\Table;
 use craft\stripe\elements\Product as ProductElement;
+use craft\stripe\elements\Price as PriceElement;
+use craft\stripe\elements\Subscription as SubscriptionElement;
 use ReflectionClass;
 use yii\base\NotSupportedException;
 
@@ -74,6 +76,28 @@ class Install extends Migration
             'uid' => $this->string(),
             'PRIMARY KEY([[stripeId]])',
         ]);
+
+
+        $this->archiveTableIfExists(Table::SUBSCRIPTIONS);
+        $this->createTable(Table::SUBSCRIPTIONS, [
+            'id' => $this->integer()->notNull(),
+            'stripeId' => $this->string(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+            'PRIMARY KEY([[id]])',
+        ]);
+
+        $this->archiveTableIfExists(Table::SUBSCRIPTIONDATA);
+        $this->createTable(Table::SUBSCRIPTIONDATA, [
+            'stripeId' => $this->string(),
+            'stripeStatus' => $this->string()->notNull(),
+            'data' => $this->json(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->string(),
+            'PRIMARY KEY([[stripeId]])',
+        ]);
     }
 
     /**
@@ -83,6 +107,7 @@ class Install extends Migration
     {
         $this->createIndex(null, Table::PRODUCTDATA, ['stripeId'], true);
         $this->createIndex(null, Table::PRICEDATA, ['stripeId'], true);
+        $this->createIndex(null, Table::SUBSCRIPTIONDATA, ['stripeId'], true);
     }
 
     /**
@@ -96,6 +121,9 @@ class Install extends Migration
         $this->addForeignKey(null, Table::PRICES, ['primaryOwnerId'], Table::PRODUCTS, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::PRICES, ['stripeId'], Table::PRICEDATA, ['stripeId'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::PRICES, ['id'], CraftTable::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
+
+        $this->addForeignKey(null, Table::SUBSCRIPTIONS, ['stripeId'], Table::SUBSCRIPTIONDATA, ['stripeId'], 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, Table::SUBSCRIPTIONS, ['id'], CraftTable::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
     }
 
     /**
@@ -107,6 +135,8 @@ class Install extends Migration
         $this->dropTables();
 
         $this->delete(CraftTable::FIELDLAYOUTS, ['type' => [ProductElement::class]]);
+        $this->delete(CraftTable::FIELDLAYOUTS, ['type' => [PriceElement::class]]);
+        $this->delete(CraftTable::FIELDLAYOUTS, ['type' => [SubscriptionElement::class]]);
 
         return true;
     }

@@ -13,6 +13,7 @@ use craft\helpers\UrlHelper;
 use craft\queue\jobs\ResaveElements;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
+use craft\stripe\elements\Subscription;
 use craft\stripe\models\Settings;
 use craft\stripe\Plugin;
 use craft\web\Controller;
@@ -76,6 +77,23 @@ class SettingsController extends Controller
         return $this->renderTemplate('stripe/settings/prices', compact('settings', 'tabs', 'selectedTab'));
     }
 
+    /**
+     * Display a form to allow an administrator to update plugin's Subscription settings.
+     *
+     * @param Settings|null $settings
+     * @return Response
+     */
+    public function actionSubscriptions(?Settings $settings = null): Response
+    {
+        if ($settings == null) {
+            $settings = Plugin::getInstance()->getSettings();
+        }
+        $tabs = $this->getTabs();
+        $selectedTab = 'subscriptions';
+
+        return $this->renderTemplate('stripe/settings/subscriptions', compact('settings', 'tabs', 'selectedTab'));
+    }
+
     private function getTabs()
     {
         return [
@@ -90,6 +108,10 @@ class SettingsController extends Controller
             'prices' => [
                 'label' => Craft::t('stripe', 'Prices'),
                 'url' => UrlHelper::cpUrl('stripe/settings/prices'),
+            ],
+            'subscriptions' => [
+                'label' => Craft::t('stripe', 'Subscriptions'),
+                'url' => UrlHelper::cpUrl('stripe/settings/subscriptions'),
             ],
         ];
     }
@@ -124,21 +146,28 @@ class SettingsController extends Controller
             $settingsSuccess = Craft::$app->getPlugins()->savePluginSettings($plugin, $settings);
         }
 
-        $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
-        //$fieldLayout->type = Product::class;
+        if (Craft::$app->getRequest()->getBodyParam('fieldLayout')) {
+            $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
+            //$fieldLayout->type = Product::class;
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $uid = StringHelper::UUID();
-        $fieldLayoutConfig = $fieldLayout->getConfig();
+            $projectConfig = Craft::$app->getProjectConfig();
+            $uid = StringHelper::UUID();
+            $fieldLayoutConfig = $fieldLayout->getConfig();
 
-        if ($fieldLayout->type === Product::class) {
-            $projectConfig->set(Plugin::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Stripe product field layout');
-            $pluginSettings->setProductFieldLayout($fieldLayout);
-        }
+            if ($fieldLayout->type === Product::class) {
+                $projectConfig->set(Plugin::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Stripe product field layout');
+                $pluginSettings->setProductFieldLayout($fieldLayout);
+            }
 
-        if ($fieldLayout->type === Price::class) {
-            $projectConfig->set(Plugin::PC_PATH_PRICE_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Stripe price field layout');
-            $pluginSettings->setPriceFieldLayout($fieldLayout);
+            if ($fieldLayout->type === Price::class) {
+                $projectConfig->set(Plugin::PC_PATH_PRICE_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Stripe price field layout');
+                $pluginSettings->setPriceFieldLayout($fieldLayout);
+            }
+
+            if ($fieldLayout->type === Subscription::class) {
+                $projectConfig->set(Plugin::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Stripe subscription field layout');
+                $pluginSettings->setSubscriptionFieldLayout($fieldLayout);
+            }
         }
 
         if (!$settingsSuccess) {

@@ -4,10 +4,10 @@
 
 {% block content %}
     {{ actionInput('stripe/settings/save-settings') }}
-    {{ redirectInput('stripe/settings/prices') }}
+    {{ redirectInput('stripe/settings/subscriptions') }}
 
     {{ forms.fieldLayoutDesignerField({
-        fieldLayout: settings.getPriceFieldLayout(),
-        type: 'craft\\stripe\\elements\\Price'
+        fieldLayout: settings.getSubscriptionFieldLayout(),
+        type: 'craft\\stripe\\elements\\Subscription'
     }) }}
 {% endblock %}

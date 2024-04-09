@@ -4,40 +4,25 @@ namespace craft\stripe\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\base\NestedElementInterface;
-use craft\base\NestedElementTrait;
-use craft\db\Query;
-use craft\db\Table as CraftTable;
-use craft\elements\ElementCollection;
 use craft\elements\User;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Cp;
-use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\stripe\db\Table;
 use craft\stripe\Plugin;
-use craft\stripe\elements\conditions\products\ProductCondition;
-use craft\stripe\elements\db\PriceQuery;
-use craft\stripe\helpers\Price as PriceHelper;
-use craft\stripe\records\Price as PriceRecord;
+use craft\stripe\elements\db\SubscriptionQuery;
+use craft\stripe\helpers\Subscription as SubscriptionHelper;
+use craft\stripe\records\Subscription as SubscriptionRecord;
 use craft\stripe\web\assets\stripecp\StripeCpAsset;
-use craft\web\CpScreenResponseBehavior;
 use yii\helpers\Html as HtmlHelper;
-use yii\web\Response;
 
 /**
- * Price element type
+ * Subscription element type
  *
- * @property-read Product|null $product the product this price belongs to
  */
-class Price extends Element implements NestedElementInterface
+class Subscription extends Element
 {
-    use NestedElementTrait;
-
     // Constants
     // -------------------------------------------------------------------------
 
@@ -45,21 +30,18 @@ class Price extends Element implements NestedElementInterface
      * Craft Statuses
      */
     public const STATUS_LIVE = 'live';
-    public const STATUS_STRIPE_ARCHIVED = 'stripeArchived';
+    public const STATUS_STRIPE_SCHEDULED = 'stripeScheduled';
+    public const STATUS_STRIPE_CANCELED = 'stripeCanceled';
 
     /**
      * Stripe Statuses
      */
     public const STRIPE_STATUS_ACTIVE = 'active';
-    public const STRIPE_STATUS_ARCHIVED = 'archived';
+    public const STRIPE_STATUS_SCHEDULED = 'scheduled';
+    public const STRIPE_STATUS_CANCELED = 'canceled';
 
     // Properties
     // -------------------------------------------------------------------------
-
-    /**
-     * @var string|null
-     */
-    public ?string $stripeId = null;
 
     /**
      * @var string
@@ -67,16 +49,14 @@ class Price extends Element implements NestedElementInterface
     public string $stripeStatus = 'active';
 
     /**
+     * @var string|null
+     */
+    public ?string $stripeId = null;
+
+    /**
      * @var array|null
      */
     private ?array $_data = null;
-
-    /**
-     * @var Product|null Product
-     * @see getProduct()
-     */
-    private ?Product $_product;
-
 
     // Methods
     // -------------------------------------------------------------------------
@@ -86,7 +66,7 @@ class Price extends Element implements NestedElementInterface
      */
     public static function displayName(): string
     {
-        return Craft::t('stripe', 'Stripe Price');
+        return Craft::t('stripe', 'Stripe Subscription');
     }
 
     /**
@@ -94,7 +74,7 @@ class Price extends Element implements NestedElementInterface
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('stripe', 'stripe price');
+        return Craft::t('stripe', 'stripe subscription');
     }
 
     /**
@@ -102,7 +82,7 @@ class Price extends Element implements NestedElementInterface
      */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('stripe', 'Stripe Prices');
+        return Craft::t('stripe', 'Stripe Subscriptions');
     }
 
     /**
@@ -110,7 +90,7 @@ class Price extends Element implements NestedElementInterface
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('stripe', 'stripe prices');
+        return Craft::t('stripe', 'stripe subscriptions');
     }
 
     /**
@@ -118,7 +98,7 @@ class Price extends Element implements NestedElementInterface
      */
     public static function refHandle(): ?string
     {
-        return 'stripeprice';
+        return 'stripesubscription';
     }
 
     /**
@@ -142,7 +122,7 @@ class Price extends Element implements NestedElementInterface
      */
     public static function hasUris(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -168,8 +148,9 @@ class Price extends Element implements NestedElementInterface
     {
         return [
             self::STATUS_LIVE => Craft::t('app', 'Live'),
-            self::STATUS_STRIPE_ARCHIVED => ['label' => Craft::t('stripe', 'Archived in Stripe'), 'color' => 'red'],
-            //self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
+            self::STATUS_STRIPE_SCHEDULED => ['label' => Craft::t('stripe', 'Scheduled in Stripe'), 'color' => 'orange'],
+            self::STATUS_STRIPE_CANCELED => ['label' => Craft::t('stripe', 'Canceled in Stripe'), 'color' => 'red'],
+            self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
         ];
     }
 
@@ -182,7 +163,8 @@ class Price extends Element implements NestedElementInterface
 
         if ($status === self::STATUS_ENABLED) {
             return match ($this->stripeStatus) {
-                self::STRIPE_STATUS_ARCHIVED => self::STATUS_STRIPE_ARCHIVED,
+                self::STRIPE_STATUS_SCHEDULED => self::STATUS_STRIPE_SCHEDULED,
+                self::STRIPE_STATUS_CANCELED => self::STATUS_STRIPE_CANCELED,
                 default => self::STATUS_LIVE,
             };
         }
@@ -195,7 +177,7 @@ class Price extends Element implements NestedElementInterface
      */
     public static function find(): ElementQueryInterface
     {
-        return Craft::createObject(PriceQuery::class, [static::class]);
+        return Craft::createObject(SubscriptionQuery::class, [static::class]);
     }
 
 //    /**
@@ -211,7 +193,7 @@ class Price extends Element implements NestedElementInterface
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        return Craft::$app->fields->getLayoutByType(Price::class);
+        return Craft::$app->fields->getLayoutByType(Subscription::class);
     }
 
     /**
@@ -221,8 +203,8 @@ class Price extends Element implements NestedElementInterface
     {
         /** @noinspection PhpUnhandledExceptionInspection */
         Craft::$app->getView()->registerAssetBundle(StripeCpAsset::class);
-        $priceCard = PriceHelper::renderCardHtml($this);
-        return $priceCard . parent::getSidebarHtml($static);
+        $subscriptionCard = SubscriptionHelper::renderCardHtml($this);
+        return $subscriptionCard . parent::getSidebarHtml($static);
     }
 
     /**
@@ -230,12 +212,12 @@ class Price extends Element implements NestedElementInterface
      */
     protected static function defineSources(string $context): array
     {
-        return [/*
+        return [
             [
                 'key' => '*',
-                'label' => Craft::t('stripe', 'All prices'),
+                'label' => Craft::t('stripe', 'All subscriptions'),
             ],
-        */];
+        ];
     }
 
     /**
@@ -255,13 +237,13 @@ class Price extends Element implements NestedElementInterface
 
         $sortOptions['stripeId'] = [
             'label' => Craft::t('stripe', 'Stripe ID'),
-            'orderBy' => 'stripe_pricedata.stripeId',
+            'orderBy' => 'stripe_subscriptiondata.stripeId',
             'defaultDir' => SORT_DESC,
         ];
 
         $sortOptions['stripeStatus'] = [
             'label' => Craft::t('stripe', 'Stripe Status'),
-            'orderBy' => 'stripe_pricedata.stripeStatus',
+            'orderBy' => 'stripe_subscriptiondata.stripeStatus',
             'defaultDir' => SORT_DESC,
         ];
 
@@ -292,9 +274,9 @@ class Price extends Element implements NestedElementInterface
 //     */
 //    public function getUriFormat(): ?string
 //    {
-//        return Plugin::getInstance()->getSettings()->uriFormat;
+//        return Plugin::getInstance()->getSettings()->productUriFormat;
 //    }
-//
+
 //    /**
 //     * @inheritdoc
 //     */
@@ -324,10 +306,10 @@ class Price extends Element implements NestedElementInterface
 //
 //        $settings = Plugin::getInstance()->getSettings();
 //
-//        if ($settings->uriFormat) {
+//        if ($settings->productUriFormat) {
 //            return [
 //                'templates/render', [
-//                    'template' => $settings->template,
+//                    'template' => $settings->productTemplate,
 //                    'variables' => [
 //                        'product' => $this,
 //                    ],
@@ -344,7 +326,7 @@ class Price extends Element implements NestedElementInterface
             return true;
         }
         // todo: implement user permissions
-        return $user->can('viewPrices');
+        return $user->can('viewSubscriptions');
     }
 
     public function canSave(User $user): bool
@@ -353,7 +335,7 @@ class Price extends Element implements NestedElementInterface
             return true;
         }
         // todo: implement user permissions
-        return $user->can('savePrices');
+        return $user->can('saveSubscriptions');
     }
 
 //    public function canDuplicate(User $user): bool
@@ -362,7 +344,7 @@ class Price extends Element implements NestedElementInterface
 //            return true;
 //        }
 //        // todo: implement user permissions
-//        return $user->can('saveProducts');
+//        return $user->can('saveSubscriptions');
 //    }
 
     public function canDelete(User $user): bool
@@ -377,7 +359,7 @@ class Price extends Element implements NestedElementInterface
 //            return true;
 //        }
 //        // todo: implement user permissions
-//        return $user->can('deletePrices');
+//        return $user->can('deleteSubscriptions');
     }
 
     /**
@@ -393,7 +375,7 @@ class Price extends Element implements NestedElementInterface
      */
     protected function cpEditUrl(): ?string
     {
-        return sprintf('stripe/prices/%s', $this->getCanonicalId());
+        return sprintf('stripe/subscriptions/%s', $this->getCanonicalId());
     }
 
     /**
@@ -401,7 +383,20 @@ class Price extends Element implements NestedElementInterface
      */
     public function getPostEditUrl(): ?string
     {
-        return UrlHelper::cpUrl('stripe/prices');
+        return UrlHelper::cpUrl('stripe/subscriptions');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function crumbs(): array
+    {
+        return [
+            [
+                'label' => self::pluralDisplayName(),
+                'url' => UrlHelper::cpUrl('stripe/subscriptions'),
+            ],
+        ];
     }
 
     /**
@@ -410,82 +405,23 @@ class Price extends Element implements NestedElementInterface
     public function afterSave(bool $isNew): void
     {
         if (!$isNew) {
-            $record = PriceRecord::findOne($this->id);
+            $record = SubscriptionRecord::findOne($this->id);
 
             if (!$record) {
-                throw new \Exception('Invalid price ID: ' . $this->id);
+                throw new \Exception('Invalid subscription ID: ' . $this->id);
             }
         } else {
-            $record = new PriceRecord();
+            $record = new SubscriptionRecord();
             $record->id = $this->id;
         }
 
         $record->stripeId = $this->stripeId;
-        $record->primaryOwnerId = $this->getPrimaryOwnerId();
 
         // We want to always have the same date as the element table, based on the logic for updating these in the element service i.e re-saving
         $record->dateUpdated = $this->dateUpdated;
         $record->dateCreated = $this->dateCreated;
 
-        // Capture the dirty attributes from the record
-        $dirtyAttributes = array_keys($record->getDirtyAttributes());
-
         $record->save(false);
-
-        $ownerId = $this->getOwnerId();
-        if ($ownerId && $this->saveOwnership) {
-            if (!isset($this->sortOrder) && (!$isNew || $this->duplicateOf)) {
-                // figure out if we should proceed this way
-                // if we're dealing with an element that's being duplicated, and it has a draftId
-                // it means we're creating a draft of something
-                // if we're duplicating element via duplicate action - draftId would be empty
-                $elementId = null;
-                if ($this->duplicateOf) {
-                    if ($this->draftId) {
-                        $elementId = $this->duplicateOf->id;
-                    }
-                } else {
-                    // if we're not duplicating - use element's id
-                    $elementId = $this->id;
-                }
-                if ($elementId) {
-                    $this->sortOrder = (new Query())
-                        ->select('sortOrder')
-                        ->from(CraftTable::ELEMENTS_OWNERS)
-                        ->where([
-                            'elementId' => $elementId,
-                            'ownerId' => $ownerId,
-                        ])
-                        ->scalar() ?: null;
-                }
-            }
-            if (!isset($this->sortOrder)) {
-                $max = (new Query())
-                    ->from(['eo' => CraftTable::ELEMENTS_OWNERS])
-                    ->innerJoin(['a' => Table::PRICES], '[[a.id]] = [[eo.elementId]]')
-                    ->where([
-                        'eo.ownerId' => $ownerId,
-                    ])
-                    ->max('[[eo.sortOrder]]');
-                $this->sortOrder = $max ? $max + 1 : 1;
-            }
-            if ($isNew) {
-                Db::insert(CraftTable::ELEMENTS_OWNERS, [
-                    'elementId' => $this->id,
-                    'ownerId' => $ownerId,
-                    'sortOrder' => $this->sortOrder,
-                ]);
-            } else {
-                Db::update(CraftTable::ELEMENTS_OWNERS, [
-                    'sortOrder' => $this->sortOrder,
-                ], [
-                    'elementId' => $this->id,
-                    'ownerId' => $ownerId,
-                ]);
-            }
-        }
-
-        $this->setDirtyAttributes($dirtyAttributes);
 
         parent::afterSave($isNew);
     }
@@ -502,21 +438,6 @@ class Price extends Element implements NestedElementInterface
                 return $this->getStripeStatusHtml();
             case 'stripeId':
                 return $this->$attribute;
-//            case 'options':
-//                return collect($this->getOptions())->map(function($option) {
-//                    return HtmlHelper::tag('span', $option['name'], [
-//                        'title' => $option['name'] . ' option values: ' . collect($option['values'])->join(', '),
-//                    ]);
-//                })->join(',&nbsp;');
-//            case 'tags':
-//                return collect($this->getTags())->map(function($tag) {
-//                    return HtmlHelper::tag('div', $tag, [
-//                        'style' => 'margin-bottom: 2px;',
-//                        'class' => 'token',
-//                    ]);
-//                })->join('&nbsp;');
-//            case 'variants':
-//                return collect($this->getVariants())->pluck('title')->map(fn($title) => StringHelper::toTitleCase($title))->join(',&nbsp;');
             default:
             {
                 return parent::attributeHtml($attribute);
@@ -526,7 +447,7 @@ class Price extends Element implements NestedElementInterface
 
 
     /**
-     * Return URL to edit the price in Stripe Dashboard
+     * Return URL to edit the subscription in Stripe Dashboard
      *
      * @return string
      */
@@ -534,7 +455,7 @@ class Price extends Element implements NestedElementInterface
     {
         $dashboardUrl = Plugin::getInstance()->dashboardUrl;
         $mode = Plugin::getInstance()->stripeMode;
-        return "{$dashboardUrl}/{$mode}/prices/{$this->stripeId}";
+        return "{$dashboardUrl}/{$mode}/subscriptions/{$this->stripeId}";
     }
 
     /**
@@ -544,8 +465,9 @@ class Price extends Element implements NestedElementInterface
     {
         $color = match ($this->stripeStatus) {
             'active' => 'green',
-            'archived' => 'red',
-            default => 'orange',
+            'scheduled' => 'orange',
+            'canceled' => 'red',
+            default => 'blue',
         };
         return "<span class='status $color'></span>" . StringHelper::titleize($this->stripeStatus);
     }
@@ -569,23 +491,5 @@ class Price extends Element implements NestedElementInterface
     public function getData(): array
     {
         return $this->_data ?? [];
-    }
-
-    /**
-     * Gets the product this price belongs to
-     *
-     * @return Product|null
-     */
-    public function getProduct(): Product|null
-    {
-        if (!isset($this->_product)) {
-            if (!$this->getPrimaryOwnerId()) {
-                return null;
-            }
-
-            $this->_product = $this->getOwner();
-        }
-
-        return $this->_product;
     }
 }
