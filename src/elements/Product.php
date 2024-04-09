@@ -293,6 +293,7 @@ class Product extends Element
         return [
             'stripeId',
             'stripeStatus',
+            'stripeEdit',
         ];
     }
 

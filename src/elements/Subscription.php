@@ -266,6 +266,7 @@ class Subscription extends Element
         return [
             'stripeId',
             'stripeStatus',
+            'stripeEdit',
         ];
     }
 

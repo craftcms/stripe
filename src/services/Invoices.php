@@ -15,11 +15,13 @@ use yii\base\Component;
 class Invoices extends Component
 {
     /**
-     * @return void
+     * Syncs all invoices from Stripe
+     *
+     * @return int
      * @throws \Throwable
      * @throws \yii\base\InvalidConfigException
      */
-    public function syncAllInvoices(): void
+    public function syncAllInvoices(): int
     {
         $api = Plugin::getInstance()->getApi();
         $invoices = $api->getAllInvoices();
@@ -27,10 +29,12 @@ class Invoices extends Component
         foreach ($invoices as $invoice) {
             $this->createOrUpdateInvoice($invoice);
         }
+
+        return count($invoices);
     }
 
     /**
-     * This takes the stripe invoice data from the API.
+     * Creates or updates Invoice Data based on what's returned from Stripe
      *
      * @param StripeInvoice $invoice
      * @return bool Whether the synchronization succeeded.

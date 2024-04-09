@@ -18,11 +18,13 @@ use yii\base\Component;
 class Customers extends Component
 {
     /**
-     * @return void
+     * Syncs all customers from Stripe
+     *
+     * @return int
      * @throws \Throwable
      * @throws \yii\base\InvalidConfigException
      */
-    public function syncAllCustomers(): void
+    public function syncAllCustomers(): int
     {
         $api = Plugin::getInstance()->getApi();
         $customers = $api->getAllCustomers();
@@ -30,10 +32,12 @@ class Customers extends Component
         foreach ($customers as $customer) {
             $this->createOrUpdateCustomer($customer);
         }
+
+        return count($customers);
     }
 
     /**
-     * This takes the stripe customer data from the API.
+     * Creates or updates Customer Data based on what's returned from Stripe
      *
      * @param StripeCustomer $customer
      * @return bool Whether the synchronization succeeded.
@@ -56,6 +60,12 @@ class Customers extends Component
         return true;
     }
 
+    /**
+     * Returns a Customer by email address
+     *
+     * @param string|null $email
+     * @return array|null
+     */
     public function getCustomersByEmail(?string $email = null): ?array
     {
         $customers = [];

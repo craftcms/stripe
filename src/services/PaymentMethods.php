@@ -15,11 +15,13 @@ use yii\base\Component;
 class PaymentMethods extends Component
 {
     /**
-     * @return void
+     * Syncs all payment methods from Stripe
+     *
+     * @return int
      * @throws \Throwable
      * @throws \yii\base\InvalidConfigException
      */
-    public function syncAllPaymentMethods(): void
+    public function syncAllPaymentMethods(): int
     {
         $api = Plugin::getInstance()->getApi();
         $paymentMethods = $api->getAllPaymentMethods();
@@ -27,10 +29,12 @@ class PaymentMethods extends Component
         foreach ($paymentMethods as $paymentMethod) {
             $this->createOrUpdatePaymentMethod($paymentMethod);
         }
+
+        return count($paymentMethods);
     }
 
     /**
-     * This takes the stripe payment method data from the API.
+     * Creates or updates Payment Method Data based on what's returned from Stripe
      *
      * @param StripePaymentMethod $paymentMethod
      * @return bool Whether the synchronization succeeded.
