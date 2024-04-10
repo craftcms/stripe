@@ -23,7 +23,7 @@ class PaymentMethods extends Component
     public function syncAllPaymentMethods(): int
     {
         $api = Plugin::getInstance()->getApi();
-        $paymentMethods = $api->getAllPaymentMethods();
+        $paymentMethods = $api->fetchAllPaymentMethods();
 
         foreach ($paymentMethods as $paymentMethod) {
             $this->createOrUpdatePaymentMethod($paymentMethod);

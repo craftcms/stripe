@@ -54,7 +54,7 @@ class Products extends Component
     public function syncAllProducts(): void
     {
         $api = Plugin::getInstance()->getApi();
-        $products = $api->getAllProducts();
+        $products = $api->fetchAllProducts();
 
         foreach ($products as $product) {
             $this->createOrUpdateProduct($product);

@@ -32,9 +32,9 @@ class Api extends Component
      *
      * @return array
      */
-    public function getAllProducts(): array
+    public function fetchAllProducts(): array
     {
-        return $this->getAll('products', ['expand' => ['data.default_price']]);
+        return $this->fetchAll('products', ['expand' => ['data.default_price']]);
     }
 
     /**
@@ -42,9 +42,9 @@ class Api extends Component
      *
      * @return array
      */
-    public function getAllPrices(): array
+    public function fetchAllPrices(): array
     {
-        return $this->getAll('prices'/*, ['expand' => ['data.product']]*/);
+        return $this->fetchAll('prices'/*, ['expand' => ['data.product']]*/);
     }
 
     /**
@@ -52,9 +52,9 @@ class Api extends Component
      *
      * @return array
      */
-    public function getAllSubscriptions(): array
+    public function fetchAllSubscriptions(): array
     {
-        return $this->getAll('subscriptions', ['status' => 'all']);
+        return $this->fetchAll('subscriptions', ['status' => 'all']);
     }
 
     /**
@@ -62,9 +62,9 @@ class Api extends Component
      *
      * @return array
      */
-    public function getAllPaymentMethods(): array
+    public function fetchAllPaymentMethods(): array
     {
-        $customers = $this->getAllCustomers();
+        $customers = $this->fetchAllCustomers();
         $paymentMethods = [];
 
         foreach ($customers as $customer) {
@@ -82,7 +82,7 @@ class Api extends Component
      *
      * @return array
      */
-    public function getAllCustomers(): array
+    public function fetchAllCustomers(): array
     {
         return $this->getAll('customers');
     }
@@ -92,9 +92,9 @@ class Api extends Component
      *
      * @return array
      */
-    public function getAllInvoices(): array
+    public function fetchAllInvoices(): array
     {
-        return $this->getAll('invoices');
+        return $this->fetchAll('invoices');
     }
 
     /**
@@ -104,7 +104,7 @@ class Api extends Component
      * @param array $params
      * @return array
      */
-    public function getAll(string $type, array $params = []): array
+    public function fetchAll(string $type, array $params = []): array
     {
         $resources = [];
 

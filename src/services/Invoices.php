@@ -24,7 +24,7 @@ class Invoices extends Component
     public function syncAllInvoices(): int
     {
         $api = Plugin::getInstance()->getApi();
-        $invoices = $api->getAllInvoices();
+        $invoices = $api->fetchAllInvoices();
 
         foreach ($invoices as $invoice) {
             $this->createOrUpdateInvoice($invoice);

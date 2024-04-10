@@ -52,7 +52,7 @@ class Subscriptions extends Component
     public function syncAllSubscriptions(): void
     {
         $api = Plugin::getInstance()->getApi();
-        $subscriptions = $api->getAllSubscriptions();
+        $subscriptions = $api->fetchAllSubscriptions();
 
         foreach ($subscriptions as $subscription) {
             $this->createOrUpdateSubscription($subscription);

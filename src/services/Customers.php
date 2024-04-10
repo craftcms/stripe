@@ -26,7 +26,7 @@ class Customers extends Component
     public function syncAllCustomers(): int
     {
         $api = Plugin::getInstance()->getApi();
-        $customers = $api->getAllCustomers();
+        $customers = $api->fetchAllCustomers();
 
         foreach ($customers as $customer) {
             $this->createOrUpdateCustomer($customer);

@@ -53,7 +53,7 @@ class Prices extends Component
     public function syncAllPrices(): void
     {
         $api = Plugin::getInstance()->getApi();
-        $prices = $api->getAllPrices();
+        $prices = $api->fetchAllPrices();
 
         foreach ($prices as $price) {
             $this->createOrUpdatePrice($price);
