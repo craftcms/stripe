@@ -387,8 +387,6 @@ class Plugin extends BasePlugin
             $event->rules['stripe/products'] = 'stripe/products/index';
             $event->rules['stripe/products/<elementId:\\d+>'] = 'elements/edit';
 
-            $event->rules['stripe/prices/<elementId:\\d+>'] = 'elements/edit';
-
             $event->rules['stripe/subscriptions'] = 'stripe/subscriptions/index';
             $event->rules['stripe/subscriptions/<elementId:\\d+>'] = 'elements/edit';
 

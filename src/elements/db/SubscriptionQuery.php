@@ -25,7 +25,7 @@ class SubscriptionQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected array $defaultOrderBy = ['stripe_subscriptiondata.stripeId' => SORT_ASC];
+    protected array $defaultOrderBy = ['stripestore_subscriptiondata.stripeId' => SORT_ASC];
 
     /**
      * @inheritdoc
@@ -102,17 +102,17 @@ class SubscriptionQuery extends ElementQuery
             strtolower(Subscription::STATUS_LIVE) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripe_subscriptiondata.stripeStatus' => 'active',
+                'stripestore_subscriptiondata.stripeStatus' => 'active',
             ],
             strtolower(Subscription::STATUS_STRIPE_SCHEDULED) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripe_subscriptiondata.stripeStatus' => 'scheduled',
+                'stripestore_subscriptiondata.stripeStatus' => 'scheduled',
             ],
             strtolower(Subscription::STATUS_STRIPE_CANCELED) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripe_subscriptiondata.stripeStatus' => 'canceled',
+                'stripestore_subscriptiondata.stripeStatus' => 'canceled',
             ],
             default => parent::statusCondition($status),
         };
@@ -130,8 +130,8 @@ class SubscriptionQuery extends ElementQuery
             return false;
         }
 
-        $subscriptionTable = 'stripe_subscriptions';
-        $subscriptionDataTable = 'stripe_subscriptiondata';
+        $subscriptionTable = 'stripestore_subscriptions';
+        $subscriptionDataTable = 'stripestore_subscriptiondata';
 
         // join standard subscription element table that only contains the stripeId
         $this->joinElementTable($subscriptionTable);
@@ -141,17 +141,17 @@ class SubscriptionQuery extends ElementQuery
         $this->subQuery->innerJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
 
         $this->query->select([
-            'stripe_subscriptions.stripeId',
-            'stripe_subscriptiondata.stripeStatus',
-            'stripe_subscriptiondata.data',
+            'stripestore_subscriptions.stripeId',
+            'stripestore_subscriptiondata.stripeStatus',
+            'stripestore_subscriptiondata.data',
         ]);
 
         if (isset($this->stripeId)) {
-            $this->subQuery->andWhere(Db::parseParam('stripe_subscriptiondata.stripeId', $this->stripeId));
+            $this->subQuery->andWhere(Db::parseParam('stripestore_subscriptiondata.stripeId', $this->stripeId));
         }
 
         if (isset($this->stripeStatus)) {
-            $this->subQuery->andWhere(Db::parseParam('stripe_subscriptiondata.stripeStatus', $this->stripeStatus));
+            $this->subQuery->andWhere(Db::parseParam('stripestore_subscriptiondata.stripeStatus', $this->stripeStatus));
         }
 
         return parent::beforePrepare();

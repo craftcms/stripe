@@ -261,13 +261,13 @@ class Product extends Element
 
         $sortOptions['stripeId'] = [
             'label' => Craft::t('stripe', 'Stripe ID'),
-            'orderBy' => 'stripe_productdata.stripeId',
+            'orderBy' => 'stripestore_productdata.stripeId',
             'defaultDir' => SORT_DESC,
         ];
 
         $sortOptions['stripeStatus'] = [
             'label' => Craft::t('stripe', 'Stripe Status'),
-            'orderBy' => 'stripe_productdata.stripeStatus',
+            'orderBy' => 'stripestore_productdata.stripeStatus',
             'defaultDir' => SORT_DESC,
         ];
 

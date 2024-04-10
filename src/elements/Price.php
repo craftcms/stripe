@@ -228,13 +228,13 @@ class Price extends Element implements NestedElementInterface
 
         $sortOptions['stripeId'] = [
             'label' => Craft::t('stripe', 'Stripe ID'),
-            'orderBy' => 'stripe_pricedata.stripeId',
+            'orderBy' => 'stripestore_pricedata.stripeId',
             'defaultDir' => SORT_DESC,
         ];
 
         $sortOptions['stripeStatus'] = [
             'label' => Craft::t('stripe', 'Stripe Status'),
-            'orderBy' => 'stripe_pricedata.stripeStatus',
+            'orderBy' => 'stripestore_pricedata.stripeStatus',
             'defaultDir' => SORT_DESC,
         ];
 

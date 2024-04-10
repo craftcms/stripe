@@ -15,13 +15,13 @@ namespace craft\stripe\db;
  */
 abstract class Table
 {
-    public const PRODUCTDATA = '{{%stripe_productdata}}';
-    public const PRODUCTS = '{{%stripe_products}}';
-    public const PRICEDATA = '{{%stripe_pricedata}}';
-    public const PRICES = '{{%stripe_prices}}';
-    public const SUBSCRIPTIONDATA = '{{%stripe_subscriptiondata}}';
-    public const SUBSCRIPTIONS = '{{%stripe_subscriptions}}';
-    public const PAYMENTMETHODDATA = '{{%stripe_paymentmethoddata}}';
-    public const CUSTOMERDATA = '{{%stripe_customerdata}}';
-    public const INVOICEDATA = '{{%stripe_invoicedata}}';
+    public const PRODUCTDATA = '{{%stripestore_productdata}}';
+    public const PRODUCTS = '{{%stripestore_products}}';
+    public const PRICEDATA = '{{%stripestore_pricedata}}';
+    public const PRICES = '{{%stripestore_prices}}';
+    public const SUBSCRIPTIONDATA = '{{%stripestore_subscriptiondata}}';
+    public const SUBSCRIPTIONS = '{{%stripestore_subscriptions}}';
+    public const PAYMENTMETHODDATA = '{{%stripestore_paymentmethoddata}}';
+    public const CUSTOMERDATA = '{{%stripestore_customerdata}}';
+    public const INVOICEDATA = '{{%stripestore_invoicedata}}';
 }

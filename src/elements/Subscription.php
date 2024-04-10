@@ -238,13 +238,13 @@ class Subscription extends Element
 
         $sortOptions['stripeId'] = [
             'label' => Craft::t('stripe', 'Stripe ID'),
-            'orderBy' => 'stripe_subscriptiondata.stripeId',
+            'orderBy' => 'stripestore_subscriptiondata.stripeId',
             'defaultDir' => SORT_DESC,
         ];
 
         $sortOptions['stripeStatus'] = [
             'label' => Craft::t('stripe', 'Stripe Status'),
-            'orderBy' => 'stripe_subscriptiondata.stripeStatus',
+            'orderBy' => 'stripestore_subscriptiondata.stripeStatus',
             'defaultDir' => SORT_DESC,
         ];
 
