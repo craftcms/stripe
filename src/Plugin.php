@@ -30,6 +30,8 @@ use craft\stripe\services\PaymentMethods;
 use craft\stripe\services\Prices;
 use craft\stripe\services\Products;
 use craft\stripe\services\Subscriptions;
+use craft\stripe\web\twig\CraftVariableBehavior;
+use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
@@ -114,7 +116,7 @@ class Plugin extends BasePlugin
 //            $this->registerUtilityTypes();
             $this->registerFieldTypes();
             $this->registerFieldLayoutElements();
-//            $this->registerVariables();
+            $this->registerVariables();
             $this->registerResaveCommands();
 
             if (!$request->getIsConsoleRequest()) {
@@ -321,18 +323,16 @@ class Plugin extends BasePlugin
         });
     }
 
-//    /**
-//     * Register Stripe twig variables to the main craft variable
-//     *
-//     * @since 3.0
-//     */
-//    private function registerVariables(): void
-//    {
-//        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, static function(Event $event) {
-//            $variable = $event->sender;
-//            $variable->attachBehavior('stripe', CraftVariableBehavior::class);
-//        });
-//    }
+    /**
+     * Register Stripe twig variables to the main craft variable
+     */
+    private function registerVariables(): void
+    {
+        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, static function(Event $event) {
+            $variable = $event->sender;
+            $variable->attachBehavior('stripe', CraftVariableBehavior::class);
+        });
+    }
 
     public function registerResaveCommands(): void
     {
