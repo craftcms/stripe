@@ -12,6 +12,7 @@ use yii\db\ActiveQueryInterface;
  *
  * @property int $id
  * @property string $stripeId
+ * @property int|null $primaryOwnerId Owner ID
  */
 class Price extends ActiveRecord
 {

@@ -26,7 +26,7 @@ class ProductsController extends Controller
      *
      * @return Response
      */
-    public function actionProductIndex(): Response
+    public function actionIndex(): Response
     {
         $plugin = Plugin::getInstance();
         $dashboardUrl = $plugin->dashboardUrl;

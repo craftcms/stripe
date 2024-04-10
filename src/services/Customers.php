@@ -73,7 +73,7 @@ class Customers extends Component
         if ($email === null) {
             return null;
         }
-        $records = $this->_createCustomerQuery()->where(['email' => $email])->all();
+        $records = $this->createCustomerQuery()->where(['email' => $email])->all();
 
         foreach ($records as $record) {
             $customer = new Customer();
@@ -90,7 +90,7 @@ class Customers extends Component
      *
      * @return Query The query object.
      */
-    private function _createCustomerQuery(): Query
+    private function createCustomerQuery(): Query
     {
         return (new Query())
             ->select([

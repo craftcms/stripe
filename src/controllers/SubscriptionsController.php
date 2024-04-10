@@ -15,7 +15,7 @@ use craft\web\Controller;
 use yii\web\Response;
 
 /**
- * The SubscriptionsController handles listing and showing Stripe products elements.
+ * The SubscriptionsController handles listing and showing Stripe subscription elements.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
@@ -26,7 +26,7 @@ class SubscriptionsController extends Controller
      *
      * @return Response
      */
-    public function actionSubscriptionIndex(): Response
+    public function actionIndex(): Response
     {
         $plugin = Plugin::getInstance();
         $dashboardUrl = $plugin->dashboardUrl;

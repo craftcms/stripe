@@ -357,12 +357,12 @@ class Plugin extends BasePlugin
             $event->rules['stripe/settings/prices'] = 'stripe/settings/prices';
             $event->rules['stripe/settings/subscriptions'] = 'stripe/settings/subscriptions';
 
-            $event->rules['stripe/products'] = 'stripe/products/product-index';
+            $event->rules['stripe/products'] = 'stripe/products/index';
             $event->rules['stripe/products/<elementId:\\d+>'] = 'elements/edit';
 
             $event->rules['stripe/prices/<elementId:\\d+>'] = 'elements/edit';
 
-            $event->rules['stripe/subscriptions'] = 'stripe/subscriptions/subscription-index';
+            $event->rules['stripe/subscriptions'] = 'stripe/subscriptions/index';
             $event->rules['stripe/subscriptions/<elementId:\\d+>'] = 'elements/edit';
 
 //            $event->rules['stripe/sync-products'] = 'stripe/products/sync';

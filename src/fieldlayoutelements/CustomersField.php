@@ -9,13 +9,9 @@ namespace craft\stripe\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\fieldlayoutelements\BaseNativeField;
-use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\stripe\elements\Product;
 use craft\stripe\models\Customer;
 use craft\stripe\Plugin;
 use yii\base\InvalidArgumentException;
@@ -94,7 +90,9 @@ class CustomersField extends BaseNativeField
         $value = Plugin::getInstance()->getCustomers()->getCustomersByEmail($element->email);
 
         if (empty($value)) {
-            return '<p class="light">' . Craft::t('stripe', 'No Stripe Customers available.') . '</p>';
+            return Html::tag('p', Craft::t('stripe', 'No Stripe Customers available.'), [
+                'class' => 'light',
+            ]);
         }
 
         $id = Html::id($this->attribute);
@@ -103,7 +101,13 @@ class CustomersField extends BaseNativeField
         /** @var Customer $customer */
         foreach ($value as $customer) {
             $html .= "<div class='customer-wrapper'>" .
-            "<div>{$customer->data['name']} (<a href='{$customer->getStripeEditUrl()}' target='_blank'>$customer->stripeId)</a></div>" .
+            "<div>" .
+                $customer->data['name'] .
+                " (<a href='{$customer->getStripeEditUrl()}' target='_blank'>" .
+                    $customer->stripeId .
+                    " <span data-icon='external'></span>" .
+                "</a>)".
+            "</div>" .
             "</div>";
         }
 

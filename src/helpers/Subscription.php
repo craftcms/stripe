@@ -11,11 +11,9 @@ use Craft;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\stripe\elements\Subscription as SubscriptionElement;
-use craft\stripe\records\SubscriptionData;
 
 /**
  * Stipe Subscription Helper.
