@@ -246,6 +246,10 @@ class Price extends Element implements NestedElementInterface
         return [
             'stripeId' => Craft::t('stripe', 'Stripe ID'),
             'stripeEdit' => Craft::t('stripe', 'Stripe Edit'),
+            'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
+            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
     }
 

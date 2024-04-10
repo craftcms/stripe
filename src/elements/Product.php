@@ -279,6 +279,13 @@ class Product extends Element
         return [
             'stripeId' => Craft::t('stripe', 'Stripe ID'),
             'stripeEdit' => Craft::t('stripe', 'Stripe Edit'),
+            'slug' => ['label' => Craft::t('app', 'Slug')],
+            'uri' => ['label' => Craft::t('app', 'URI')],
+            'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
+            'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
+            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
     }
 

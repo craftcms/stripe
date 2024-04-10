@@ -4,8 +4,10 @@ namespace craft\stripe\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -254,6 +256,11 @@ class Subscription extends Element
         return [
             'stripeId' => Craft::t('stripe', 'Stripe ID'),
             'stripeEdit' => Craft::t('stripe', 'Stripe Edit'),
+            'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
+            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
+            'products' => ['label' => Craft::t('stripe', 'Products')]
         ];
     }
 
@@ -378,6 +385,8 @@ class Subscription extends Element
                 return $this->getStripeStatusHtml();
             case 'stripeId':
                 return $this->$attribute;
+            case 'products':
+                return Cp::elementPreviewHtml($this->getProducts());
             default:
             {
                 return parent::attributeHtml($attribute);
