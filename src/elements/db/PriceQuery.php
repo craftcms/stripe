@@ -370,15 +370,12 @@ class PriceQuery extends ElementQuery
             'stripe_pricedata.data',
         ]);
 
-        //$t = $this->query->getRawSql();
-        //$t1 = $this->subQuery->getRawSql();
-
         if (!empty($this->ownerId) || !empty($this->primaryOwnerId)) {
             // Join in the elements_owners table
             $ownersCondition = [
                 'and',
                 '[[elements_owners.elementId]] = [[elements.id]]',
-                $this->ownerId ? ['elements_owners.ownerId' => $this->ownerId] : '[[elements_owners.ownerId]] = [[prices.primaryOwnerId]]',
+                $this->ownerId ? ['elements_owners.ownerId' => $this->ownerId] : '[[elements_owners.ownerId]] = [[stripe_prices.primaryOwnerId]]',
             ];
 
             $this->query
@@ -392,7 +389,7 @@ class PriceQuery extends ElementQuery
             //$this->subQuery->andWhere(['addresses.fieldId' => $this->fieldId]);
 
             if ($this->primaryOwnerId) {
-                $this->subQuery->andWhere(['prices.primaryOwnerId' => $this->primaryOwnerId]);
+                $this->subQuery->andWhere(['stripe_prices.primaryOwnerId' => $this->primaryOwnerId]);
             }
 
             // Ignore revision/draft blocks by default
@@ -402,7 +399,7 @@ class PriceQuery extends ElementQuery
             if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
                 $this->subQuery->innerJoin(
                     ['owners' => Table::ELEMENTS],
-                    $this->ownerId ? '[[owners.id]] = [[elements_owners.ownerId]]' : '[[owners.id]] = [[prices.primaryOwnerId]]'
+                    $this->ownerId ? '[[owners.id]] = [[elements_owners.ownerId]]' : '[[owners.id]] = [[stripe_prices.primaryOwnerId]]'
                 );
 
                 if (!$allowOwnerDrafts) {
@@ -419,7 +416,7 @@ class PriceQuery extends ElementQuery
             if (!$this->primaryOwnerId && !$this->ownerId) {
                 throw new QueryAbortedException();
             }
-            $this->subQuery->andWhere(['prices.primaryOwnerId' => $this->primaryOwnerId ?? $this->ownerId]);
+            $this->subQuery->andWhere(['stripe_prices.primaryOwnerId' => $this->primaryOwnerId ?? $this->ownerId]);
         }
 
         if (isset($this->stripeId)) {
