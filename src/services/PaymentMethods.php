@@ -2,17 +2,38 @@
 
 namespace craft\stripe\services;
 
+use craft\db\Query;
 use craft\helpers\Json;
+use craft\stripe\db\Table;
+use craft\stripe\models\PaymentMethod;
 use craft\stripe\records\PaymentMethodData as PaymentMethodDataRecord;
 use craft\stripe\Plugin;
 use Stripe\PaymentMethod as StripePaymentMethod;
 use yii\base\Component;
+use yii\base\InvalidConfigException;
 
 /**
  * Payment Methods service
  */
 class PaymentMethods extends Component
 {
+    /**
+     * Memoized array of payment methods.
+     *
+     * @var PaymentMethod[]|null
+     */
+    private ?array $_allPaymentMethods = null;
+
+    /**
+     * Returns all payment methods.
+     *
+     * @return PaymentMethod[]
+     */
+    public function getAllPaymentMethods(): array
+    {
+        return $this->_getAllPaymentMethods();
+    }
+
     /**
      * Syncs all payment methods from Stripe
      *
@@ -54,5 +75,75 @@ class PaymentMethods extends Component
         $paymentMethodDataRecord->save();
 
         return true;
+    }
+
+    /**
+     * Returns a Query object prepped for retrieving payment methods.
+     *
+     * @return Query The query object.
+     */
+    private function _createPaymentMethodQuery(): Query
+    {
+        return (new Query())
+            ->select([
+                'sspmd.stripeId',
+                'sspmd.data',
+            ])
+            ->from(['sspmd' => Table::PAYMENTMETHODDATA]);
+    }
+
+    /**
+     * Populate an array of payment methods from their database table rows
+     *
+     * @return PaymentMethod[]
+     */
+    private function _populatePaymentMethods(array $results): array
+    {
+        $paymentMethods = [];
+
+        foreach ($results as $result) {
+            try {
+                $paymentMethods[] = $this->_populatePaymentMethod($result);
+            } catch (InvalidConfigException) {
+                continue; // Just skip this
+            }
+        }
+
+        return $paymentMethods;
+    }
+
+    /**
+     * Populate a payment methods model from database table row.
+     *
+     * @return PaymentMethod
+     */
+    private function _populatePaymentMethod(array $result): PaymentMethod
+    {
+        $paymentMethod = new PaymentMethod();
+        $paymentMethod->setAttributes($result, false);
+
+        return $paymentMethod;
+    }
+
+    /**
+     * Get all payment methods memoized.
+     *
+     * @return array
+     */
+    private function _getAllPaymentMethods(): array
+    {
+        if ($this->_allPaymentMethods === null) {
+            $paymentMethods = $this->_createPaymentMethodQuery()->all();
+
+            if (!empty($paymentMethods)) {
+                $this->_allPaymentMethods = [];
+                $paymentMethods = $this->_populatePaymentMethods($paymentMethods);
+                foreach ($paymentMethods as $paymentMethod) {
+                    $this->_allPaymentMethods[$paymentMethod->stripeId] = $paymentMethod;
+                }
+            }
+        }
+
+        return $this->_allPaymentMethods ?? [];
     }
 }

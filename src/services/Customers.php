@@ -3,6 +3,7 @@
 namespace craft\stripe\services;
 
 use craft\db\Query;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\stripe\db\Table;
 use craft\stripe\models\Customer;
@@ -10,12 +11,30 @@ use craft\stripe\records\CustomerData as CustomerDataRecord;
 use craft\stripe\Plugin;
 use Stripe\Customer as StripeCustomer;
 use yii\base\Component;
+use yii\base\InvalidConfigException;
 
 /**
  * Customers service
  */
 class Customers extends Component
 {
+    /**
+     * Memoized array of customers.
+     *
+     * @var Customer[]|null
+     */
+    private ?array $_allCustomers = null;
+
+    /**
+     * Returns all customers
+     *
+     * @return Customer[]
+     */
+    public function getAllCustomers(): array
+    {
+        return $this->_getAllCustomers();
+    }
+
     /**
      * Syncs all customers from Stripe
      *
@@ -63,25 +82,11 @@ class Customers extends Component
      * Returns a Customer by email address
      *
      * @param string|null $email
-     * @return array|null
+     * @return array
      */
-    public function getCustomersByEmail(?string $email = null): ?array
+    public function getCustomersByEmail(?string $email = null): array
     {
-        $customers = [];
-
-        if ($email === null) {
-            return null;
-        }
-        $records = $this->createCustomerQuery()->where(['email' => $email])->all();
-
-        foreach ($records as $record) {
-            $customer = new Customer();
-            $customer->setAttributes($record, false);
-
-            $customers[] = $customer;
-        }
-
-        return $customers;
+        return ArrayHelper::whereMultiple($this->_getAllCustomers(), ['email' => $email]);
     }
 
     /**
@@ -89,14 +94,69 @@ class Customers extends Component
      *
      * @return Query The query object.
      */
-    private function createCustomerQuery(): Query
+    private function _createCustomerQuery(): Query
     {
         return (new Query())
             ->select([
-                'stripeId',
-                'email',
-                'data',
+                'sscd.stripeId',
+                'sscd.email',
+                'sscd.data',
             ])
-            ->from([Table::CUSTOMERDATA]);
+            ->from(['sscd' => Table::CUSTOMERDATA]);
+    }
+
+    /**
+     * Populate an array of customers from their database table rows
+     *
+     * @return Customer[]
+     */
+    private function _populateCustomers(array $results): array
+    {
+        $customers = [];
+
+        foreach ($results as $result) {
+            try {
+                $customers[] = $this->_populateCustomer($result);
+            } catch (InvalidConfigException) {
+                continue; // Just skip this
+            }
+        }
+
+        return $customers;
+    }
+
+    /**
+     * Populate a customer model from database table row.
+     *
+     * @return Customer
+     */
+    private function _populateCustomer(array $result): Customer
+    {
+        $invoice = new Customer();
+        $invoice->setAttributes($result, false);
+
+        return $invoice;
+    }
+
+    /**
+     * Get all customers memoized.
+     *
+     * @return array
+     */
+    private function _getAllCustomers(): array
+    {
+        if ($this->_allCustomers === null) {
+            $customers = $this->_createCustomerQuery()->all();
+
+            if (!empty($customers)) {
+                $this->_allCustomers = [];
+                $customers = $this->_populateCustomers($customers);
+                foreach ($customers as $customer) {
+                    $this->_allCustomers[$customer->stripeId] = $customer;
+                }
+            }
+        }
+
+        return $this->_allCustomers ?? [];
     }
 }
