@@ -1,0 +1,14 @@
+{% extends "commerce/_layouts/cp" %}
+
+{% set title = "Invoice"|t('stripe') ~ ' ' ~ invoice.data.number %}
+
+{% block actionButton %}
+    {% if viewInvoiceUrl %}
+        <a data-icon="external" class="btn submit" href="{{ viewInvoiceUrl }}"
+           target="_blank">{{ 'View in Stripe'|t('stripe') }}</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+   INVOICE data goes here
+{% endblock %}

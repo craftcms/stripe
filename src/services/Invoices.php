@@ -3,7 +3,10 @@
 namespace craft\stripe\services;
 
 use Craft;
+use craft\db\Query;
 use craft\helpers\Json;
+use craft\stripe\db\Table;
+use craft\stripe\models\Invoice;
 use craft\stripe\records\InvoiceData as InvoiceDataRecord;
 use craft\stripe\Plugin;
 use Stripe\Invoice as StripeInvoice;
@@ -55,5 +58,22 @@ class Invoices extends Component
         $invoiceDataRecord->save();
 
         return true;
+    }
+
+    public function getInvoiceById(?string $stripeId): Invoice|null
+    {
+        if ($stripeId === null) {
+            return null;
+        }
+
+        $result = InvoiceDataRecord::find()->where(['stripeId' => $stripeId])->one();
+        if ($result === null) {
+            return null;
+        }
+
+        $invoice = new Invoice();
+        $invoice->setAttributes($result->getAttributes(), false);
+
+        return $invoice;
     }
 }

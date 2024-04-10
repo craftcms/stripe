@@ -1,0 +1,40 @@
+{% extends "commerce/_layouts/cp" %}
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% set title = "Stripe Invoices"|t('stripe') %}
+
+{% block actionButton %}
+    {% if newInvoiceUrl %}
+        <a data-icon="external" class="btn submit" href="{{ newInvoiceUrl }}"
+           target="_blank">{{ 'New Invoice'|t('stripe') }}</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div id="invoices-vue-admin-table"></div>
+{% endblock %}
+
+{% js %}
+    var columns = [
+        { name: '__slot:title', title: Craft.t('stripe', 'Invoice No') },
+        { name: 'amount', title: Craft.t('stripe', 'Amount') },
+        { name: 'frequency', title: Craft.t('stripe', 'Frequency') },
+        { name: 'customerEmail', title: Craft.t('stripe', 'Customer email') },
+        { name: 'due', title: Craft.t('stripe', 'Due') },
+        { name: 'created', title: Craft.t('stripe', 'Created') },
+        { name: 'stripeUrl', title: Craft.t('stripe', 'Stripe Edit') },
+    ];
+
+    new Craft.VueAdminTable({
+        actions: false,
+        checkboxes: false,
+        columns: columns,
+        fullPane: false,
+        container: '#invoices-vue-admin-table',
+        emptyMessage: Craft.t('stripe', 'No invoices exist yet.'),
+        padded: true,
+        tableDataEndpoint: '{{ tableDataEndpoint|raw }}',
+        search: true,
+        perPage: 100,
+    });
+{% endjs %}

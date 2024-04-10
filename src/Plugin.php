@@ -365,6 +365,9 @@ class Plugin extends BasePlugin
             $event->rules['stripe/subscriptions'] = 'stripe/subscriptions/index';
             $event->rules['stripe/subscriptions/<elementId:\\d+>'] = 'elements/edit';
 
+            $event->rules['stripe/invoices'] = 'stripe/invoices/index';
+            $event->rules['stripe/invoices/<stripeId:in_[A-Za-z0-9]+>'] = 'stripe/invoices/view';
+
 //            $event->rules['stripe/sync-products'] = 'stripe/products/sync';
 //            $event->rules['stripe/webhooks'] = 'stripe/webhooks/edit';
         });
@@ -399,6 +402,11 @@ class Plugin extends BasePlugin
         $ret['subnav']['subscriptions'] = [
             'label' => Craft::t('stripe', 'Subscriptions'),
             'url' => 'stripe/subscriptions',
+        ];
+
+        $ret['subnav']['invoices'] = [
+            'label' => Craft::t('stripe', 'Invoices'),
+            'url' => 'stripe/invoices',
         ];
 
 
