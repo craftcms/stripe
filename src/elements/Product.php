@@ -156,7 +156,7 @@ class Product extends Element
      */
     public static function isLocalized(): bool
     {
-        return false;
+        return true;
     }
 
     /**

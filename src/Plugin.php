@@ -5,7 +5,10 @@ namespace craft\stripe;
 use Craft;
 use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
+use craft\console\Controller;
+use craft\console\controllers\ResaveController;
 use craft\elements\User;
+use craft\events\DefineConsoleActionsEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
@@ -112,7 +115,7 @@ class Plugin extends BasePlugin
             $this->registerFieldTypes();
             $this->registerFieldLayoutElements();
 //            $this->registerVariables();
-//            $this->registerResaveCommands();
+            $this->registerResaveCommands();
 
             if (!$request->getIsConsoleRequest()) {
                 if ($request->getIsCpRequest()) {
@@ -331,20 +334,40 @@ class Plugin extends BasePlugin
 //        });
 //    }
 
-//    public function registerResaveCommands(): void
-//    {
-//        Event::on(ResaveController::class, Controller::EVENT_DEFINE_ACTIONS, static function(DefineConsoleActionsEvent $e) {
-//            $e->actions['stripe-products'] = [
-//                'action' => function(): int {
-//                    /** @var ResaveController $controller */
-//                    $controller = Craft::$app->controller;
-//                    return $controller->resaveElements(Product::class);
-//                },
-//                'options' => [],
-//                'helpSummary' => 'Re-saves Stripe products.',
-//            ];
-//        });
-//    }
+    public function registerResaveCommands(): void
+    {
+        Event::on(ResaveController::class, Controller::EVENT_DEFINE_ACTIONS, static function(DefineConsoleActionsEvent $e) {
+            $e->actions['stripe-products'] = [
+                'action' => function(): int {
+                    /** @var ResaveController $controller */
+                    $controller = Craft::$app->controller;
+                    return $controller->resaveElements(Product::class);
+                },
+                'options' => [],
+                'helpSummary' => 'Re-saves Stripe products.',
+            ];
+
+            $e->actions['stripe-prices'] = [
+                'action' => function(): int {
+                    /** @var ResaveController $controller */
+                    $controller = Craft::$app->controller;
+                    return $controller->resaveElements(Price::class);
+                },
+                'options' => [],
+                'helpSummary' => 'Re-saves Stripe prices.',
+            ];
+
+            $e->actions['stripe-subscriptions'] = [
+                'action' => function(): int {
+                    /** @var ResaveController $controller */
+                    $controller = Craft::$app->controller;
+                    return $controller->resaveElements(Subscription::class);
+                },
+                'options' => [],
+                'helpSummary' => 'Re-saves Stripe subscriptions.',
+            ];
+        });
+    }
 
     /**
      * Register the CP routes
