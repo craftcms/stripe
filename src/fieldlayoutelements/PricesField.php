@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
+use craft\enums\ElementIndexViewMode;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -88,26 +89,13 @@ class PricesField extends BaseNativeField
             throw new InvalidArgumentException(sprintf('%s can only be used in product field layouts.', __CLASS__));
         }
 
-        $value = $element->getPrices();
+        Craft::$app->getView()->registerDeltaName($this->attribute());
 
-        if (empty($value)) {
-            return '<p class="light">' . Craft::t('stripe', 'No Stripe Prices available.') . '</p>';
-        }
-
-        $size = Cp::CHIP_SIZE_SMALL;
-
-        $id = Html::id($this->attribute);
-        $html = "<div id='$id' class='elementselect noteditable'>" .
-            "<div class='elements chips" . ($size === Cp::CHIP_SIZE_LARGE ? ' inline-chips' : '') . "'>";
-
-        foreach ($value as $relatedElement) {
-            $html .= Cp::elementChipHtml($relatedElement, [
-                'size' => $size,
-            ]);
-        }
-
-        $html .= '</div></div>';
-
-        return $html;
+        return $element->getPriceManager()->getIndexHtml($element, [
+            'canCreate' => false,
+            'allowedViewModes' => [ElementIndexViewMode::Cards, ElementIndexViewMode::Table],
+            'sortable' => false,
+            'pageSize' => 50,
+        ]);
     }
 }

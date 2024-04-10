@@ -393,7 +393,7 @@ class Price extends Element implements NestedElementInterface
      */
     protected function cpEditUrl(): ?string
     {
-        return sprintf('stripe/prices/%s', $this->getCanonicalId());
+        return null;
     }
 
     /**

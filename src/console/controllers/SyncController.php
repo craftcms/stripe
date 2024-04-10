@@ -28,6 +28,7 @@ class SyncController extends Controller
         if ($this->confirm('Do you want to continue?')) {
             $this->syncProducts();
             $this->syncPrices();
+            $this->syncSubscriptions();
             $this->syncCustomers();
             $this->syncPaymentMethods();
             $this->syncInvoices();

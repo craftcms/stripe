@@ -1,4 +1,4 @@
-{% extends "commerce/_layouts/cp" %}
+{% extends "_layouts/cp" %}
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
 {% set title = "Stripe Invoices"|t('stripe') %}
@@ -22,7 +22,6 @@
         { name: 'customerEmail', title: Craft.t('stripe', 'Customer email') },
         { name: 'due', title: Craft.t('stripe', 'Due') },
         { name: 'created', title: Craft.t('stripe', 'Created') },
-        { name: 'stripeUrl', title: Craft.t('stripe', 'Stripe Edit') },
     ];
 
     new Craft.VueAdminTable({

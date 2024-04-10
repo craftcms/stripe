@@ -6,6 +6,7 @@ use Craft;
 use craft\base\Element;
 use craft\elements\User;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -15,7 +16,6 @@ use craft\stripe\elements\db\SubscriptionQuery;
 use craft\stripe\helpers\Subscription as SubscriptionHelper;
 use craft\stripe\records\Subscription as SubscriptionRecord;
 use craft\stripe\web\assets\stripecp\StripeCpAsset;
-use yii\helpers\Html as HtmlHelper;
 
 /**
  * Subscription element type
@@ -434,7 +434,7 @@ class Subscription extends Element
     {
         switch ($attribute) {
             case 'stripeEdit':
-                return HtmlHelper::a('', $this->getStripeEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]);
+                return Html::a('', $this->getStripeEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]);
             case 'stripeStatus':
                 return $this->getStripeStatusHtml();
             case 'stripeId':

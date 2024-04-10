@@ -366,7 +366,6 @@ class Plugin extends BasePlugin
             $event->rules['stripe/subscriptions/<elementId:\\d+>'] = 'elements/edit';
 
             $event->rules['stripe/invoices'] = 'stripe/invoices/index';
-            $event->rules['stripe/invoices/<stripeId:in_[A-Za-z0-9]+>'] = 'stripe/invoices/view';
 
 //            $event->rules['stripe/sync-products'] = 'stripe/products/sync';
 //            $event->rules['stripe/webhooks'] = 'stripe/webhooks/edit';
@@ -394,29 +393,28 @@ class Plugin extends BasePlugin
         $ret['label'] = Craft::t('stripe', 'Stripe');
 
 
-        $ret['subnav']['products'] = [
+        $ret['subnav']['stripeProducts'] = [
             'label' => Craft::t('stripe', 'Products'),
             'url' => 'stripe/products',
         ];
 
-        $ret['subnav']['subscriptions'] = [
+        $ret['subnav']['stripeSubscriptions'] = [
             'label' => Craft::t('stripe', 'Subscriptions'),
             'url' => 'stripe/subscriptions',
         ];
 
-        $ret['subnav']['invoices'] = [
+        $ret['subnav']['stripeInvoices'] = [
             'label' => Craft::t('stripe', 'Invoices'),
             'url' => 'stripe/invoices',
         ];
 
 
         if (Craft::$app->getUser()->getIsAdmin() && Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
-            $ret['subnav']['settings'] = [
+            $ret['subnav']['stripeSettings'] = [
                 'label' => Craft::t('stripe', 'Settings'),
                 'url' => 'stripe/settings',
             ];
         }
-
 
 //        if (Craft::$app->getUser()->getIsAdmin()) {
 //            $ret['subnav']['webhooks'] = [

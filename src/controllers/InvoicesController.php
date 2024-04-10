@@ -125,33 +125,13 @@ class InvoicesController extends Controller
                 'customerEmail' => $invoice->data['customer_email'],
                 'due' => $invoice->data['due_date'] ? $formatter->asDatetime($invoice->data['due_date'], 'php:Y-m-d') : '',
                 'created' => $formatter->asDatetime($invoice->data['created'], $formatter::FORMAT_WIDTH_SHORT),
-                'url' => UrlHelper::cpUrl('stripe/invoices/' . $invoice->stripeId),
-                'stripeUrl' => Html::a('', $invoice->getStripeEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]),
+                'url' => $invoice->getStripeEditUrl(),
             ];
         }
 
         return $this->asSuccess(data: [
             'pagination' => AdminTable::paginationLinks($page, $total, $limit),
             'data' => $tableData,
-        ]);
-    }
-
-    /**
-     * Displays a single invoice page.
-     *
-     * @return Response
-     */
-    public function actionView(string $stripeId): Response
-    {
-        $invoice = Plugin::getInstance()->getInvoices()->getInvoiceById($stripeId);
-
-        if ($invoice === null) {
-            throw new BadRequestHttpException("Invalid invoice ID: $stripeId");
-        }
-
-        return $this->renderTemplate('stripe/invoices/_view', [
-            'invoice' => $invoice,
-            'viewInvoiceUrl' => $invoice->getStripeEditUrl(),
         ]);
     }
 }
