@@ -10,13 +10,11 @@ namespace craft\stripe\controllers;
 use Craft;
 use craft\db\Query;
 use craft\helpers\AdminTable;
-use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\stripe\db\Table;
 use craft\stripe\models\Invoice;
 use craft\stripe\Plugin;
 use craft\web\Controller;
-use yii\base\InvalidArgumentException;
 use yii\db\Expression;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -28,15 +26,6 @@ use yii\web\Response;
  */
 class InvoicesController extends Controller
 {
-    private Plugin $_plugin;
-
-    public function init(): void
-    {
-        parent::init();
-
-        $this->_plugin = Plugin::getInstance();
-    }
-
     /**
      * Displays the invoices index page.
      *
@@ -44,10 +33,7 @@ class InvoicesController extends Controller
      */
     public function actionIndex(): Response
     {
-        $dashboardUrl = $this->_plugin->dashboardUrl;
-        $mode = $this->_plugin->stripeMode;
-
-        $newInvoiceUrl = "{$dashboardUrl}/{$mode}/invoices/create";
+        $newInvoiceUrl = Plugin::getInstance()->stripeBaseUrl . "/invoices/create";
 
         return $this->renderTemplate('stripe/invoices/_index', [
             'newInvoiceUrl' => $newInvoiceUrl,

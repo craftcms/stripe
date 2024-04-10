@@ -12,7 +12,6 @@ use craft\elements\User;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\enums\PropagationMethod;
-use craft\helpers\Cp;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -25,9 +24,7 @@ use craft\stripe\elements\db\ProductQuery;
 use craft\stripe\helpers\Product as ProductHelper;
 use craft\stripe\records\Product as ProductRecord;
 use craft\stripe\web\assets\stripecp\StripeCpAsset;
-use craft\web\CpScreenResponseBehavior;
 use yii\helpers\Html as HtmlHelper;
-use yii\web\Response;
 
 /**
  * Product element type
@@ -398,15 +395,6 @@ class Product extends Element
         return $user->can('saveProducts');
     }
 
-//    public function canDuplicate(User $user): bool
-//    {
-//        if (parent::canDuplicate($user)) {
-//            return true;
-//        }
-//        // todo: implement user permissions
-//        return $user->can('saveProducts');
-//    }
-
     public function canDelete(User $user): bool
     {
         // We normally cant delete stripe elements, but we can if we are in a draft state.
@@ -522,21 +510,6 @@ class Product extends Element
                 return $this->getStripeStatusHtml();
             case 'stripeId':
                 return $this->$attribute;
-//            case 'options':
-//                return collect($this->getOptions())->map(function($option) {
-//                    return HtmlHelper::tag('span', $option['name'], [
-//                        'title' => $option['name'] . ' option values: ' . collect($option['values'])->join(', '),
-//                    ]);
-//                })->join(',&nbsp;');
-//            case 'tags':
-//                return collect($this->getTags())->map(function($tag) {
-//                    return HtmlHelper::tag('div', $tag, [
-//                        'style' => 'margin-bottom: 2px;',
-//                        'class' => 'token',
-//                    ]);
-//                })->join('&nbsp;');
-//            case 'variants':
-//                return collect($this->getVariants())->pluck('title')->map(fn($title) => StringHelper::toTitleCase($title))->join(',&nbsp;');
             default:
             {
                 return parent::attributeHtml($attribute);
@@ -552,9 +525,7 @@ class Product extends Element
      */
     public function getStripeEditUrl(): string
     {
-        $dashboardUrl = Plugin::getInstance()->dashboardUrl;
-        $mode = Plugin::getInstance()->stripeMode;
-        return "{$dashboardUrl}/{$mode}/products/{$this->stripeId}";
+        return Plugin::getInstance()->stripeBaseUrl . "/products/{$this->stripeId}";
     }
 
     /**

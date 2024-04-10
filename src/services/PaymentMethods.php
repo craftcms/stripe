@@ -2,7 +2,6 @@
 
 namespace craft\stripe\services;
 
-use Craft;
 use craft\helpers\Json;
 use craft\stripe\records\PaymentMethodData as PaymentMethodDataRecord;
 use craft\stripe\Plugin;

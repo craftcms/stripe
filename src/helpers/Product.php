@@ -15,7 +15,6 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\stripe\elements\Product as ProductElement;
-use craft\stripe\records\ProductData;
 
 /**
  * Stipe Product Helper.
@@ -111,14 +110,6 @@ class Product
                             case 'default_price':
                                 $meta[Craft::t('stripe', $label)] =
                                     Cp::elementChipHtml($product->defaultPrice, ['size' => Cp::CHIP_SIZE_SMALL]);
-
-//                                $meta[Craft::t('stripe', $label)] = Html::tag(
-//                                    'span',
-//                                    $value['id'],
-//                                    [
-//                                        'class' => 'break-word no-scroll',
-//                                    ]
-//                                );
                                 break;
                             default:
                                 $meta[Craft::t('stripe', $label)] = collect($product->data[$key])

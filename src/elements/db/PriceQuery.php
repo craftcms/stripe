@@ -2,7 +2,6 @@
 
 namespace craft\stripe\elements\db;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
@@ -426,30 +425,10 @@ class PriceQuery extends ElementQuery
         if (isset($this->stripeId)) {
             $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.stripeId', $this->stripeId));
         }
-//
-//        if (isset($this->productType)) {
-//            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.productType', $this->productType));
-//        }
-//
-//        if (isset($this->publishedScope)) {
-//            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.publishedScope', $this->publishedScope));
-//        }
-//
+
         if (isset($this->stripeStatus)) {
             $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.stripeStatus', $this->stripeStatus));
         }
-//
-//        if (isset($this->handle)) {
-//            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.handle', $this->handle));
-//        }
-//
-//        if (isset($this->vendor)) {
-//            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.vendor', $this->vendor));
-//        }
-//
-//        if (isset($this->tags)) {
-//            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.tags', $this->tags));
-//        }
 
         return parent::beforePrepare();
     }

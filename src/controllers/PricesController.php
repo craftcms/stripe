@@ -21,22 +21,6 @@ use yii\web\Response;
  */
 class PricesController extends Controller
 {
-//    /**
-//     * Displays the price index page.
-//     *
-//     * @return Response
-//     */
-//    public function actionProductIndex(): Response
-//    {
-//        $plugin = Plugin::getInstance();
-//        $dashboardUrl = $plugin->dashboardUrl;
-//        $mode = $plugin->stripeMode;
-//
-//        $newProductUrl = "{$dashboardUrl}/{$mode}/prices/create";
-//
-//        return $this->renderTemplate('stripe/prices/_index', compact('newProductUrl'));
-//    }
-
     /**
      * Renders the meta card HTML that shows when editing Product element in the CP.
      *

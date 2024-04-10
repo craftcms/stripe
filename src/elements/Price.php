@@ -8,26 +8,20 @@ use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\db\Query;
 use craft\db\Table as CraftTable;
-use craft\elements\ElementCollection;
 use craft\elements\User;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\stripe\db\Table;
 use craft\stripe\Plugin;
-use craft\stripe\elements\conditions\products\ProductCondition;
 use craft\stripe\elements\db\PriceQuery;
 use craft\stripe\helpers\Price as PriceHelper;
 use craft\stripe\records\Price as PriceRecord;
 use craft\stripe\web\assets\stripecp\StripeCpAsset;
-use craft\web\CpScreenResponseBehavior;
-use yii\helpers\Html as HtmlHelper;
-use yii\web\Response;
 
 /**
  * Price element type
@@ -75,7 +69,7 @@ class Price extends Element implements NestedElementInterface
      * @var Product|null Product
      * @see getProduct()
      */
-    private ?Product $_product;
+    private ?Product $_product = null;
 
 
     // Methods
@@ -198,14 +192,6 @@ class Price extends Element implements NestedElementInterface
         return Craft::createObject(PriceQuery::class, [static::class]);
     }
 
-//    /**
-//     * @inheritdoc
-//     */
-//    public static function createCondition(): ElementConditionInterface
-//    {
-//        return Craft::createObject(ProductCondition::class, [static::class]);
-//    }
-
     /**
      * @inheritdoc
      */
@@ -223,19 +209,6 @@ class Price extends Element implements NestedElementInterface
         Craft::$app->getView()->registerAssetBundle(StripeCpAsset::class);
         $priceCard = PriceHelper::renderCardHtml($this);
         return $priceCard . parent::getSidebarHtml($static);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected static function defineSources(string $context): array
-    {
-        return [/*
-            [
-                'key' => '*',
-                'label' => Craft::t('stripe', 'All prices'),
-            ],
-        */];
     }
 
     /**
@@ -287,57 +260,6 @@ class Price extends Element implements NestedElementInterface
         ];
     }
 
-//    /**
-//     * @inheritdoc
-//     */
-//    public function getUriFormat(): ?string
-//    {
-//        return Plugin::getInstance()->getSettings()->uriFormat;
-//    }
-//
-//    /**
-//     * @inheritdoc
-//     */
-//    protected function previewTargets(): array
-//    {
-//        $previewTargets = [];
-//        $url = $this->getUrl();
-//        if ($url) {
-//            $previewTargets[] = [
-//                'label' => Craft::t('app', 'Primary {type} page', [
-//                    'type' => self::lowerDisplayName(),
-//                ]),
-//                'url' => $url,
-//            ];
-//        }
-//        return $previewTargets;
-//    }
-
-//    /**
-//     * @inheritdoc
-//     */
-//    protected function route(): array|string|null
-//    {
-//        if (!$this->previewing && $this->getStatus() != self::STATUS_LIVE) {
-//            return null;
-//        }
-//
-//        $settings = Plugin::getInstance()->getSettings();
-//
-//        if ($settings->uriFormat) {
-//            return [
-//                'templates/render', [
-//                    'template' => $settings->template,
-//                    'variables' => [
-//                        'product' => $this,
-//                    ],
-//                ],
-//            ];
-//        }
-//
-//        return null;
-//    }
-
     public function canView(User $user): bool
     {
         if (parent::canView($user)) {
@@ -355,15 +277,6 @@ class Price extends Element implements NestedElementInterface
         // todo: implement user permissions
         return $user->can('savePrices');
     }
-
-//    public function canDuplicate(User $user): bool
-//    {
-//        if (parent::canDuplicate($user)) {
-//            return true;
-//        }
-//        // todo: implement user permissions
-//        return $user->can('saveProducts');
-//    }
 
     public function canDelete(User $user): bool
     {
@@ -394,14 +307,6 @@ class Price extends Element implements NestedElementInterface
     protected function cpEditUrl(): ?string
     {
         return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getPostEditUrl(): ?string
-    {
-        return UrlHelper::cpUrl('stripe/prices');
     }
 
     /**
@@ -497,26 +402,11 @@ class Price extends Element implements NestedElementInterface
     {
         switch ($attribute) {
             case 'stripeEdit':
-                return HtmlHelper::a('', $this->getStripeEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]);
+                return Html::a('', $this->getStripeEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]);
             case 'stripeStatus':
                 return $this->getStripeStatusHtml();
             case 'stripeId':
                 return $this->$attribute;
-//            case 'options':
-//                return collect($this->getOptions())->map(function($option) {
-//                    return HtmlHelper::tag('span', $option['name'], [
-//                        'title' => $option['name'] . ' option values: ' . collect($option['values'])->join(', '),
-//                    ]);
-//                })->join(',&nbsp;');
-//            case 'tags':
-//                return collect($this->getTags())->map(function($tag) {
-//                    return HtmlHelper::tag('div', $tag, [
-//                        'style' => 'margin-bottom: 2px;',
-//                        'class' => 'token',
-//                    ]);
-//                })->join('&nbsp;');
-//            case 'variants':
-//                return collect($this->getVariants())->pluck('title')->map(fn($title) => StringHelper::toTitleCase($title))->join(',&nbsp;');
             default:
             {
                 return parent::attributeHtml($attribute);
@@ -531,9 +421,7 @@ class Price extends Element implements NestedElementInterface
      */
     public function getStripeEditUrl(): string
     {
-        $dashboardUrl = Plugin::getInstance()->dashboardUrl;
-        $mode = Plugin::getInstance()->stripeMode;
-        return "{$dashboardUrl}/{$mode}/prices/{$this->stripeId}";
+        return Plugin::getInstance()->stripeBaseUrl . "/prices/{$this->stripeId}";
     }
 
     /**

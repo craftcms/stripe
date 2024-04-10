@@ -2,7 +2,6 @@
 
 namespace craft\stripe\services;
 
-use Craft;
 use craft\db\Query;
 use craft\helpers\Json;
 use craft\stripe\db\Table;

@@ -2,7 +2,6 @@
 
 namespace craft\stripe\elements\db;
 
-use Craft;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
@@ -23,14 +22,6 @@ class ProductQuery extends ElementQuery
      */
     public mixed $stripeStatus = null;
 
-//    public mixed $handle = null;
-//    public mixed $productType = null;
-//    public mixed $publishedScope = null;
-//    public mixed $tags = null;
-//    public mixed $vendor = null;
-//    public mixed $images = null;
-//    public mixed $options = null;
-
     /**
      * @inheritdoc
      */
@@ -49,24 +40,6 @@ class ProductQuery extends ElementQuery
         parent::__construct($elementType, $config);
     }
 
-//    /**
-//     * Narrows the query results based on the Stripe product type
-//     */
-//    public function productType(mixed $value): self
-//    {
-//        $this->productType = $value;
-//        return $this;
-//    }
-
-//    /**
-//     * Narrows the query results based on the Stripe product type
-//     */
-//    public function publishedScope(mixed $value): self
-//    {
-//        $this->publishedScope = $value;
-//        return $this;
-//    }
-
     /**
      * Narrows the query results based on the Stripe status
      */
@@ -75,33 +48,6 @@ class ProductQuery extends ElementQuery
         $this->stripeStatus = $value;
         return $this;
     }
-
-//    /**
-//     * Narrows the query results based on the Stripe product handle
-//     */
-//    public function handle(mixed $value): self
-//    {
-//        $this->handle = $value;
-//        return $this;
-//    }
-
-//    /**
-//     * Narrows the query results based on the Stripe product vendor
-//     */
-//    public function vendor(mixed $value): self
-//    {
-//        $this->vendor = $value;
-//        return $this;
-//    }
-
-//    /**
-//     * Narrows the query results based on the Stripe product tags
-//     */
-//    public function tags(mixed $value): self
-//    {
-//        $this->tags = $value;
-//        return $this;
-//    }
 
     /**
      * Narrows the query results based on the Stripe product ID
@@ -194,37 +140,13 @@ class ProductQuery extends ElementQuery
             'stripe_productdata.data',
         ]);
 
-        //$t = $this->query->getRawSql();
-        //$t1 = $this->subQuery->getRawSql();
-
-
         if (isset($this->stripeId)) {
             $this->subQuery->andWhere(Db::parseParam('stripe_productdata.stripeId', $this->stripeId));
         }
-//
-//        if (isset($this->productType)) {
-//            $this->subQuery->andWhere(Db::parseParam('stripe_productdata.productType', $this->productType));
-//        }
-//
-//        if (isset($this->publishedScope)) {
-//            $this->subQuery->andWhere(Db::parseParam('stripe_productdata.publishedScope', $this->publishedScope));
-//        }
-//
+
         if (isset($this->stripeStatus)) {
             $this->subQuery->andWhere(Db::parseParam('stripe_productdata.stripeStatus', $this->stripeStatus));
         }
-//
-//        if (isset($this->handle)) {
-//            $this->subQuery->andWhere(Db::parseParam('stripe_productdata.handle', $this->handle));
-//        }
-//
-//        if (isset($this->vendor)) {
-//            $this->subQuery->andWhere(Db::parseParam('stripe_productdata.vendor', $this->vendor));
-//        }
-//
-//        if (isset($this->tags)) {
-//            $this->subQuery->andWhere(Db::parseParam('stripe_productdata.tags', $this->tags));
-//        }
 
         return parent::beforePrepare();
     }

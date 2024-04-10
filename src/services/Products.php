@@ -8,7 +8,9 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
+use craft\stripe\elements\Product;
 use craft\stripe\elements\Product as ProductElement;
+use craft\stripe\elements\Subscription;
 use craft\stripe\events\StripeProductSyncEvent;
 use craft\stripe\records\ProductData as ProductDataRecord;
 use craft\stripe\Plugin;
@@ -75,9 +77,6 @@ class Products extends Component
      */
     public function createOrUpdateProduct(StripeProduct $product): bool
     {
-        // Expand any JSON-like properties:
-        //$metaFields = MetafieldsHelper::unpack($metafields);
-
         // Build our attribute set from the Stripe product data:
         $attributes = [
             'stripeId' => $product->id,
@@ -169,5 +168,36 @@ class Products extends Component
     public function handleDeletedFieldLayout(): void
     {
         Craft::$app->getFields()->deleteLayoutsByType(ProductElement::class);
+    }
+
+    /**
+     * Get all the products that belong to given subscription stripe id
+     *
+     * @param string|null $subscriptionId
+     * @return array|null
+     */
+    public function getProductsBySubscriptionId(?string $subscriptionId): array|null
+    {
+        if ($subscriptionId === null) {
+            return null;
+        }
+
+        // get subscription
+        $subscription = Subscription::find()->stripeId($subscriptionId)->one();
+
+        if ($subscription === null) {
+            return null;
+        }
+
+        // get product ids from the list of items
+        $productIds = array_map(fn($item) => $item['price']['product'], $subscription->data['items']['data']);
+
+        $products = [];
+        // get each product element by the stripeId
+        foreach ($productIds as $productId) {
+            $products[] = Product::find()->stripeId($productId)->one();
+        }
+
+        return $products;
     }
 }

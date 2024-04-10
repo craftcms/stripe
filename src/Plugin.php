@@ -9,7 +9,6 @@ use craft\elements\User;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
-use craft\helpers\App;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\services\Elements;
@@ -19,7 +18,6 @@ use craft\stripe\elements\Product;
 use craft\stripe\elements\Subscription;
 use craft\stripe\fieldlayoutelements\CustomersField;
 use craft\stripe\fieldlayoutelements\PricesField;
-use craft\stripe\fieldlayoutelements\StripeCustomersField;
 use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\models\Settings;
 use craft\stripe\services\Api;
@@ -80,6 +78,11 @@ class Plugin extends BasePlugin
      * @var string Stripe Dashboard URL
      */
     public string $dashboardUrl = 'https://dashboard.stripe.com';
+
+    /**
+     * @var string Stripe Base URL for all external links to Stripe
+     */
+    public string $stripeBaseUrl;
 
     public static function config(): array
     {
@@ -144,6 +147,7 @@ class Plugin extends BasePlugin
 
             // get stripe environment from the secret key
             $this->stripeMode = $this->getStripeMode();
+            $this->stripeBaseUrl = "$this->dashboardUrl/$this->stripeMode";
         });
     }
 

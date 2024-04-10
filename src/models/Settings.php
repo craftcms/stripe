@@ -4,6 +4,7 @@ namespace craft\stripe\models;
 
 use Craft;
 use craft\base\Model;
+use craft\models\FieldLayout;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
 use craft\stripe\elements\Subscription;
@@ -74,9 +75,9 @@ class Settings extends Model
     }
 
     /**
-     * @return \craft\models\FieldLayout|mixed
+     * @return FieldLayout
      */
-    public function getProductFieldLayout()
+    public function getProductFieldLayout(): FieldLayout
     {
         if (!isset($this->_productFieldLayout)) {
             $this->_productFieldLayout = Craft::$app->fields->getLayoutByType(Product::class);
@@ -86,18 +87,18 @@ class Settings extends Model
     }
 
     /**
-     * @param mixed $fieldLayout
+     * @param FieldLayout $fieldLayout
      * @return void
      */
-    public function setProductFieldLayout(mixed $fieldLayout): void
+    public function setProductFieldLayout(FieldLayout $fieldLayout): void
     {
         $this->_productFieldLayout = $fieldLayout;
     }
 
     /**
-     * @return \craft\models\FieldLayout|mixed
+     * @return FieldLayout
      */
-    public function getPriceFieldLayout()
+    public function getPriceFieldLayout(): FieldLayout
     {
         if (!isset($this->_priceFieldLayout)) {
             $this->_priceFieldLayout = Craft::$app->fields->getLayoutByType(Price::class);
@@ -107,18 +108,18 @@ class Settings extends Model
     }
 
     /**
-     * @param mixed $fieldLayout
+     * @param FieldLayout $fieldLayout
      * @return void
      */
-    public function setPriceFieldLayout(mixed $fieldLayout): void
+    public function setPriceFieldLayout(FieldLayout $fieldLayout): void
     {
         $this->_priceFieldLayout = $fieldLayout;
     }
 
     /**
-     * @return \craft\models\FieldLayout|mixed
+     * @return FieldLayout
      */
-    public function getSubscriptionFieldLayout()
+    public function getSubscriptionFieldLayout(): FieldLayout
     {
         if (!isset($this->_subscriptionFieldLayout)) {
             $this->_subscriptionFieldLayout = Craft::$app->fields->getLayoutByType(Subscription::class);
@@ -128,10 +129,10 @@ class Settings extends Model
     }
 
     /**
-     * @param mixed $fieldLayout
+     * @param FieldLayout $fieldLayout
      * @return void
      */
-    public function setSubscriptionFieldLayout(mixed $fieldLayout): void
+    public function setSubscriptionFieldLayout(FieldLayout $fieldLayout): void
     {
         $this->_subscriptionFieldLayout = $fieldLayout;
     }

@@ -4,7 +4,6 @@ namespace craft\stripe\services;
 
 use Craft;
 use craft\events\ConfigEvent;
-use craft\fieldlayoutelements\BaseNativeField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig;
@@ -12,7 +11,6 @@ use craft\models\FieldLayout;
 use craft\stripe\elements\Price as PriceElement;
 use craft\stripe\elements\Product as ProductElement;
 use craft\stripe\events\StripePriceSyncEvent;
-use craft\stripe\fieldlayoutelements\PricesField;
 use craft\stripe\records\PriceData as PriceDataRecord;
 use craft\stripe\Plugin;
 use Stripe\Price as StripePrice;
@@ -78,9 +76,6 @@ class Prices extends Component
      */
     public function createOrUpdatePrice(StripePrice $price): bool
     {
-        // Expand any JSON-like properties:
-        //$metaFields = MetafieldsHelper::unpack($metafields);
-
         // Build our attribute set from the Stripe price data:
         $attributes = [
             'stripeId' => $price->id,
@@ -116,7 +111,6 @@ class Prices extends Component
             ->one();
 
         if ($productElement) {
-            //$pricesField = $productElement->getFieldLayout()->getField(fn($field) => $field instanceof PricesField);
             $attributes['ownerId'] = $productElement->id;
             $attributes['primaryOwnerId'] = $productElement->id;
         }

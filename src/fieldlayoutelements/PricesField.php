@@ -9,12 +9,8 @@ namespace craft\stripe\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
 use craft\enums\ElementIndexViewMode;
 use craft\fieldlayoutelements\BaseNativeField;
-use craft\helpers\Cp;
-use craft\helpers\Html;
 use craft\stripe\elements\Product;
 use yii\base\InvalidArgumentException;
 

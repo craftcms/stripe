@@ -28,11 +28,7 @@ class ProductsController extends Controller
      */
     public function actionIndex(): Response
     {
-        $plugin = Plugin::getInstance();
-        $dashboardUrl = $plugin->dashboardUrl;
-        $mode = $plugin->stripeMode;
-
-        $newProductUrl = "{$dashboardUrl}/{$mode}/products/create";
+        $newProductUrl = Plugin::getInstance()->stripeBaseUrl . "/products/create";
 
         return $this->renderTemplate('stripe/products/_index', compact('newProductUrl'));
     }

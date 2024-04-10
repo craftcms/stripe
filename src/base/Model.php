@@ -9,7 +9,6 @@ namespace craft\stripe\base;
 
 use craft\base\Model as BaseModel;
 use craft\helpers\Json;
-use craft\stripe\Plugin;
 
 /**
  * Stripe base model

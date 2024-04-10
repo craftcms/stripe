@@ -20,6 +20,7 @@ use craft\stripe\web\assets\stripecp\StripeCpAsset;
 /**
  * Subscription element type
  *
+ * @property-read Product[]|null $products the products in this subscription
  */
 class Subscription extends Element
 {
@@ -54,9 +55,15 @@ class Subscription extends Element
     public ?string $stripeId = null;
 
     /**
- * @var array|null
- */
+     * @var array|null
+     */
     private ?array $_data = null;
+
+    /**
+     * @var Product[]|null Products
+     * @see getProducts()
+     */
+    private ?array $_products = null;
 
     // Methods
     // -------------------------------------------------------------------------
@@ -180,14 +187,6 @@ class Subscription extends Element
         return Craft::createObject(SubscriptionQuery::class, [static::class]);
     }
 
-//    /**
-//     * @inheritdoc
-//     */
-//    public static function createCondition(): ElementConditionInterface
-//    {
-//        return Craft::createObject(ProductCondition::class, [static::class]);
-//    }
-
     /**
      * @inheritdoc
      */
@@ -270,57 +269,6 @@ class Subscription extends Element
         ];
     }
 
-//    /**
-//     * @inheritdoc
-//     */
-//    public function getUriFormat(): ?string
-//    {
-//        return Plugin::getInstance()->getSettings()->productUriFormat;
-//    }
-
-//    /**
-//     * @inheritdoc
-//     */
-//    protected function previewTargets(): array
-//    {
-//        $previewTargets = [];
-//        $url = $this->getUrl();
-//        if ($url) {
-//            $previewTargets[] = [
-//                'label' => Craft::t('app', 'Primary {type} page', [
-//                    'type' => self::lowerDisplayName(),
-//                ]),
-//                'url' => $url,
-//            ];
-//        }
-//        return $previewTargets;
-//    }
-
-//    /**
-//     * @inheritdoc
-//     */
-//    protected function route(): array|string|null
-//    {
-//        if (!$this->previewing && $this->getStatus() != self::STATUS_LIVE) {
-//            return null;
-//        }
-//
-//        $settings = Plugin::getInstance()->getSettings();
-//
-//        if ($settings->productUriFormat) {
-//            return [
-//                'templates/render', [
-//                    'template' => $settings->productTemplate,
-//                    'variables' => [
-//                        'product' => $this,
-//                    ],
-//                ],
-//            ];
-//        }
-//
-//        return null;
-//    }
-
     public function canView(User $user): bool
     {
         if (parent::canView($user)) {
@@ -338,15 +286,6 @@ class Subscription extends Element
         // todo: implement user permissions
         return $user->can('saveSubscriptions');
     }
-
-//    public function canDuplicate(User $user): bool
-//    {
-//        if (parent::canDuplicate($user)) {
-//            return true;
-//        }
-//        // todo: implement user permissions
-//        return $user->can('saveSubscriptions');
-//    }
 
     public function canDelete(User $user): bool
     {
@@ -454,9 +393,7 @@ class Subscription extends Element
      */
     public function getStripeEditUrl(): string
     {
-        $dashboardUrl = Plugin::getInstance()->dashboardUrl;
-        $mode = Plugin::getInstance()->stripeMode;
-        return "{$dashboardUrl}/{$mode}/subscriptions/{$this->stripeId}";
+        return Plugin::getInstance()->stripeBaseUrl . "/subscriptions/{$this->stripeId}";
     }
 
     /**
@@ -492,5 +429,19 @@ class Subscription extends Element
     public function getData(): array
     {
         return $this->_data ?? [];
+    }
+
+    /**
+     * Gets products that belong to this subscription
+     *
+     * @return Product[]|null
+     */
+    public function getProducts(): array|null
+    {
+        if (!isset($this->_products)) {
+            $this->_products = Plugin::getInstance()->getProducts()->getProductsBySubscriptionId($this->stripeId);
+        }
+
+        return $this->_products;
     }
 }

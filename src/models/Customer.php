@@ -29,9 +29,7 @@ class Customer extends Model
      */
     public function getStripeEditUrl(): string
     {
-        $dashboardUrl = Plugin::getInstance()->dashboardUrl;
-        $mode = Plugin::getInstance()->stripeMode;
-        return "{$dashboardUrl}/{$mode}/customers/{$this->stripeId}";
+        return Plugin::getInstance()->stripeBaseUrl . "/customers/{$this->stripeId}";
     }
 
 //    /**

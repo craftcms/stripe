@@ -2,7 +2,6 @@
 
 namespace craft\stripe\elements\db;
 
-use Craft;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
@@ -146,10 +145,6 @@ class SubscriptionQuery extends ElementQuery
             'stripe_subscriptiondata.stripeStatus',
             'stripe_subscriptiondata.data',
         ]);
-
-        //$t = $this->query->getRawSql();
-        //$t1 = $this->subQuery->getRawSql();
-
 
         if (isset($this->stripeId)) {
             $this->subQuery->andWhere(Db::parseParam('stripe_subscriptiondata.stripeId', $this->stripeId));

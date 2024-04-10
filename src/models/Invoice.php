@@ -24,9 +24,7 @@ class Invoice extends Model
      */
     public function getStripeEditUrl(): string
     {
-        $dashboardUrl = Plugin::getInstance()->dashboardUrl;
-        $mode = Plugin::getInstance()->stripeMode;
-        return "{$dashboardUrl}/{$mode}/invoices/{$this->stripeId}";
+        return Plugin::getInstance()->stripeBaseUrl . "/invoices/{$this->stripeId}";
     }
 
 //    /**

@@ -28,11 +28,7 @@ class SubscriptionsController extends Controller
      */
     public function actionIndex(): Response
     {
-        $plugin = Plugin::getInstance();
-        $dashboardUrl = $plugin->dashboardUrl;
-        $mode = $plugin->stripeMode;
-
-        $newSubscriptionUrl = "{$dashboardUrl}/{$mode}/subscriptions/create";
+        $newSubscriptionUrl = Plugin::getInstance()->stripeBaseUrl . "/subscriptions/create";
 
         return $this->renderTemplate('stripe/subscriptions/_index', compact('newSubscriptionUrl'));
     }

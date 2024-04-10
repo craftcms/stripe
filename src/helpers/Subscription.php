@@ -41,6 +41,7 @@ class Subscription
             'cancelAt',
             'canceledAt',
             'endedAt',
+            'products',
         ];
 
         $title = Html::tag('h3', $subscription->title, [
@@ -115,6 +116,14 @@ class Subscription
                             $meta[Craft::t('stripe', 'Ended at')] =
                                 $formatter->asDatetime($stripeSubscription['ended_at'], Formatter::FORMAT_WIDTH_SHORT);
                         }
+                    case 'products':
+                        $products = $subscription->getProducts();
+                        $html = '<ul class="elements chips">';
+                        foreach ($products as $product) {
+                            $html .= '<li>' . Cp::elementChipHtml($product, ['size' => Cp::CHIP_SIZE_SMALL]) . '</li>';
+                        }
+                        $html .= '</ul>';
+                        $meta[Craft::t('stripe', 'Products')] = $html;
                 }
             }
         }
