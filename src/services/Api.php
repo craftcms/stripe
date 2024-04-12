@@ -20,7 +20,7 @@ class Api extends Component
     /**
      * @var string
      */
-    public const STRIPE_API_VERSION = '2023-10-16';
+    public const STRIPE_API_VERSION = '2024-04-10';
 
     /**
      * @var StripeClient|null
@@ -84,7 +84,7 @@ class Api extends Component
      */
     public function fetchAllCustomers(): array
     {
-        return $this->getAll('customers');
+        return $this->fetchAll('customers');
     }
 
     /**
