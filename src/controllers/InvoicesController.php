@@ -9,6 +9,7 @@ namespace craft\stripe\controllers;
 
 use Craft;
 use craft\db\Query;
+use craft\elements\User;
 use craft\helpers\AdminTable;
 use craft\helpers\UrlHelper;
 use craft\stripe\db\Table;
@@ -51,6 +52,8 @@ class InvoicesController extends Controller
     {
         $this->requireAcceptsJson();
 
+        $db = Craft::$app->getDb();
+
         $page = $this->request->getParam('page', 1);
         $limit = $this->request->getParam('per_page', 100);
         $search = $this->request->getParam('search');
@@ -67,7 +70,7 @@ class InvoicesController extends Controller
         if ($search) {
             $searchTerm = '%' . str_replace(' ', '%', $search) . '%';
 
-            if (Craft::$app->getDb()->getIsPgsql()) {
+            if ($db->getIsPgsql()) {
                 // TODO: TEST ME!!!!
                 $whereClause = [
                     'or',
@@ -95,25 +98,9 @@ class InvoicesController extends Controller
         $sqlQuery->limit($limit);
         $sqlQuery->offset($offset);
 
-        $result = $sqlQuery->all();
-
-        $tableData = [];
-        $formatter = Craft::$app->getFormatter();
-        foreach ($result as $item) {
-            $invoice = new Invoice();
-            $invoice->setAttributes($item, false);
-
-            $tableData[] = [
-                'id' => $invoice->stripeId,
-                'title' => Craft::t('site', $invoice->data['number']),
-                'amount' => $formatter->asCurrency($invoice->data['total'] / 100, $invoice->data['currency']),
-                'frequency' => '',
-                'customerEmail' => $invoice->data['customer_email'],
-                'due' => $invoice->data['due_date'] ? $formatter->asDatetime($invoice->data['due_date'], 'php:Y-m-d') : '',
-                'created' => $formatter->asDatetime($invoice->data['created'], $formatter::FORMAT_WIDTH_SHORT),
-                'url' => $invoice->getStripeEditUrl(),
-            ];
-        }
+        $invoicesService = Plugin::getInstance()->getInvoices();
+        $invoices = $invoicesService->populateInvoices($sqlQuery->all());
+        $tableData = $invoicesService->getTableData($invoices);
 
         return $this->asSuccess(data: [
             'pagination' => AdminTable::paginationLinks($page, $total, $limit),

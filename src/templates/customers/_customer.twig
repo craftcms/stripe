@@ -1,0 +1,61 @@
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+<h3>{{ 'Subscriptions'|t('stripe') }}</h3>
+<div id="subscriptions-vue-admin-table"></div>
+{#{% if subscriptions is empty %}
+    <p class="zilch">{{ 'No subscriptions'|t('stripe') }}</p>
+{% else %}
+
+    {% for subscription in subscriptions %}
+        <p>{{ subscription.stripeId }}</p>
+    {% endfor %}
+{% endif %}#}
+{#{{ subscriptions|raw }}#}
+
+<h3>{{ 'Invoices'|t('stripe') }}</h3>
+<div id="invoices-vue-admin-table"></div>
+
+{% js %}
+    var subscriptionColumns = [
+        { name: '__slot:title', title: Craft.t('stripe', 'Subscription No') },
+        { name: 'period', title: Craft.t('stripe', 'Current Period') },
+        { name: 'canceledAt', title: Craft.t('stripe', 'Canceled at') },
+        { name: 'endedAt', title: Craft.t('stripe', 'Ended at') },
+        { name: 'created', title: Craft.t('stripe', 'Created at') },
+        { name: 'products', title: Craft.t('stripe', 'Products') },
+    ];
+    new Craft.VueAdminTable({
+        actions: false,
+        checkboxes: false,
+        columns: subscriptionColumns,
+        fullPane: false,
+        container: '#subscriptions-vue-admin-table',
+        emptyMessage: Craft.t('stripe', 'No invoices exist yet.'),
+        padded: true,
+        tableData: {{ subscriptions|json_encode|raw }},
+        search: false,
+        perPage: 100,
+    });
+
+    var invoiceColumns = [
+    { name: '__slot:title', title: Craft.t('stripe', 'Invoice No') },
+    { name: 'amount', title: Craft.t('stripe', 'Amount') },
+    { name: 'frequency', title: Craft.t('stripe', 'Frequency') },
+    { name: 'customerEmail', title: Craft.t('stripe', 'Customer email') },
+    { name: 'due', title: Craft.t('stripe', 'Due') },
+    { name: 'created', title: Craft.t('stripe', 'Created') },
+    ];
+
+    new Craft.VueAdminTable({
+        actions: false,
+        checkboxes: false,
+        columns: invoiceColumns,
+        fullPane: false,
+        container: '#invoices-vue-admin-table',
+        emptyMessage: Craft.t('stripe', 'No invoices exist yet.'),
+        padded: true,
+        tableData: {{ invoices|json_encode|raw }},
+        search: false,
+        perPage: 100,
+    });
+{% endjs %}

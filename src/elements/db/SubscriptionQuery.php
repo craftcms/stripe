@@ -2,10 +2,14 @@
 
 namespace craft\stripe\elements\db;
 
+use Craft;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
+use craft\elements\User;
 use craft\helpers\Db;
 use craft\stripe\elements\Subscription;
+use craft\stripe\Plugin;
+use yii\db\Expression;
 
 /**
  * Subscription query
@@ -90,6 +94,34 @@ class SubscriptionQuery extends ElementQuery
     public function status(array|string|null $value): static
     {
         parent::status($value);
+        return $this;
+    }
+
+    public function user(User|int|string $value): static
+    {
+        if (is_numeric($value)) {
+            $user = Craft::$app->getUsers()->getUserById($value);
+        } elseif (is_string($value)) {
+            $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($value);
+        } elseif ($value instanceof User) {
+            $user = $value;
+        }
+
+        if (!empty($user)) {
+            // get stripe customers for this user
+            $customers = Plugin::getInstance()->getCustomers()->getCustomersByEmail($user->email);
+            $customerIds = "'" . implode("','", array_keys($customers)) . "'";
+
+            $db = Craft::$app->getDb();
+
+            if ($db->getIsPgsql()) {
+                // TODO: TEST ME!!!!
+                $this->where(new Expression(sprintf('data::customer" IN (%s)', $customerIds)));
+            } else {
+                $this->where(new Expression(sprintf('data->"$.customer" IN (%s)', $customerIds)));
+            }
+        }
+
         return $this;
     }
 

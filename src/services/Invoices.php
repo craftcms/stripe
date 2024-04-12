@@ -2,9 +2,9 @@
 
 namespace craft\stripe\services;
 
+use Craft;
 use craft\db\Query;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\stripe\db\Table;
 use craft\stripe\models\Invoice;
@@ -13,6 +13,7 @@ use craft\stripe\Plugin;
 use Stripe\Invoice as StripeInvoice;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
+use yii\db\Expression;
 
 /**
  * Invoices service
@@ -113,12 +114,7 @@ class Invoices extends Component
         // get invoices
         $invoices = [];
         foreach (array_keys($customers) as $customerId) {
-            $invoices = array_merge($invoices, ArrayHelper::where($this->_getAllInvoices(), 'data.customer', $customerId));
-        }
-
-
-        if (empty($invoices)) {
-            return [];
+            $invoices = array_merge($invoices, $this->getInvoicesByCustomerId($customerId));
         }
 
         return array_filter($invoices);
@@ -136,13 +132,61 @@ class Invoices extends Component
             return null;
         }
 
-        $invoice = ArrayHelper::where($this->_getAllInvoices(), 'stripeId', $stripeId);
+        $invoice = $this->_createInvoiceQuery()->where(['stripeId' => $stripeId])->one();
 
-        if (empty($invoice)) {
-            return null;
+        if (!empty($invoice)) {
+            $invoice = $this->populateInvoice($invoice);
         }
 
-        return $invoice[0];
+        return $invoice;
+    }
+
+    /**
+     * Gets invoices by customer's Stripe id
+     *
+     * @param string $customerId
+     * @return Invoice[]
+     */
+    public function getInvoicesByCustomerId(string $customerId): array
+    {
+        $invoices = $this->_createInvoiceQuery()
+            ->addSelect(new Expression('ssid.data->"$.customer" AS customerId'))
+            ->where(new Expression('ssid.data->"$.customer" = :customerId', ['customerId' => $customerId]))
+            ->all();
+
+        if (!empty($invoices)) {
+            $invoices = $this->populateInvoices($invoices);
+        }
+
+        return $invoices;
+    }
+
+    /**
+     * Returns array of invoices ready to display in the Vue Admin Table.
+     *
+     * @param array $invoices
+     * @return array
+     * @throws InvalidConfigException
+     */
+    public function getTableData(array $invoices): array
+    {
+        $tableData = [];
+        $formatter = Craft::$app->getFormatter();
+
+        foreach ($invoices as $invoice) {
+            $tableData[] = [
+                'id' => $invoice->stripeId,
+                'title' => Craft::t('site', $invoice->data['number']),
+                'amount' => $formatter->asCurrency($invoice->data['total'] / 100, $invoice->data['currency']),
+                'frequency' => '',
+                'customerEmail' => $invoice->data['customer_email'],
+                'due' => $invoice->data['due_date'] ? $formatter->asDatetime($invoice->data['due_date'], 'php:Y-m-d') : '',
+                'created' => $formatter->asDatetime($invoice->data['created'], $formatter::FORMAT_WIDTH_SHORT),
+                'url' => $invoice->getStripeEditUrl(),
+            ];
+        }
+
+        return $tableData;
     }
 
     /**
@@ -165,13 +209,13 @@ class Invoices extends Component
      *
      * @return Invoice[]
      */
-    private function _populateInvoices(array $results): array
+    public function populateInvoices(array $results): array
     {
         $invoices = [];
 
         foreach ($results as $result) {
             try {
-                $invoices[] = $this->_populateInvoice($result);
+                $invoices[] = $this->populateInvoice($result);
             } catch (InvalidConfigException) {
                 continue; // Just skip this
             }
@@ -185,7 +229,7 @@ class Invoices extends Component
      *
      * @return Invoice
      */
-    private function _populateInvoice(array $result): Invoice
+    public function populateInvoice(array $result): Invoice
     {
         $invoice = new Invoice();
         $invoice->setAttributes($result, false);
@@ -205,7 +249,7 @@ class Invoices extends Component
 
             if (!empty($invoices)) {
                 $this->_allInvoices = [];
-                $invoices = $this->_populateInvoices($invoices);
+                $invoices = $this->populateInvoices($invoices);
                 foreach ($invoices as $invoice) {
                     $this->_allInvoices[$invoice->stripeId] = $invoice;
                 }

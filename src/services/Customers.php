@@ -86,7 +86,18 @@ class Customers extends Component
      */
     public function getCustomersByEmail(?string $email = null): array
     {
-        return ArrayHelper::whereMultiple($this->_getAllCustomers(), ['email' => $email]);
+//        return ArrayHelper::whereMultiple($this->_getAllCustomers(), ['email' => $email]);
+        $customers = [];
+        $results = $this->_createCustomerQuery()->where(['sscd.email' => $email])->all();
+
+        if (!empty($results)) {
+            $results = $this->_populateCustomers($results);
+            foreach ($results as $result) {
+                $customers[$result->stripeId] = $result;
+            }
+        }
+
+        return $customers;
     }
 
     /**

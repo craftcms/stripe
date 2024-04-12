@@ -7,8 +7,10 @@ use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
 use craft\console\Controller;
 use craft\console\controllers\ResaveController;
+use craft\controllers\UsersController;
 use craft\elements\User;
 use craft\events\DefineConsoleActionsEvent;
+use craft\events\DefineEditUserScreensEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
@@ -19,7 +21,6 @@ use craft\services\Fields;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
 use craft\stripe\elements\Subscription;
-use craft\stripe\fieldlayoutelements\CustomersField;
 use craft\stripe\fieldlayoutelements\PricesField;
 use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\models\Settings;
@@ -114,6 +115,7 @@ class Plugin extends BasePlugin
             
             $this->registerElementTypes();
 //            $this->registerUtilityTypes();
+            $this->registerUserEditScreens();
             $this->registerFieldTypes();
             $this->registerFieldLayoutElements();
             $this->registerVariables();
@@ -290,6 +292,15 @@ class Plugin extends BasePlugin
         });
     }
 
+    private function registerUserEditScreens(): void
+    {
+        Event::on(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS, function (DefineEditUserScreensEvent $event) {
+            $event->screens['stripe'] = [
+                'label' => Craft::t('stripe', 'Stripe'),
+            ];
+        });
+    }
+
     /**
      * Register Field Types
      *
@@ -315,9 +326,6 @@ class Plugin extends BasePlugin
             switch ($fieldLayout->type) {
                 case Product::class:
                     $event->fields[] = PricesField::class;
-                    break;
-                case User::class:
-                    $event->fields[] = CustomersField::class;
                     break;
             }
         });
@@ -391,6 +399,9 @@ class Plugin extends BasePlugin
             $event->rules['stripe/subscriptions/<elementId:\\d+>'] = 'elements/edit';
 
             $event->rules['stripe/invoices'] = 'stripe/invoices/index';
+
+            $event->rules['myaccount/stripe'] = 'stripe/customers/index';
+            $event->rules['users/<userId:\\d+>/stripe'] = 'stripe/customers/index';
 
 //            $event->rules['stripe/sync-products'] = 'stripe/products/sync';
 //            $event->rules['stripe/webhooks'] = 'stripe/webhooks/edit';
