@@ -9,11 +9,9 @@ namespace craft\stripe\controllers;
 
 use Craft;
 use craft\db\Query;
-use craft\elements\User;
 use craft\helpers\AdminTable;
 use craft\helpers\UrlHelper;
 use craft\stripe\db\Table;
-use craft\stripe\models\Invoice;
 use craft\stripe\Plugin;
 use craft\web\Controller;
 use yii\db\Expression;
@@ -94,6 +92,12 @@ class InvoicesController extends Controller
                 ->andWhere($whereClause);
         }
 
+        if ($db->getIsPgsql()) {
+            $orderBy = new Expression("data::created desc");
+        } else {
+            $orderBy = new Expression('data->"$.created" desc');
+        }
+
         if (!empty($sort)) {
             $sort = $sort[0];
             $field = substr($sort['sortField'], 0, strpos($sort['sortField'], '|'));
@@ -102,9 +106,9 @@ class InvoicesController extends Controller
             } else {
                 $orderBy = new Expression('data->"$.' . $field . '" ' . $sort['direction']);
             }
-
-            $sqlQuery->orderBy($orderBy);
         }
+
+        $sqlQuery->orderBy($orderBy);
 
         $total = $sqlQuery->count();
 
