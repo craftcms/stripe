@@ -21,6 +21,6 @@ class ProductData extends ActiveRecord
 
     public function getProduct(): ActiveQueryInterface
     {
-        return $this->hasOne(Product::class, ['id' => 'stripeId']);
+        return $this->hasOne(Product::class, ['stripeId' => 'stripeId']);
     }
 }

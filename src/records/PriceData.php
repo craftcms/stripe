@@ -10,6 +10,7 @@ use yii\db\ActiveQueryInterface;
  * Price Data record
  *
  * @property string $stripeId
+ * @property string $productId
  * @property string $data
  */
 class PriceData extends ActiveRecord
@@ -21,6 +22,11 @@ class PriceData extends ActiveRecord
 
     public function getPrice(): ActiveQueryInterface
     {
-        return $this->hasOne(Price::class, ['id' => 'stripeId']);
+        return $this->hasOne(Price::class, ['stripeId' => 'stripeId']);
+    }
+
+    public function getProductData(): ActiveQueryInterface
+    {
+        return $this->hasOne(ProductData::class, ['stripeId' => 'productId']);
     }
 }

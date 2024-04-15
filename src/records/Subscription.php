@@ -27,6 +27,6 @@ class Subscription extends ActiveRecord
 
     public function getData(): ActiveQueryInterface
     {
-        return $this->hasOne(SubscriptionData::class, ['stripeId' => 'id']);
+        return $this->hasOne(SubscriptionData::class, ['stripeId' => 'stripeId']);
     }
 }

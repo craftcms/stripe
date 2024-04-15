@@ -10,6 +10,7 @@ use yii\db\ActiveQueryInterface;
  * Subscription Data record
  *
  * @property string $stripeId
+ * @property string $customerId
  * @property string $data
  */
 class SubscriptionData extends ActiveRecord
@@ -21,6 +22,11 @@ class SubscriptionData extends ActiveRecord
 
     public function getSubscription(): ActiveQueryInterface
     {
-        return $this->hasOne(Subscription::class, ['id' => 'stripeId']);
+        return $this->hasOne(Subscription::class, ['stripeId' => 'stripeId']);
+    }
+
+    public function getCustomerData(): ActiveQueryInterface
+    {
+        return $this->hasOne(CustomerData::class, ['stripeId' => 'customerId']);
     }
 }

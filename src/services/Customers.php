@@ -3,7 +3,6 @@
 namespace craft\stripe\services;
 
 use craft\db\Query;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\stripe\db\Table;
 use craft\stripe\models\Customer;
@@ -19,20 +18,23 @@ use yii\base\InvalidConfigException;
 class Customers extends Component
 {
     /**
-     * Memoized array of customers.
-     *
-     * @var Customer[]|null
-     */
-    private ?array $_allCustomers = null;
-
-    /**
      * Returns all customers
      *
      * @return Customer[]
      */
     public function getAllCustomers(): array
     {
-        return $this->_getAllCustomers();
+        $customers = [];
+        $results = $this->_createCustomerQuery()->all();
+
+        if (!empty($results)) {
+            $results = $this->_populateCustomers($results);
+            foreach ($results as $result) {
+                $customers[$result->stripeId] = $result;
+            }
+        }
+
+        return $customers;
     }
 
     /**
@@ -178,27 +180,5 @@ class Customers extends Component
         $invoice->setAttributes($result, false);
 
         return $invoice;
-    }
-
-    /**
-     * Get all customers memoized.
-     *
-     * @return array
-     */
-    private function _getAllCustomers(): array
-    {
-        if ($this->_allCustomers === null) {
-            $customers = $this->_createCustomerQuery()->all();
-
-            if (!empty($customers)) {
-                $this->_allCustomers = [];
-                $customers = $this->_populateCustomers($customers);
-                foreach ($customers as $customer) {
-                    $this->_allCustomers[$customer->stripeId] = $customer;
-                }
-            }
-        }
-
-        return $this->_allCustomers ?? [];
     }
 }

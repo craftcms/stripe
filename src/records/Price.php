@@ -28,6 +28,11 @@ class Price extends ActiveRecord
 
     public function getData(): ActiveQueryInterface
     {
-        return $this->hasOne(PriceData::class, ['stripeId' => 'id']);
+        return $this->hasOne(PriceData::class, ['stripeId' => 'stripeId']);
+    }
+
+    public function getProduct(): ActiveQueryInterface
+    {
+        return $this->hasOne(Product::class, ['id' => 'primaryOwnerId']);
     }
 }

@@ -64,7 +64,7 @@ class PaymentMethods extends Component
         // Build our attribute set from the Stripe payment method data:
         $attributes = [
             'stripeId' => $paymentMethod->id,
-            'title' => $paymentMethod->id,
+            'customerId' => $paymentMethod->customer,
             'data' => Json::decode($paymentMethod->toJSON()),
         ];
 

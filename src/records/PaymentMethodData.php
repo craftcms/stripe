@@ -10,6 +10,7 @@ use yii\db\ActiveQueryInterface;
  * Payment Method Data record
  *
  * @property string $stripeId
+ * @property string $customerId
  * @property string $data
  */
 class PaymentMethodData extends ActiveRecord
@@ -17,5 +18,10 @@ class PaymentMethodData extends ActiveRecord
     public static function tableName()
     {
         return Table::PAYMENTMETHODDATA;
+    }
+
+    public function getCustomerData(): ActiveQueryInterface
+    {
+        return $this->hasOne(CustomerData::class, ['stripeId' => 'customerId']);
     }
 }

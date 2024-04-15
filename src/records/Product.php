@@ -27,6 +27,11 @@ class Product extends ActiveRecord
 
     public function getData(): ActiveQueryInterface
     {
-        return $this->hasOne(ProductData::class, ['stripeId' => 'id']);
+        return $this->hasOne(ProductData::class, ['stripeId' => 'stripeId']);
+    }
+
+    public function getPrices(): ActiveQueryInterface
+    {
+        return $this->hasMany(Price::class, ['primaryOwnerId' => 'id']);
     }
 }
