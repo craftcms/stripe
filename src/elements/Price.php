@@ -264,24 +264,25 @@ class Price extends Element implements NestedElementInterface
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function canView(User $user): bool
     {
-        if (parent::canView($user)) {
-            return true;
-        }
-        // todo: implement user permissions
-        return $user->can('viewPrices');
+        return true;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function canSave(User $user): bool
     {
-        if (parent::canSave($user)) {
-            return true;
-        }
-        // todo: implement user permissions
-        return $user->can('savePrices');
+        return true;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function canDelete(User $user): bool
     {
         // We normally cant delete stripe elements, but we can if we are in a draft state.
@@ -290,11 +291,6 @@ class Price extends Element implements NestedElementInterface
         }
 
         return false;
-//        if (parent::canSave($user)) {
-//            return true;
-//        }
-//        // todo: implement user permissions
-//        return $user->can('deletePrices');
     }
 
     /**

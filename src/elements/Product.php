@@ -384,24 +384,25 @@ class Product extends Element
         return null;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function canView(User $user): bool
     {
-        if (parent::canView($user)) {
-            return true;
-        }
-        // todo: implement user permissions
-        return $user->can('viewProducts');
+        return true;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function canSave(User $user): bool
     {
-        if (parent::canSave($user)) {
-            return true;
-        }
-        // todo: implement user permissions
-        return $user->can('saveProducts');
+        return true;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function canDelete(User $user): bool
     {
         // We normally cant delete stripe elements, but we can if we are in a draft state.
@@ -410,11 +411,6 @@ class Product extends Element
         }
 
         return false;
-//        if (parent::canSave($user)) {
-//            return true;
-//        }
-//        // todo: implement user permissions
-//        return $user->can('deleteProducts');
     }
 
     /**
