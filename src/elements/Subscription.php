@@ -68,6 +68,12 @@ class Subscription extends Element
      */
     private ?array $_products = null;
 
+    /**
+     * @var Customer|null Customer
+     * @see getCustomer()
+     */
+    private ?Customer $_customer = null;
+
     // Methods
     // -------------------------------------------------------------------------
 
@@ -237,6 +243,9 @@ class Subscription extends Element
     {
         $sortOptions = parent::defineSortOptions();
 
+        unset($sortOptions['stripeEdit']);
+        unset($sortOptions['products']);
+
         $sortOptions['stripeId'] = [
             'label' => Craft::t('stripe', 'Stripe ID'),
             'orderBy' => 'stripestore_subscriptiondata.stripeId',
@@ -246,6 +255,12 @@ class Subscription extends Element
         $sortOptions['stripeStatus'] = [
             'label' => Craft::t('stripe', 'Stripe Status'),
             'orderBy' => 'stripestore_subscriptiondata.stripeStatus',
+            'defaultDir' => SORT_DESC,
+        ];
+
+        $sortOptions['customerEmail'] = [
+            'label' => Craft::t('stripe', 'Customer Email'),
+            'orderBy' => 'stripestore_customerdata.email',
             'defaultDir' => SORT_DESC,
         ];
 
@@ -386,7 +401,7 @@ class Subscription extends Element
             case 'products':
                 return Cp::elementPreviewHtml($this->getProducts());
             case 'customerEmail':
-                return $this->getCustomer()->email;
+                return $this->getCustomer() ? $this->getCustomer()->email : '';
             default:
                 return parent::attributeHtml($attribute);
         }
@@ -460,6 +475,17 @@ class Subscription extends Element
      */
     public function getCustomer(): Customer|null
     {
-        return Plugin::getInstance()->getCustomers()->getCustomerByStripeId($this->data['customer']);
+        return $this->_customer;
+    }
+
+    /**
+     * Sets the customer for the subscription element.
+     *
+     * @param Customer $customer
+     * @return void
+     */
+    public function setCustomer(Customer $customer): void
+    {
+        $this->_customer = $customer;
     }
 }

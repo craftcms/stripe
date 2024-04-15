@@ -8,6 +8,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\User;
 use craft\helpers\Db;
 use craft\stripe\elements\Subscription;
+use craft\stripe\models\Customer;
 use craft\stripe\Plugin;
 use yii\db\Expression;
 
@@ -97,6 +98,33 @@ class SubscriptionQuery extends ElementQuery
         return $this;
     }
 
+    /**
+     * Narrows the query results based on the User related to this {elements}.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | User with id of `1`.
+     * | `'test@test.com'` | User with email address of `test@test.com`.
+     * | `$user` | User element.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch subscriptions for userId 1 #}
+     * {% set {elements-var} = {twig-method}
+     *   .user(1)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch subscriptions for userId 1
+     * ${elements-var} = {element-class}::find()
+     *     ->user(1)
+     *     ->all();
+     * ```
+     */
     public function user(User|int|string $value): static
     {
         if (is_numeric($value)) {
@@ -172,10 +200,22 @@ class SubscriptionQuery extends ElementQuery
         $this->query->innerJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
         $this->subQuery->innerJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
 
+        $customerDataJoinTable = ['stripestore_customerdata' => '{{%stripestore_customerdata}}'];
+        $this->query->leftJoin(
+            $customerDataJoinTable,
+            "[[stripestore_customerdata.stripeId]] = [[stripestore_subscriptiondata.customerId]]"
+        );
+        $this->subQuery->leftJoin(
+            $customerDataJoinTable,
+            "[[stripestore_customerdata.stripeId]] = [[stripestore_subscriptiondata.customerId]]"
+        );
+
         $this->query->select([
             'stripestore_subscriptions.stripeId',
             'stripestore_subscriptiondata.stripeStatus',
             'stripestore_subscriptiondata.data',
+            'stripestore_customerdata.email AS customerEmail',
+            'stripestore_customerdata.data AS customerData',
         ]);
 
         if (isset($this->stripeId)) {
@@ -187,5 +227,27 @@ class SubscriptionQuery extends ElementQuery
         }
 
         return parent::beforePrepare();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function populate($rows): array
+    {
+        foreach ($rows as &$row) {
+            if (isset($row['customerData'])) {
+                $model = new Customer();
+                $model->setAttributes([
+                    'email' => $row['customerEmail'],
+                    'data' => $row['customerData'],
+                ], false);
+
+                $row['customer'] = $model;
+                unset($row['customerEmail']);
+                unset($row['customerData']);
+            }
+        }
+
+        return parent::populate($rows);
     }
 }
