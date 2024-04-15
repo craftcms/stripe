@@ -31,6 +31,7 @@ use craft\stripe\services\PaymentMethods;
 use craft\stripe\services\Prices;
 use craft\stripe\services\Products;
 use craft\stripe\services\Subscriptions;
+use craft\stripe\services\Webhook;
 use craft\stripe\web\twig\CraftVariableBehavior;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
@@ -101,6 +102,7 @@ class Plugin extends BasePlugin
                 'products' => ['class' => Products::class],
                 'subscriptions' => ['class' => Subscriptions::class],
                 'paymentMethods' => ['class' => PaymentMethods::class],
+                'webhook' => ['class' => Webhook::class],
             ],
         ];
     }
@@ -124,9 +126,9 @@ class Plugin extends BasePlugin
             if (!$request->getIsConsoleRequest()) {
                 if ($request->getIsCpRequest()) {
                     $this->registerCpRoutes();
-                } /*else {
+                } else {
                     $this->registerSiteRoutes();
-                }*/
+                }
             }
 //
             $projectConfigService = Craft::$app->getProjectConfig();
@@ -238,6 +240,17 @@ class Plugin extends BasePlugin
     public function getPaymentMethods(): PaymentMethods
     {
         return $this->get('paymentMethods');
+    }
+
+    /**
+     * Returns the Webhook service
+     *
+     * @return Webhook The Webhook service
+     * @throws InvalidConfigException
+     */
+    public function getWebhook(): Webhook
+    {
+        return $this->get('webhook');
     }
 
     /**
@@ -408,17 +421,15 @@ class Plugin extends BasePlugin
         });
     }
 
-//    /**
-//     * Registers the Site routes.
-//     *
-//     * @since 3.0
-//     */
-//    private function registerSiteRoutes(): void
-//    {
-//        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function(RegisterUrlRulesEvent $event) {
-//            $event->rules['stripe/webhook/handle'] = 'stripe/webhook/handle';
-//        });
-//    }
+    /**
+     * Registers the Site routes.
+     */
+    private function registerSiteRoutes(): void
+    {
+        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function(RegisterUrlRulesEvent $event) {
+            $event->rules['stripe/webhook/handle'] = 'stripe/webhook/handle';
+        });
+    }
 
     /**
      * @inheritdoc

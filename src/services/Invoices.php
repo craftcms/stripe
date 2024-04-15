@@ -117,6 +117,8 @@ class Invoices extends Component
             $invoices = array_merge($invoices, $this->getInvoicesByCustomerId($customerId));
         }
 
+        array_multisort(array_map(fn($invoice) => $invoice['data']['created'], $invoices), SORT_DESC, $invoices);
+
         return array_filter($invoices);
     }
 
@@ -176,8 +178,9 @@ class Invoices extends Component
         foreach ($invoices as $invoice) {
             $tableData[] = [
                 'id' => $invoice->stripeId,
-                'title' => Craft::t('site', $invoice->data['number']),
+                'title' => $invoice->data['number'] ?? Craft::t('stripe', 'Draft'),
                 'amount' => $formatter->asCurrency($invoice->data['total'] / 100, $invoice->data['currency']),
+                'stripeStatus' => $invoice->data['status'],
                 'frequency' => '',
                 'customerEmail' => $invoice->data['customer_email'],
                 'due' => $invoice->data['due_date'] ? $formatter->asDatetime($invoice->data['due_date'], 'php:Y-m-d') : '',
@@ -187,6 +190,21 @@ class Invoices extends Component
         }
 
         return $tableData;
+    }
+
+    /**
+     * Deletes invoice data by Stripe id.
+     *
+     * @param string $stripeId
+     * @return void
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function deleteInvoiceByStripeId(string $stripeId): void
+    {
+        if ($invoiceData = InvoiceDataRecord::find()->where(['stripeId' => $stripeId])->one()) {
+            $invoiceData->delete();
+        }
     }
 
     /**

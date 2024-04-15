@@ -33,5 +33,16 @@
             suggestEnvVars: true,
             autofocus: true,
         }) }}
+
+        {{ forms.autosuggestField({
+            first: true,
+            label: 'Endpoint Secret'|t('stripe'),
+            id: 'endpointSecret',
+            name: 'settings[endpointSecret]',
+            value: settings.endpointSecret,
+            errors: settings.getErrors('endpointSecret'),
+            suggestEnvVars: true,
+            autofocus: true,
+        }) }}
     </div>
 {% endblock %}

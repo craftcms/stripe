@@ -29,6 +29,11 @@ class Settings extends Model
     /**
      * @var string
      */
+    public string $endpointSecret = '';
+
+    /**
+     * @var string
+     */
     public string $productUriFormat = '';
 
     /**
@@ -69,6 +74,7 @@ class Settings extends Model
         return [
             'secretKey' => Craft::t('stripe', 'Stripe Secret Key'),
             'publicKey' => Craft::t('stripe', 'Stripe Public Key'),
+            'endpointSecret' => Craft::t('stripe', 'Stripe Endpoint Secret (webhooks)'),
             'productUriFormat' => Craft::t('stripe', 'Product URI format'),
             'productTemplate' => Craft::t('stripe', 'Product Template'),
         ];

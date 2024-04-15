@@ -57,6 +57,7 @@ class InvoicesController extends Controller
         $page = $this->request->getParam('page', 1);
         $limit = $this->request->getParam('per_page', 100);
         $search = $this->request->getParam('search');
+        $sort = $this->request->getParam('sort');
         $offset = ($page - 1) * $limit;
 
         $sqlQuery = (new Query())
@@ -91,6 +92,18 @@ class InvoicesController extends Controller
 
             $sqlQuery
                 ->andWhere($whereClause);
+        }
+
+        if (!empty($sort)) {
+            $sort = $sort[0];
+            $field = substr($sort['sortField'], 0, strpos($sort['sortField'], '|'));
+            if ($db->getIsPgsql()) {
+                $orderBy = new Expression("data::$field {$sort['direction']}");
+            } else {
+                $orderBy = new Expression('data->"$.' . $field . '" ' . $sort['direction']);
+            }
+
+            $sqlQuery->orderBy($orderBy);
         }
 
         $total = $sqlQuery->count();

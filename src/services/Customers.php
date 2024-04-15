@@ -101,6 +101,21 @@ class Customers extends Component
     }
 
     /**
+     * Deletes customer data by Stripe id.
+     *
+     * @param string $stripeId
+     * @return void
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function deleteCustomerByStripeId(string $stripeId): void
+    {
+        if ($customerData = CustomerDataRecord::find()->where(['stripeId' => $stripeId])->one()) {
+            $customerData->delete();
+        }
+    }
+
+    /**
      * Returns a Query object prepped for retrieving customers.
      *
      * @return Query The query object.

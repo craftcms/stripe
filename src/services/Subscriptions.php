@@ -209,4 +209,24 @@ class Subscriptions extends Component
 
         return $tableData;
     }
+
+    /**
+     * Deletes subscription by Stripe id.
+     *
+     * @param string $stripeId
+     * @return void
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function deleteSubscriptionByStripeId(string $stripeId): void
+    {
+        if ($stripeId) {
+            if ($subscription = SubscriptionElement::find()->stripeId($stripeId)->one()) {
+                Craft::$app->getElements()->deleteElement($subscription, false);
+            }
+            if ($subscriptionData = SubscriptionDataRecord::find()->where(['stripeId' => $stripeId])->one()) {
+                $subscriptionData->delete();
+            }
+        }
+    }
 }

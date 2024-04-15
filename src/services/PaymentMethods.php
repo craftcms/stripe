@@ -78,6 +78,21 @@ class PaymentMethods extends Component
     }
 
     /**
+     * Deletes payment method data by Stripe id.
+     *
+     * @param string $stripeId
+     * @return void
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function deletePaymentMethodByStripeId(string $stripeId): void
+    {
+        if ($paymentMethodData = PaymentMethodDataRecord::find()->where(['stripeId' => $stripeId])->one()) {
+            $paymentMethodData->delete();
+        }
+    }
+
+    /**
      * Returns a Query object prepped for retrieving payment methods.
      *
      * @return Query The query object.

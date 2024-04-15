@@ -180,8 +180,34 @@ class Prices extends Component
         Craft::$app->getFields()->deleteLayoutsByType(PriceElement::class);
     }
 
+    /**
+     * Returns price by Stripe id.
+     *
+     * @param string $stripeId
+     * @return PriceElement|null
+     */
     public function getPriceByStripeId(string $stripeId): ?PriceElement
     {
         return PriceElement::find()->stripeId($stripeId)->one();
+    }
+
+    /**
+     * Deletes price by Stripe id.
+     *
+     * @param string $stripeId
+     * @return void
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function deletePriceByStripeId(string $stripeId): void
+    {
+        if ($stripeId) {
+            if ($price = PriceElement::find()->stripeId($stripeId)->one()) {
+                Craft::$app->getElements()->deleteElement($price, false);
+            }
+            if ($priceData = PriceDataRecord::find()->where(['stripeId' => $stripeId])->one()) {
+                $priceData->delete();
+            }
+        }
     }
 }

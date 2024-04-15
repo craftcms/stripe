@@ -200,4 +200,24 @@ class Products extends Component
 
         return $products;
     }
+
+    /**
+     * Deletes product by Stripe id.
+     *
+     * @param string $stripeId
+     * @return void
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function deleteProductByStripeId(string $stripeId): void
+    {
+        if ($stripeId) {
+            if ($product = ProductElement::find()->stripeId($stripeId)->one()) {
+                Craft::$app->getElements()->deleteElement($product, true);
+            }
+            if ($productData = ProductDataRecord::find()->where(['stripeId' => $stripeId])->one()) {
+                $productData->delete();
+            }
+        }
+    }
 }

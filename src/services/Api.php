@@ -154,4 +154,14 @@ class Api extends Component
         $settings = Plugin::getInstance()->getSettings();
         return App::parseEnv($settings->secretKey);
     }
+
+    /**
+     * Get parsed endpoint secret
+     * @return string|null
+     */
+    public function getEndpointSecret(): ?string
+    {
+        $settings = Plugin::getInstance()->getSettings();
+        return App::parseEnv($settings->endpointSecret);
+    }
 }

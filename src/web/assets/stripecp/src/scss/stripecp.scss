@@ -79,3 +79,7 @@
     margin-right: var(--neg-padding);
   }
 }
+
+#subscriptions-vue-admin-table {
+  overflow: scroll;
+}

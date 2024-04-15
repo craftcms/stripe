@@ -63,13 +63,4 @@ class CustomersController extends Controller
 
         return $response;
     }
-
-    private function subscriptionsTableData($subscriptions): array
-    {
-        $data = [];
-
-        return $data;
-    }
-
-
 }
