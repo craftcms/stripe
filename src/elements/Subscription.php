@@ -13,6 +13,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use craft\stripe\models\Customer;
 use craft\stripe\Plugin;
 use craft\stripe\elements\db\SubscriptionQuery;
 use craft\stripe\helpers\Subscription as SubscriptionHelper;
@@ -260,7 +261,8 @@ class Subscription extends Element
             'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
-            'products' => ['label' => Craft::t('stripe', 'Products')]
+            'products' => ['label' => Craft::t('stripe', 'Products')],
+            'customerEmail' => ['label' => Craft::t('stripe', 'Customer Email')],
         ];
     }
 
@@ -270,8 +272,8 @@ class Subscription extends Element
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
-            'stripeId',
             'stripeStatus',
+            'customerEmail',
             'stripeEdit',
         ];
     }
@@ -387,10 +389,10 @@ class Subscription extends Element
                 return $this->$attribute;
             case 'products':
                 return Cp::elementPreviewHtml($this->getProducts());
+            case 'customerEmail':
+                return $this->getCustomer()->email;
             default:
-            {
                 return parent::attributeHtml($attribute);
-            }
         }
     }
 
@@ -452,5 +454,16 @@ class Subscription extends Element
         }
 
         return $this->_products;
+    }
+
+    /**
+     * Returns customer this subscription is related to.
+     *
+     * @return Customer|null
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function getCustomer(): Customer|null
+    {
+        return Plugin::getInstance()->getCustomers()->getCustomerByStripeId($this->data['customer']);
     }
 }

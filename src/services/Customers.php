@@ -79,14 +79,13 @@ class Customers extends Component
     }
 
     /**
-     * Returns a Customer by email address
+     * Returns Customer(s) by email address
      *
      * @param string|null $email
      * @return array
      */
     public function getCustomersByEmail(?string $email = null): array
     {
-//        return ArrayHelper::whereMultiple($this->_getAllCustomers(), ['email' => $email]);
         $customers = [];
         $results = $this->_createCustomerQuery()->where(['sscd.email' => $email])->all();
 
@@ -98,6 +97,23 @@ class Customers extends Component
         }
 
         return $customers;
+    }
+
+    /**
+     * Returns a Customer by their Stripe id
+     *
+     * @param string $stripeId
+     * @return Customer|null
+     */
+    public function getCustomerByStripeId(string $stripeId): Customer|null
+    {
+        $customer = $this->_createCustomerQuery()->where(['sscd.stripeId' => $stripeId])->one();
+
+        if (!empty($customer)) {
+            $customer = $this->_populateCustomer($customer);
+        }
+
+        return $customer;
     }
 
     /**

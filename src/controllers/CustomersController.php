@@ -56,7 +56,7 @@ class CustomersController extends Controller
 //        ]);
 
         $response->contentTemplate('stripe/customers/_customer', [
-            'subscriptions' => $subscriptionsService->getTableData($subscriptions),
+            'subscriptions' => $subscriptionsService->getTableData($subscriptions, true),
             'invoices' => $invoicesService->getTableData($invoices),
             //'tableDataEndpoint' => UrlHelper::actionUrl('stripe/invoices/table-data', ['userId' => $user->id]),
         ]);

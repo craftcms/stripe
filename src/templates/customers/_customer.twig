@@ -39,12 +39,12 @@
     });
 
     var invoiceColumns = [
-    { name: '__slot:title', title: Craft.t('stripe', 'Invoice No') },
-    { name: 'amount', title: Craft.t('stripe', 'Amount') },
-    { name: 'frequency', title: Craft.t('stripe', 'Frequency') },
-    { name: 'customerEmail', title: Craft.t('stripe', 'Customer email') },
-    { name: 'due', title: Craft.t('stripe', 'Due') },
-    { name: 'created', title: Craft.t('stripe', 'Created') },
+        { name: '__slot:title', title: Craft.t('stripe', 'Invoice No') },
+        { name: 'amount', title: Craft.t('stripe', 'Amount') },
+        { name: 'stripeStatus', title: Craft.t('stripe', 'Status') },
+        { name: 'due', title: Craft.t('stripe', 'Due') },
+        { name: 'frequency', title: Craft.t('stripe', 'Frequency') },
+        { name: 'created', title: Craft.t('stripe', 'Created') },
     ];
 
     new Craft.VueAdminTable({

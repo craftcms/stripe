@@ -177,7 +177,7 @@ class Subscriptions extends Component
      * @return array
      * @throws InvalidConfigException
      */
-    public function getTableData(array $subscriptions): array
+    public function getTableData(array $subscriptions, bool $useLocalLink = false): array
     {
         $tableData = [];
         $formatter = Craft::$app->getFormatter();
@@ -193,7 +193,7 @@ class Subscriptions extends Component
                 'canceledAt' => $formatter->asDatetime($subscription->data['canceled_at'], $formatter::FORMAT_WIDTH_SHORT),
                 'endedAt' => $formatter->asDatetime($subscription->data['ended_at'], $formatter::FORMAT_WIDTH_SHORT),
                 'created' => $formatter->asDatetime($subscription->data['created'], $formatter::FORMAT_WIDTH_SHORT),
-                'url' => $subscription->getStripeEditUrl(),
+                'url' => $useLocalLink ? $subscription->getCpEditUrl() : $subscription->getStripeEditUrl(),
             ];
 
             $products = $subscription->getProducts();
