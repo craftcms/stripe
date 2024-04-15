@@ -22,6 +22,7 @@ use craft\stripe\elements\db\PriceQuery;
 use craft\stripe\helpers\Price as PriceHelper;
 use craft\stripe\records\Price as PriceRecord;
 use craft\stripe\web\assets\stripecp\StripeCpAsset;
+use yii\base\InvalidConfigException;
 
 /**
  * Price element type
@@ -226,6 +227,13 @@ class Price extends Element implements NestedElementInterface
     {
         $sortOptions = parent::defineSortOptions();
 
+        unset($sortOptions['stripeEdit']);
+        unset($sortOptions['type']);
+        unset($sortOptions['unitPrice']);
+        unset($sortOptions['pricePerUnit']);
+        unset($sortOptions['interval']);
+        unset($sortOptions['currency']);
+
         $sortOptions['stripeId'] = [
             'label' => Craft::t('stripe', 'Stripe ID'),
             'orderBy' => 'stripestore_pricedata.stripeId',
@@ -246,6 +254,11 @@ class Price extends Element implements NestedElementInterface
         return [
             'stripeId' => Craft::t('stripe', 'Stripe ID'),
             'stripeEdit' => Craft::t('stripe', 'Stripe Edit'),
+            'type' => Craft::t('stripe', 'Type'),
+            'unitPrice' => Craft::t('stripe', 'Unit Price'),
+            'pricePerUnit' => Craft::t('stripe', 'Price per Unit'),
+            'interval' => Craft::t('stripe', 'Interval'),
+            'currency' => Craft::t('stripe', 'Currency'),
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
@@ -261,6 +274,8 @@ class Price extends Element implements NestedElementInterface
         return [
             'stripeId',
             'stripeStatus',
+            'type',
+            'unitPrice',
         ];
     }
 
@@ -400,18 +415,16 @@ class Price extends Element implements NestedElementInterface
      */
     protected function attributeHtml(string $attribute): string
     {
-        switch ($attribute) {
-            case 'stripeEdit':
-                return Html::a('', $this->getStripeEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]);
-            case 'stripeStatus':
-                return $this->getStripeStatusHtml();
-            case 'stripeId':
-                return $this->$attribute;
-            default:
-            {
-                return parent::attributeHtml($attribute);
-            }
-        }
+        return match ($attribute) {
+            'stripeEdit' => Html::a('', $this->getStripeEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]),
+            'stripeStatus' => $this->getStripeStatusHtml(),
+            'type' => $this->getData()['type'],
+            'pricePerUnit' => PriceHelper::asPricePerUnit($this->getData()),
+            'unitPrice' => PriceHelper::asUnitPrice($this->getData()),
+            'currency' => strtoupper($this->getData()['currency']),
+            'interval' => PriceHelper::getInterval($this->getData()['recurring']),
+            default => parent::attributeHtml($attribute),
+        };
     }
 
     /**
@@ -462,6 +475,7 @@ class Price extends Element implements NestedElementInterface
      * Gets the product this price belongs to
      *
      * @return Product|null
+     * @throws InvalidConfigException
      */
     public function getProduct(): Product|null
     {
