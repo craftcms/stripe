@@ -2,6 +2,7 @@
 
 namespace craft\stripe\elements\db;
 
+use craft\base\Element;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
@@ -34,7 +35,7 @@ class ProductQuery extends ElementQuery
     {
         // Default status
         if (!isset($config['status'])) {
-            $config['status'] = 'enabled';
+            $config['status'] = Element::STATUS_ENABLED;
         }
 
         parent::__construct($elementType, $config);

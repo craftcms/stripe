@@ -68,7 +68,6 @@ class Product
             'tax_code',
             'shippable',
             'attributes',
-            'unit_label',
             'description',
             'default_price',
         ];
@@ -84,20 +83,20 @@ class Product
                         switch ($key) {
                             case 'images':
                                 // despite it being called "images" it looks like you can only have one?
-                                $meta[Craft::t('stripe', $label)] = collect($product->data[$key])
+                                $meta[Craft::t('stripe', $label)] = collect($product->getData()[$key])
                                     ->map(function($img) {
                                         return Html::a(Html::img($img, ['width' => 64]), $img, ['target' => '_blank']);
                                     })
                                     ->join(' ');
                                 break;
                             case 'features':
-                                $meta[Craft::t('stripe', $label)] = collect($product->data[$key])
+                                $meta[Craft::t('stripe', $label)] = collect($value)
                                     ->pluck('name')
                                     ->filter()
                                     ->join(', ');
                                 break;
                             case 'metadata':
-                                $meta[Craft::t('stripe', $label)] = collect($product->data[$key])
+                                $meta[Craft::t('stripe', $label)] = collect($value)
                                     ->map(function($val, $i) {
                                         // todo: style me!
                                         return Html::beginTag('div', ['class' => 'fullwidth']) .
@@ -112,7 +111,7 @@ class Product
                                     Cp::elementChipHtml($product->defaultPrice, ['size' => Cp::CHIP_SIZE_SMALL]);
                                 break;
                             default:
-                                $meta[Craft::t('stripe', $label)] = collect($product->data[$key])
+                                $meta[Craft::t('stripe', $label)] = collect($value)
                                     ->join('; ');
                                 break;
                         }
@@ -121,8 +120,8 @@ class Product
             }
         }
 
-        $meta[Craft::t('stripe', 'Created at')] = $formatter->asDatetime($product->data['created'], Formatter::FORMAT_WIDTH_SHORT);
-        $meta[Craft::t('stripe', 'Updated at')] = $formatter->asDatetime($product->data['updated'], Formatter::FORMAT_WIDTH_SHORT);
+        $meta[Craft::t('stripe', 'Created at')] = $formatter->asDatetime($product->getData()['created'], Formatter::FORMAT_WIDTH_SHORT);
+        $meta[Craft::t('stripe', 'Updated at')] = $formatter->asDatetime($product->getData()['updated'], Formatter::FORMAT_WIDTH_SHORT);
 
         $metadataHtml = Cp::metadataHtml($meta);
 
@@ -134,7 +133,7 @@ class Product
         ]);
 
         // This is the date updated in the database which represents the last time it was updated from a Stripe webhook or sync.
-        $dateUpdated = DateTimeHelper::toDateTime($product->data['updated']);
+        $dateUpdated = DateTimeHelper::toDateTime($product->getData()['updated']);
         $now = new \DateTime();
         $diff = $now->diff($dateUpdated);
         $duration = DateTimeHelper::humanDuration($diff, false);

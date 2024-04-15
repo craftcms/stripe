@@ -506,18 +506,11 @@ class Product extends Element
      */
     protected function attributeHtml(string $attribute): string
     {
-        switch ($attribute) {
-            case 'stripeEdit':
-                return HtmlHelper::a('', $this->getStripeEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]);
-            case 'stripeStatus':
-                return $this->getStripeStatusHtml();
-            case 'stripeId':
-                return $this->$attribute;
-            default:
-            {
-                return parent::attributeHtml($attribute);
-            }
-        }
+        return match ($attribute) {
+            'stripeEdit' => HtmlHelper::a('', $this->getStripeEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]),
+            'stripeStatus' => $this->getStripeStatusHtml(),
+            default => parent::attributeHtml($attribute),
+        };
     }
 
 

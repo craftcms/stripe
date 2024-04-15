@@ -79,7 +79,7 @@ class Prices extends Component
         // Build our attribute set from the Stripe price data:
         $attributes = [
             'stripeId' => $price->id,
-            'title' => $price->id,
+            'title' => $price->nickname ?? $price->id,
             'stripeStatus' => $price->active ? PriceElement::STRIPE_STATUS_ACTIVE : PriceElement::STRIPE_STATUS_ARCHIVED,
             'productId' => $price->product,
             'data' => Json::decode($price->toJSON()),

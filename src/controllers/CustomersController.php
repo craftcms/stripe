@@ -48,7 +48,7 @@ class CustomersController extends Controller
         /** @var Response|CpScreenResponseBehavior $response */
         $response = $this->asEditUserScreen($user, 'stripe');
 
-        $subscriptions = Subscription::find()->user($user)->all();
+        $subscriptions = Subscription::find()->status(null)->user($user)->all();
         $invoices = $invoicesService->getInvoicesByUser($user);
 //        $subscriptions = Cp::elementIndexHtml(Subscription::class, [
 //            'criteria' => ['userId' => $user->id],

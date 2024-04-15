@@ -391,20 +391,13 @@ class Subscription extends Element
      */
     protected function attributeHtml(string $attribute): string
     {
-        switch ($attribute) {
-            case 'stripeEdit':
-                return Html::a('', $this->getStripeEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]);
-            case 'stripeStatus':
-                return $this->getStripeStatusHtml();
-            case 'stripeId':
-                return $this->$attribute;
-            case 'products':
-                return Cp::elementPreviewHtml($this->getProducts());
-            case 'customerEmail':
-                return $this->getCustomer() ? $this->getCustomer()->email : '';
-            default:
-                return parent::attributeHtml($attribute);
-        }
+        return match ($attribute) {
+            'stripeEdit' => Html::a('', $this->getStripeEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]),
+            'stripeStatus' => $this->getStripeStatusHtml(),
+            'products' => Cp::elementPreviewHtml($this->getProducts()),
+            'customerEmail' => $this->getCustomer() ? $this->getCustomer()->email : '',
+            default => parent::attributeHtml($attribute),
+        };
     }
 
 
