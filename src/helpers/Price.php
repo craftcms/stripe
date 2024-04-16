@@ -56,7 +56,7 @@ class Price
     {
         $unitPrice = self::asPriceAmount($stripePrice['unit_amount'], $stripePrice['currency']);
 
-        $interval = self::getInterval($stripePrice['recurring']);
+        $interval = self::getInterval($stripePrice);
         $pricePerUnit = self::asPricePerUnit($stripePrice);
 
         if (isset($stripePrice['custom_unit_amount'])) {
@@ -105,15 +105,15 @@ class Price
     /**
      * Returns the interval of the price.
      *
-     * @param array|null $recurring
+     * @param mixed $stripePrice
      * @return string
      */
-    public static function getInterval(?array $recurring): string
+    public static function getInterval(mixed $stripePrice): string
     {
-        if ($recurring === null) {
+        if ($stripePrice['recurring'] === null) {
             $interval = Craft::t('stripe', 'One-time');
         } else {
-            $interval = "Every {$recurring['interval_count']} {$recurring['interval']}";
+            $interval = "Every {$stripePrice['recurring']['interval_count']} {$stripePrice['recurring']['interval']}";
         }
 
         return $interval;
@@ -189,7 +189,7 @@ class Price
                         $meta[Craft::t('stripe', 'Currency')] = strtoupper($stripePrice['currency']);
                         break;
                     case 'interval':
-                        $meta[Craft::t('stripe', 'Interval')] = self::getInterval($stripePrice['recurring']);
+                        $meta[Craft::t('stripe', 'Interval')] = self::getInterval($stripePrice);
                         break;
                     case 'presetAmount':
                         if ($stripePrice['custom_unit_amount']) {

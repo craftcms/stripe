@@ -38,8 +38,7 @@ class WebhookController extends Controller
         $apiService = Plugin::getInstance()->getApi();
         $webhookService = Plugin::getInstance()->getWebhook();
         $client = $apiService->getClient();
-        //$endpointSecret = $apiService->getEndpointSecret();
-        $endpointSecret = 'whsec_19edca25a9457150ca9a8f52dab22ba54889f9156a8ac0afc2cada863fa739a0';
+        $endpointSecret = $apiService->getEndpointSecret();
 
         // verify
         $payload = @file_get_contents('php://input');

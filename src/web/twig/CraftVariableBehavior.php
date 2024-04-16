@@ -8,16 +8,11 @@
 namespace craft\stripe\web\twig;
 
 use Craft;
-use craft\db\ActiveQuery;
-use craft\db\Query;
 use craft\elements\db\ElementQueryInterface;
-use craft\stripe\elements\db\ProductQuery;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
 use craft\stripe\elements\Subscription;
-use craft\stripe\models\Invoice;
 use craft\stripe\Plugin;
-use craft\stripe\records\InvoiceData;
 use yii\base\Behavior;
 
 /**

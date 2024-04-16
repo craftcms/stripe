@@ -33,6 +33,7 @@ use craft\stripe\services\Products;
 use craft\stripe\services\Subscriptions;
 use craft\stripe\services\Webhook;
 use craft\stripe\web\twig\CraftVariableBehavior;
+use craft\stripe\web\twig\Extension;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use yii\base\Event;
@@ -121,6 +122,7 @@ class Plugin extends BasePlugin
             $this->registerFieldTypes();
             $this->registerFieldLayoutElements();
             $this->registerVariables();
+            $this->registerTwigExtension();
             $this->registerResaveCommands();
 
             if (!$request->getIsConsoleRequest()) {
@@ -353,6 +355,17 @@ class Plugin extends BasePlugin
             $variable = $event->sender;
             $variable->attachBehavior('stripe', CraftVariableBehavior::class);
         });
+    }
+
+    /**
+     * Register Stripe twig extension
+     */
+    private function registerTwigExtension(): void
+    {
+        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+            // Register the Twig extension
+            Craft::$app->getView()->registerTwigExtension(new Extension());
+        }
     }
 
     public function registerResaveCommands(): void
