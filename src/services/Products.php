@@ -77,22 +77,6 @@ class Products extends Component
      */
     public function createOrUpdateProduct(StripeProduct $product): bool
     {
-        // Build our attribute set from the Stripe product data:
-        $attributes = [
-            'stripeId' => $product->id,
-            'title' => $product->name,
-            'stripeStatus' => $product->active ? ProductElement::STRIPE_STATUS_ACTIVE : ProductElement::STRIPE_STATUS_ARCHIVED,
-            'data' => Json::decode($product->toJSON()),
-        ];
-
-        // Find the product data or create one
-        /** @var ProductDataRecord $productDataRecord */
-        $productDataRecord = ProductDataRecord::find()->where(['stripeId' => $product->id])->one() ?: new ProductDataRecord();
-
-        // Set attributes and save:
-        $productDataRecord->setAttributes($attributes, false);
-
-
         // Find the product element or create one
         /** @var ProductElement|null $productElement */
         $productElement = ProductElement::find()
@@ -104,6 +88,14 @@ class Products extends Component
             /** @var ProductElement $productElement */
             $productElement = new ProductElement();
         }
+
+        // Build our attribute set from the Stripe product data:
+        $attributes = [
+            'stripeId' => $product->id,
+            'title' => $product->name,
+            'stripeStatus' => $product->active ? ProductElement::STRIPE_STATUS_ACTIVE : ProductElement::STRIPE_STATUS_ARCHIVED,
+            'data' => Json::decode($product->toJSON()),
+        ];
 
         // Set attributes on the element to emulate it having been loaded with JOINed data:
         $productElement->setAttributes($attributes, false);
@@ -120,14 +112,21 @@ class Products extends Component
             return false;
         }
 
-        // if we're still processing, we can save the productDataRecord
-        $productDataRecord->save();
-
         if (!Craft::$app->getElements()->saveElement($productElement)) {
             Craft::error("Failed to synchronize Stripe product ID #{$product->id}.", 'stripe');
 
             return false;
         }
+
+        $attributes['productId'] = $productElement->id;
+
+        // Find the product data or create one
+        /** @var ProductDataRecord $productDataRecord */
+        $productDataRecord = ProductDataRecord::find()->where(['stripeId' => $product->id])->one() ?: new ProductDataRecord();
+        $productDataRecord->setAttributes($attributes, false);
+        $productDataRecord->save();
+
+
 
         return true;
     }

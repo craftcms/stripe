@@ -76,23 +76,6 @@ class Prices extends Component
      */
     public function createOrUpdatePrice(StripePrice $price): bool
     {
-        // Build our attribute set from the Stripe price data:
-        $attributes = [
-            'stripeId' => $price->id,
-            'title' => $price->nickname ?? $price->id,
-            'stripeStatus' => $price->active ? PriceElement::STRIPE_STATUS_ACTIVE : PriceElement::STRIPE_STATUS_ARCHIVED,
-            'productId' => $price->product,
-            'data' => Json::decode($price->toJSON()),
-        ];
-
-        // Find the price data or create one
-        /** @var PriceDataRecord $priceDataRecord */
-        $priceDataRecord = PriceDataRecord::find()->where(['stripeId' => $price->id])->one() ?: new PriceDataRecord();
-
-        // Set attributes and save:
-        $priceDataRecord->setAttributes($attributes, false);
-
-
         // Find the price element or create one
         /** @var PriceElement|null $priceElement */
         $priceElement = PriceElement::find()
@@ -105,13 +88,24 @@ class Prices extends Component
             $priceElement = new PriceElement();
         }
 
+        // Build our attribute set from the Stripe price data:
+        $attributes = [
+            //'productId' => $price->product,
+            'stripeId' => $price->id,
+            'title' => $price->nickname ?? $price->id,
+            'stripeStatus' => $price->active ? PriceElement::STRIPE_STATUS_ACTIVE : PriceElement::STRIPE_STATUS_ARCHIVED,
+            'data' => Json::decode($price->toJSON()),
+        ];
+
         // get the product for this price
         $productElement = ProductElement::find()
             ->stripeId($price->product)
             ->status(null)
+            //->with('data')
             ->one();
 
         if ($productElement) {
+            //$attributes['productDataId'] = $productElement->data->id;
             $attributes['ownerId'] = $productElement->id;
             $attributes['primaryOwnerId'] = $productElement->id;
         }
@@ -131,14 +125,19 @@ class Prices extends Component
             return false;
         }
 
-        // if we're still processing, we can save the priceDataRecord
-        $priceDataRecord->save();
-
         if (!Craft::$app->getElements()->saveElement($priceElement)) {
             Craft::error("Failed to synchronize Stripe price ID #{$price->id}.", 'stripe');
 
             return false;
         }
+
+        $attributes['priceId'] = $priceElement->id;
+
+        // Find the price data or create one
+        /** @var PriceDataRecord $priceDataRecord */
+        $priceDataRecord = PriceDataRecord::find()->where(['stripeId' => $price->id])->one() ?: new PriceDataRecord();
+        $priceDataRecord->setAttributes($attributes, false);
+        $priceDataRecord->save();
 
         return true;
     }

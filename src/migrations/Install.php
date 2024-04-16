@@ -35,102 +35,102 @@ class Install extends Migration
     {
         $this->archiveTableIfExists(Table::PRODUCTS);
         $this->createTable(Table::PRODUCTS, [
-            'id' => $this->integer()->notNull(),
+            'id' => $this->primaryKey(),
             'stripeId' => $this->string(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY([[id]])',
         ]);
 
         $this->archiveTableIfExists(Table::PRODUCTDATA);
         $this->createTable(Table::PRODUCTDATA, [
+            'id' => $this->primaryKey(),
+            'productId' => $this->integer()->notNull(),
             'stripeId' => $this->string()->notNull(),
             'stripeStatus' => $this->string()->notNull(),
             'data' => $this->json(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->string(),
-            'PRIMARY KEY([[stripeId]])',
         ]);
 
         $this->archiveTableIfExists(Table::PRICES);
         $this->createTable(Table::PRICES, [
-            'id' => $this->integer()->notNull(),
+            'id' => $this->primaryKey(),
             'primaryOwnerId' => $this->integer()->defaultValue(NULL),
             'stripeId' => $this->string(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY([[id]])',
         ]);
 
         $this->archiveTableIfExists(Table::PRICEDATA);
         $this->createTable(Table::PRICEDATA, [
+            'id' => $this->primaryKey(),
+            'priceId' => $this->integer()->notNull(),
+            //'productDataId' => $this->integer()->notNull(), //$this->string(),
             'stripeId' => $this->string(),
             'stripeStatus' => $this->string()->notNull(),
-            'productId' => $this->string(),
             'data' => $this->json(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->string(),
-            'PRIMARY KEY([[stripeId]])',
         ]);
 
 
         $this->archiveTableIfExists(Table::SUBSCRIPTIONS);
         $this->createTable(Table::SUBSCRIPTIONS, [
-            'id' => $this->integer()->notNull(),
+            'id' => $this->primaryKey(),
             'stripeId' => $this->string(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY([[id]])',
         ]);
 
         $this->archiveTableIfExists(Table::SUBSCRIPTIONDATA);
         $this->createTable(Table::SUBSCRIPTIONDATA, [
+            'id' => $this->primaryKey(),
+            'subscriptionId' => $this->integer()->notNull(),
             'stripeId' => $this->string()->notNull(),
             'stripeStatus' => $this->string()->notNull(),
-            'customerId' => $this->string(),
+            //'customerDataId' => $this->string(),
             'data' => $this->json(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->string(),
-            'PRIMARY KEY([[stripeId]])',
         ]);
 
         $this->archiveTableIfExists(Table::PAYMENTMETHODDATA);
         $this->createTable(Table::PAYMENTMETHODDATA, [
+            'id' => $this->primaryKey(),
             'stripeId' => $this->string()->notNull(),
-            'customerId' => $this->string(),
+            //'customerDataId' => $this->integer()->notNull(), //$this->string(),
             'data' => $this->json(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->string(),
-            'PRIMARY KEY([[stripeId]])',
         ]);
 
         $this->archiveTableIfExists(Table::CUSTOMERDATA);
         $this->createTable(Table::CUSTOMERDATA, [
+            'id' => $this->primaryKey(),
             'stripeId' => $this->string()->notNull(),
             'email' => $this->string()->notNull(),
             'data' => $this->json(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->string(),
-            'PRIMARY KEY([[stripeId]])',
         ]);
 
         $this->archiveTableIfExists(Table::INVOICEDATA);
         $this->createTable(Table::INVOICEDATA, [
+            'id' => $this->primaryKey(),
             'stripeId' => $this->string()->notNull(),
-            'customerId' => $this->string(),
+            //'customerDataId' => $this->integer()->notNull(), //$this->string(),
             'data' => $this->json(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->string(),
-            'PRIMARY KEY([[stripeId]])',
         ]);
     }
 
@@ -152,14 +152,14 @@ class Install extends Migration
      */
     public function addForeignKeys(): void
     {
-        $this->addForeignKey(null, Table::PRODUCTS, ['stripeId'], Table::PRODUCTDATA, ['stripeId'], 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, Table::PRODUCTDATA, ['productId'], Table::PRODUCTS, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::PRODUCTS, ['id'], CraftTable::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
 
         $this->addForeignKey(null, Table::PRICES, ['primaryOwnerId'], Table::PRODUCTS, ['id'], 'CASCADE', 'CASCADE');
-        $this->addForeignKey(null, Table::PRICES, ['stripeId'], Table::PRICEDATA, ['stripeId'], 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, Table::PRICEDATA, ['priceId'],Table::PRICES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::PRICES, ['id'], CraftTable::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
 
-        $this->addForeignKey(null, Table::SUBSCRIPTIONS, ['stripeId'], Table::SUBSCRIPTIONDATA, ['stripeId'], 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, Table::SUBSCRIPTIONDATA, ['subscriptionId'],Table::SUBSCRIPTIONS, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::SUBSCRIPTIONS, ['id'], CraftTable::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
 
 //        $this->addForeignKey(null, Table::INVOICEDATA, ['customerId'], Table::CUSTOMERDATA, ['stripeId'], 'SET NULL', 'CASCADE');

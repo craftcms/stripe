@@ -67,7 +67,7 @@ class Invoices extends Component
         // Build our attribute set from the Stripe payment method data:
         $attributes = [
             'stripeId' => $invoice->id,
-            'customerId' => $invoice->customer,
+            //'customerId' => $invoice->customer,
             'data' => Json::decode($invoice->toJSON()),
         ];
 

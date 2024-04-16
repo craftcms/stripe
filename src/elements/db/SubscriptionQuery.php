@@ -138,16 +138,12 @@ class SubscriptionQuery extends ElementQuery
         if (!empty($user)) {
             // get stripe customers for this user
             $customers = Plugin::getInstance()->getCustomers()->getCustomersByEmail($user->email);
-            $customerIds = "'" . implode("','", array_keys($customers)) . "'";
-
-            $db = Craft::$app->getDb();
-
-            if ($db->getIsPgsql()) {
-                // TODO: TEST ME!!!!
-                $this->where(new Expression(sprintf('data::customer" IN (%s)', $customerIds)));
-            } else {
-                $this->where(new Expression(sprintf('data->"$.customer" IN (%s)', $customerIds)));
-            }
+            $qb = Craft::$app->getDb()->getQueryBuilder();
+            $this->where([
+                'in',
+                $qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["customer"]),
+                array_keys($customers)]
+            );
         }
 
         return $this;
@@ -201,13 +197,15 @@ class SubscriptionQuery extends ElementQuery
         $this->subQuery->innerJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
 
         $customerDataJoinTable = ['stripestore_customerdata' => '{{%stripestore_customerdata}}'];
+        $qb = Craft::$app->getDb()->getQueryBuilder();
+
         $this->query->leftJoin(
             $customerDataJoinTable,
-            "[[stripestore_customerdata.stripeId]] = [[stripestore_subscriptiondata.customerId]]"
+            "[[stripestore_customerdata.stripeId]] = ".$qb->jsonExtract("[[$subscriptionDataTable.data]]", ["customer"])
         );
         $this->subQuery->leftJoin(
             $customerDataJoinTable,
-            "[[stripestore_customerdata.stripeId]] = [[stripestore_subscriptiondata.customerId]]"
+            "[[stripestore_customerdata.stripeId]] = ".$qb->jsonExtract("[[$subscriptionDataTable.data]]", ["customer"])
         );
 
         $this->query->select([
@@ -243,9 +241,10 @@ class SubscriptionQuery extends ElementQuery
                 ], false);
 
                 $row['customer'] = $model;
-                unset($row['customerEmail']);
-                unset($row['customerData']);
             }
+
+            unset($row['customerEmail']);
+            unset($row['customerData']);
         }
 
         return parent::populate($rows);

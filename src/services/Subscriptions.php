@@ -77,23 +77,6 @@ class Subscriptions extends Component
      */
     public function createOrUpdateSubscription(StripeSubscription $subscription): bool
     {
-        // Build our attribute set from the Stripe subscription data:
-        $attributes = [
-            'stripeId' => $subscription->id,
-            'title' => $subscription->id,
-            'stripeStatus' => $subscription->status,
-            'customerId' => $subscription->customer,
-            'data' => Json::decode($subscription->toJSON()),
-        ];
-
-        // Find the subscription data or create one
-        /** @var SubscriptionDataRecord $subscriptionDataRecord */
-        $subscriptionDataRecord = SubscriptionDataRecord::find()->where(['stripeId' => $subscription->id])->one() ?: new SubscriptionDataRecord();
-
-        // Set attributes and save:
-        $subscriptionDataRecord->setAttributes($attributes, false);
-
-
         // Find the subscription element or create one
         /** @var SubscriptionElement|null $subscriptionElement */
         $subscriptionElement = SubscriptionElement::find()
@@ -105,6 +88,15 @@ class Subscriptions extends Component
             /** @var SubscriptionElement $subscriptionElement */
             $subscriptionElement = new SubscriptionElement();
         }
+
+        // Build our attribute set from the Stripe subscription data:
+        $attributes = [
+            'stripeId' => $subscription->id,
+            'title' => $subscription->id,
+            'stripeStatus' => $subscription->status,
+            //'customerId' => $subscription->customer,
+            'data' => Json::decode($subscription->toJSON()),
+        ];
 
         // Set attributes on the element to emulate it having been loaded with JOINed data:
         $subscriptionElement->setAttributes($attributes, false);
@@ -121,14 +113,19 @@ class Subscriptions extends Component
             return false;
         }
 
-        // if we're still processing, we can save the subscriptionDataRecord
-        $subscriptionDataRecord->save();
-
         if (!Craft::$app->getElements()->saveElement($subscriptionElement)) {
             Craft::error("Failed to synchronize Stripe subscription ID #{$subscription->id}.", 'stripe');
 
             return false;
         }
+
+        $attributes['subscriptionId'] = $subscriptionElement->id;
+
+        // Find the subscription data or create one
+        /** @var SubscriptionDataRecord $subscriptionDataRecord */
+        $subscriptionDataRecord = SubscriptionDataRecord::find()->where(['stripeId' => $subscription->id])->one() ?: new SubscriptionDataRecord();
+        $subscriptionDataRecord->setAttributes($attributes, false);
+        $subscriptionDataRecord->save();
 
         return true;
     }
