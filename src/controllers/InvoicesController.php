@@ -50,8 +50,6 @@ class InvoicesController extends Controller
     {
         $this->requireAcceptsJson();
 
-        $db = Craft::$app->getDb();
-
         $page = $this->request->getParam('page', 1);
         $limit = $this->request->getParam('per_page', 100);
         $search = $this->request->getParam('search');
@@ -65,50 +63,26 @@ class InvoicesController extends Controller
             ])
             ->from([Table::INVOICEDATA]);
 
+        $qb = Craft::$app->getDb()->getQueryBuilder();
 
+        // searching
         if ($search) {
-            $searchTerm = '%' . str_replace(' ', '%', $search) . '%';
-
-            if ($db->getIsPgsql()) {
-                // TODO: TEST ME!!!!
-                $whereClause = [
-                    'or',
-                    // Search invoice number
-                    ['ILIKE', 'data::number', $searchTerm],
-                    // Search customer email
-                    ['ILIKE', 'data::customer_email', $searchTerm],
-                ];
-            } else {
-                $whereClause = [
-                    'or',
-                    // Search invoice number
-                    new Expression("JSON_SEARCH(`data`, 'all', '$searchTerm', NULL, '$.number')"),
-                    // Search customer email
-                    new Expression("JSON_SEARCH(`data`, 'all', '$searchTerm', NULL, '$.customer_email')"),
-                ];
-            }
-
-            $sqlQuery
-                ->andWhere($whereClause);
+            $sqlQuery->andWhere([
+                'or',
+                ['like', $qb->jsonExtract("[[stripestore_invoicedata.data]]", ["number"]), $search],
+                ['like', $qb->jsonExtract("[[stripestore_invoicedata.data]]", ["customer_email"]), $search],
+            ]);
         }
 
-        if ($db->getIsPgsql()) {
-            $orderBy = new Expression("data::created desc");
-        } else {
-            $orderBy = new Expression('data->"$.created" desc');
-        }
-
+        // ordering
+        $orderBy = [$qb->jsonExtract("[[stripestore_invoicedata.data]]", ["created"]) => SORT_DESC];
         if (!empty($sort)) {
             $sort = $sort[0];
             $field = substr($sort['sortField'], 0, strpos($sort['sortField'], '|'));
-            if ($db->getIsPgsql()) {
-                $orderBy = new Expression("data::$field {$sort['direction']}");
-            } else {
-                $orderBy = new Expression('data->"$.' . $field . '" ' . $sort['direction']);
-            }
+            $orderBy = [$qb->jsonExtract("[[stripestore_invoicedata.data]]", ["$field"]) => SORT_DESC];
         }
-
         $sqlQuery->orderBy($orderBy);
+
 
         $total = $sqlQuery->count();
 
