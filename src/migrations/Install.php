@@ -68,7 +68,6 @@ class Install extends Migration
         $this->createTable(Table::PRICEDATA, [
             'id' => $this->primaryKey(),
             'priceId' => $this->integer()->notNull(),
-            //'productDataId' => $this->integer()->notNull(), //$this->string(),
             'stripeId' => $this->string(),
             'stripeStatus' => $this->string()->notNull(),
             'data' => $this->json(),
@@ -93,7 +92,6 @@ class Install extends Migration
             'subscriptionId' => $this->integer()->notNull(),
             'stripeId' => $this->string()->notNull(),
             'stripeStatus' => $this->string()->notNull(),
-            //'customerDataId' => $this->string(),
             'data' => $this->json(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),

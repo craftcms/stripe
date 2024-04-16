@@ -2,9 +2,10 @@
 
 namespace craft\stripe\records;
 
+use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
 use craft\stripe\db\Table;
-use yii\db\ActiveQueryInterface;
+use craft\stripe\records\db\InvoiceQuery;
 
 /**
  * Invoice Data record
@@ -20,8 +21,13 @@ class InvoiceData extends ActiveRecord
         return Table::INVOICEDATA;
     }
 
-    public function getCustomerData(): ActiveQueryInterface
+//    public function getCustomerData(): ActiveQueryInterface
+//    {
+//        return $this->hasOne(CustomerData::class, ['stripeId' => 'customerId']);
+//    }
+
+    public static function find(): ActiveQuery
     {
-        return $this->hasOne(CustomerData::class, ['stripeId' => 'customerId']);
+        return new InvoiceQuery(static::class);
     }
 }

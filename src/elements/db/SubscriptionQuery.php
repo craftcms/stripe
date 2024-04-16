@@ -150,6 +150,37 @@ class SubscriptionQuery extends ElementQuery
     }
 
     /**
+     * Narrows the query results based on the Stripe Customer Id related to this {elements}.
+     *
+     * ```twig
+     * {# Fetch subscriptions for userId 1 #}
+     * {% set {elements-var} = {twig-method}
+     *   .customerId('cus_Ab12Cd34Ef56Gh')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch subscriptions for userId 1
+     * ${elements-var} = {element-class}::find()
+     *     ->customerId('cus_Ab12Cd34Ef56Gh')
+     *     ->all();
+     * ```
+     */
+    public function customerId(string $value): static
+    {
+        $customerId = trim($value);
+
+        if (!empty($customerId)) {
+            $qb = Craft::$app->getDb()->getQueryBuilder();
+            $this->where([
+                $qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["customer"]) => $customerId
+            ]);
+        }
+
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
     protected function statusCondition(string $status): mixed
@@ -212,6 +243,7 @@ class SubscriptionQuery extends ElementQuery
             'stripestore_subscriptions.stripeId',
             'stripestore_subscriptiondata.stripeStatus',
             'stripestore_subscriptiondata.data',
+            'stripestore_customerdata.stripeId AS customerStripeId',
             'stripestore_customerdata.email AS customerEmail',
             'stripestore_customerdata.data AS customerData',
         ]);
@@ -236,6 +268,7 @@ class SubscriptionQuery extends ElementQuery
             if (isset($row['customerData'])) {
                 $model = new Customer();
                 $model->setAttributes([
+                    'stripeId' => $row['customerStripeId'],
                     'email' => $row['customerEmail'],
                     'data' => $row['customerData'],
                 ], false);
@@ -243,6 +276,7 @@ class SubscriptionQuery extends ElementQuery
                 $row['customer'] = $model;
             }
 
+            unset($row['customerStripeId']);
             unset($row['customerEmail']);
             unset($row['customerData']);
         }

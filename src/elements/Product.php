@@ -12,6 +12,7 @@ use craft\elements\User;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\enums\PropagationMethod;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -312,11 +313,11 @@ class Product extends Element
         if ($handle == 'prices') {
             $map = (new Query())
                 ->select([
-                    'source' => 'ownerId',
+                    'source' => 'primaryOwnerId',
                     'target' => 'id',
                 ])
                 ->from([Table::PRICES])
-                ->where(['ownerId' => $sourceElementIds])
+                ->where(['primaryOwnerId' => $sourceElementIds])
                 ->all();
 
             return [
@@ -566,13 +567,13 @@ class Product extends Element
     public function getDefaultPrice(): Price|null
     {
         if (!isset($this->_defaultPrice)) {
-            $defaultPriceId = $this->getData()['default_price']['id'];
-
-            if (!$defaultPriceId) {
+            if ( $this->getData()['default_price'] === null) {
                 return null;
             }
 
-            $price = Plugin::getInstance()->getPrices()->getPriceByStripeId($defaultPriceId);
+            $price = $this->getPrices()
+                ->filter(fn(Price $price) => $price->stripeId === $this->getData()['default_price']['id'])
+                ->first();
 
             if (!$price) {
                 return null;
