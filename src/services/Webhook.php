@@ -84,8 +84,8 @@ class Webhook extends Component
             case 'invoice.deleted':
                 $plugin->getInvoices()->deleteInvoiceByStripeId($eventObject->id);
                 break;
-            default:
-                echo 'Received unknown event type ' . $event->type;
+//            default:
+//                echo 'Received unknown event type ' . $event->type;
         }
     }
 }

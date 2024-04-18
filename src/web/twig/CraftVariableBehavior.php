@@ -75,4 +75,22 @@ class CraftVariableBehavior extends Behavior
 
         return $query;
     }
+
+    /**
+     * @param array $lineItems
+     * @param string|null $customer
+     * @param string|null $successUrl
+     * @param string|null $cancelUrl
+     * @return string
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function stripeCheckoutUrl(
+        array $lineItems = [],
+        ?string $customer = null,
+        ?string $successUrl = null,
+        ?string $cancelUrl = null
+    ): string
+    {
+        return Plugin::getInstance()->getCheckout()->getCheckoutUrl($lineItems, $customer, $successUrl, $cancelUrl);
+    }
 }

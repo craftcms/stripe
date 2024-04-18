@@ -26,6 +26,7 @@ use craft\stripe\fieldlayoutelements\PricesField;
 use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\models\Settings;
 use craft\stripe\services\Api;
+use craft\stripe\services\Checkout;
 use craft\stripe\services\Customers;
 use craft\stripe\services\Invoices;
 use craft\stripe\services\PaymentMethods;
@@ -98,6 +99,7 @@ class Plugin extends BasePlugin
         return [
             'components' => [
                 'api' => ['class' => Api::class],
+                'checkout' => ['class' => Checkout::class],
                 'customers' => ['class' => Customers::class],
                 'invoices' => ['class' => Invoices::class],
                 'prices' => ['class' => Prices::class],
@@ -254,6 +256,17 @@ class Plugin extends BasePlugin
     public function getWebhook(): Webhook
     {
         return $this->get('webhook');
+    }
+
+    /**
+     * Returns the Checkout service
+     *
+     * @return Checkout The Checkout service
+     * @throws InvalidConfigException
+     */
+    public function getCheckout(): Checkout
+    {
+        return $this->get('checkout');
     }
 
     /**
