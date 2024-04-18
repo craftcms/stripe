@@ -8,7 +8,6 @@ use craft\base\Plugin as BasePlugin;
 use craft\console\Controller;
 use craft\console\controllers\ResaveController;
 use craft\controllers\UsersController;
-use craft\elements\User;
 use craft\events\DefineConsoleActionsEvent;
 use craft\events\DefineEditUserScreensEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
@@ -19,6 +18,7 @@ use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\services\Elements;
 use craft\services\Fields;
+use craft\services\Utilities;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
 use craft\stripe\elements\Subscription;
@@ -34,10 +34,11 @@ use craft\stripe\services\Prices;
 use craft\stripe\services\Products;
 use craft\stripe\services\Subscriptions;
 use craft\stripe\services\Webhook;
+use craft\stripe\utilities\Sync;
 use craft\stripe\web\twig\CraftVariableBehavior;
 use craft\stripe\web\twig\Extension;
-use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
+use craft\web\twig\variables\CraftVariable;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 
@@ -120,7 +121,7 @@ class Plugin extends BasePlugin
             $request = Craft::$app->getRequest();
             
             $this->registerElementTypes();
-//            $this->registerUtilityTypes();
+            $this->registerUtilityTypes();
             $this->registerUserEditScreens();
             $this->registerFieldTypes();
             $this->registerFieldLayoutElements();
@@ -291,21 +292,19 @@ class Plugin extends BasePlugin
         return $this->get('invoices');
     }
 
-//    /**
-//     * Registers the utilities.
-//     *
-//     * @since 3.0
-//     */
-//    private function registerUtilityTypes(): void
-//    {
-//        Event::on(
-//            Utilities::class,
-//            Utilities::EVENT_REGISTER_UTILITIES,
-//            function(RegisterComponentTypesEvent $event) {
-//                $event->types[] = Sync::class;
-//            }
-//        );
-//    }
+    /**
+     * Registers the utilities.
+     */
+    private function registerUtilityTypes(): void
+    {
+        Event::on(
+            Utilities::class,
+            Utilities::EVENT_REGISTER_UTILITIES,
+            function(RegisterComponentTypesEvent $event) {
+                $event->types[] = Sync::class;
+            }
+        );
+    }
 
     /**
      * Register the element types supplied by Stripe

@@ -1,0 +1,13 @@
+<h2>{{ "Stripe Sync"|t('stripe') }}</h2>
+{% import "_includes/forms" as forms %}
+
+<form method="POST">
+    {{ actionInput('') }}
+    {{ csrfInput() }}
+
+    <a class="btn submit formsubmit" data-icon="refresh"
+       data-action="stripe/sync/all"
+       data-confirm="{{ 'Are you sure you want run a complete sync of all Stripe Products, Prices, Subscriptions, Customers, Invoices and Payment Methods?'|t('stripe') }}">
+        {{ 'Sync all data'|t('stripe') }}
+    </a>
+</form>
