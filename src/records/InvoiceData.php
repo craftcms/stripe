@@ -25,9 +25,4 @@ class InvoiceData extends ActiveRecord
 //    {
 //        return $this->hasOne(CustomerData::class, ['stripeId' => 'customerId']);
 //    }
-
-    public static function find(): ActiveQuery
-    {
-        return new InvoiceQuery(static::class);
-    }
 }

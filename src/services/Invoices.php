@@ -21,20 +21,23 @@ use yii\db\Expression;
 class Invoices extends Component
 {
     /**
-     * Memoized array of invoices.
-     *
-     * @var Invoice[]|null
-     */
-    private ?array $_allInvoices = null;
-
-    /**
      * Returns all invoices
      *
      * @return Invoice[]
      */
     public function getAllInvoices(): array
     {
-        return $this->_getAllInvoices();
+        $invoices = [];
+        $results = $this->_createInvoiceQuery()->all();
+
+        if (!empty($results)) {
+            $results = $this->populateInvoices($results);
+            foreach ($results as $result) {
+                $invoices[$result->stripeId] = $result;
+            }
+        }
+
+        return $invoices;
     }
 
     /**
@@ -253,27 +256,5 @@ class Invoices extends Component
         $invoice->setAttributes($result, false);
 
         return $invoice;
-    }
-
-    /**
-     * Get all invoices memoized.
-     *
-     * @return array
-     */
-    private function _getAllInvoices(): array
-    {
-        if ($this->_allInvoices === null) {
-            $invoices = $this->_createInvoiceQuery()->all();
-
-            if (!empty($invoices)) {
-                $this->_allInvoices = [];
-                $invoices = $this->populateInvoices($invoices);
-                foreach ($invoices as $invoice) {
-                    $this->_allInvoices[$invoice->stripeId] = $invoice;
-                }
-            }
-        }
-
-        return $this->_allInvoices ?? [];
     }
 }
