@@ -7,6 +7,9 @@
 <h3>{{ 'Invoices'|t('stripe') }}</h3>
 <div id="invoices-vue-admin-table"></div>
 
+<h3>{{ 'Payment Methods'|t('stripe') }}</h3>
+<div id="payment-methods-vue-admin-table"></div>
+
 {% js %}
     var invoiceColumns = [
         { name: '__slot:title', title: Craft.t('stripe', 'Invoice No') },
@@ -27,6 +30,24 @@
         padded: true,
         tableData: {{ invoices|json_encode|raw }},
         search: false,
-        perPage: 100,
+    });
+
+    var paymentMethodColumns = [
+        { name: '__slot:title', title: Craft.t('stripe', 'Payment Method Id') },
+        { name: 'type', title: Craft.t('stripe', 'Type') },
+        { name: 'last4', title: Craft.t('stripe', 'Last 4 digits') },
+        { name: 'created', title: Craft.t('stripe', 'Created') },
+    ];
+
+    new Craft.VueAdminTable({
+        actions: false,
+        checkboxes: false,
+        columns: paymentMethodColumns,
+        fullPane: false,
+        container: '#payment-methods-vue-admin-table',
+        emptyMessage: Craft.t('stripe', 'No payment methods exist yet.'),
+        padded: true,
+        tableData: {{ paymentMethods|json_encode|raw }},
+        search: false,
     });
 {% endjs %}

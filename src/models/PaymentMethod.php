@@ -24,7 +24,7 @@ class PaymentMethod extends Model
      */
     public function getStripeEditUrl(): string
     {
-        return Plugin::getInstance()->stripeBaseUrl . "/payment_methods/{$this->stripeId}";
+        return Plugin::getInstance()->stripeBaseUrl . "/customers/{$this->getData()['customer']}";
     }
 
 //    /**

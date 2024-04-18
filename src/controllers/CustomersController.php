@@ -41,7 +41,7 @@ class CustomersController extends Controller
     {
         $this->requireCpRequest();
         $invoicesService = Plugin::getInstance()->getInvoices();
-        $subscriptionsService = Plugin::getInstance()->getSubscriptions();
+        $paymentMethodsService = Plugin::getInstance()->getPaymentMethods();
 
         $user = $this->editedUser($userId);
 
@@ -49,6 +49,7 @@ class CustomersController extends Controller
         $response = $this->asEditUserScreen($user, 'stripe');
 
         $invoices = $invoicesService->getInvoicesByUser($user);
+        $paymentMethods = $paymentMethodsService->getPaymentMethodsByUser($user);
         $subscriptions = Cp::elementIndexHtml(Subscription::class, [
             'context' => 'embedded-index',
             'jsSettings' => [
@@ -59,6 +60,7 @@ class CustomersController extends Controller
         $response->contentTemplate('stripe/customers/_customer', [
             'subscriptions' => $subscriptions,
             'invoices' => $invoicesService->getTableData($invoices),
+            'paymentMethods' => $paymentMethodsService->getTableData($paymentMethods),
             //'tableDataEndpoint' => UrlHelper::actionUrl('stripe/invoices/table-data', ['userId' => $user->id]),
         ]);
 
