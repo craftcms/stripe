@@ -169,46 +169,6 @@ class Subscriptions extends Component
     }
 
     /**
-     * Returns array of subscriptions ready to display in the Vue Admin Table.
-     *
-     * @param array $subscriptions
-     * @return array
-     * @throws InvalidConfigException
-     */
-    public function getTableData(array $subscriptions, bool $useLocalLink = false): array
-    {
-        $tableData = [];
-        $formatter = Craft::$app->getFormatter();
-
-        foreach ($subscriptions as $subscription) {
-            $data = [
-                'id' => $subscription->stripeId,
-                'title' => $subscription->stripeId,
-                'status' => $subscription->stripeStatus,
-                'period' => $formatter->asDatetime($subscription->data['current_period_start'], 'php:d M') .
-                    ' to ' .
-                    $formatter->asDatetime($subscription->data['current_period_end'], 'php:d M'),
-                'canceledAt' => $formatter->asDatetime($subscription->data['canceled_at'], $formatter::FORMAT_WIDTH_SHORT),
-                'endedAt' => $formatter->asDatetime($subscription->data['ended_at'], $formatter::FORMAT_WIDTH_SHORT),
-                'created' => $formatter->asDatetime($subscription->data['created'], $formatter::FORMAT_WIDTH_SHORT),
-                'url' => $useLocalLink ? $subscription->getCpEditUrl() : $subscription->getStripeEditUrl(),
-            ];
-
-            $products = $subscription->getProducts();
-            $html = '<ul class="elements chips">';
-            foreach ($products as $product) {
-                $html .= '<li>' . Cp::elementChipHtml($product, ['size' => Cp::CHIP_SIZE_SMALL]) . '</li>';
-            }
-            $html .= '</ul>';
-            $data['products'] = $html;
-
-            $tableData[] = $data;
-        }
-
-        return $tableData;
-    }
-
-    /**
      * Deletes subscription by Stripe id.
      *
      * @param string $stripeId

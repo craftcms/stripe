@@ -48,15 +48,16 @@ class CustomersController extends Controller
         /** @var Response|CpScreenResponseBehavior $response */
         $response = $this->asEditUserScreen($user, 'stripe');
 
-        $subscriptions = Subscription::find()->status(null)->user($user)->all();
         $invoices = $invoicesService->getInvoicesByUser($user);
-//        $subscriptions = Cp::elementIndexHtml(Subscription::class, [
-//            'criteria' => ['userId' => $user->id],
-//            'context' => 'embedded-index',
-//        ]);
+        $subscriptions = Cp::elementIndexHtml(Subscription::class, [
+            'context' => 'embedded-index',
+            'jsSettings' => [
+                'criteria' => ['userId' => $user->id],
+            ]
+        ]);
 
         $response->contentTemplate('stripe/customers/_customer', [
-            'subscriptions' => $subscriptionsService->getTableData($subscriptions, true),
+            'subscriptions' => $subscriptions,
             'invoices' => $invoicesService->getTableData($invoices),
             //'tableDataEndpoint' => UrlHelper::actionUrl('stripe/invoices/table-data', ['userId' => $user->id]),
         ]);
