@@ -78,8 +78,7 @@ class Subscription
             foreach ($properties as $property) {
                 switch ($property) {
                     case 'customer':
-                        // todo: change me to an element
-                        $meta[Craft::t('stripe', 'Customer')] = $stripeSubscription['customer'];
+                        $meta[Craft::t('stripe', 'Customer')] = Customer::getCustomerLink($stripeSubscription['customer']);
                         break;
                     case 'currentPeriod':
                         $meta[Craft::t('stripe', 'Current period')] =

@@ -77,7 +77,12 @@ class Product
                 $label = StringHelper::titleize(implode(' ', StringHelper::toWords($key, false, true)));
                 if (in_array($key, $dataAttributesToDisplay)) {
                     if (!is_array($value)) {
-                        $meta[Craft::t('stripe', $label)] = $value;
+                        if ($key === 'default_price') {
+                            $meta[Craft::t('stripe', $label)] =
+                                Cp::elementChipHtml($product->getDefaultPrice(), ['size' => Cp::CHIP_SIZE_SMALL]);
+                        } else {
+                            $meta[Craft::t('stripe', $label)] = $value;
+                        }
                     }
                     else {
                         switch ($key) {
@@ -105,10 +110,6 @@ class Product
                                             Html::endTag('div');
                                     })
                                     ->join(' ');
-                                break;
-                            case 'default_price':
-                                $meta[Craft::t('stripe', $label)] =
-                                    Cp::elementChipHtml($product->defaultPrice, ['size' => Cp::CHIP_SIZE_SMALL]);
                                 break;
                             default:
                                 $meta[Craft::t('stripe', $label)] = collect($value)

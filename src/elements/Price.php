@@ -234,15 +234,11 @@ class Price extends Element implements NestedElementInterface
         unset($sortOptions['interval']);
         unset($sortOptions['currency']);
 
+        $sortOptions['title'] = self::displayName();
+
         $sortOptions['stripeId'] = [
             'label' => Craft::t('stripe', 'Stripe ID'),
             'orderBy' => 'stripestore_pricedata.stripeId',
-            'defaultDir' => SORT_DESC,
-        ];
-
-        $sortOptions['stripeStatus'] = [
-            'label' => Craft::t('stripe', 'Stripe Status'),
-            'orderBy' => 'stripestore_pricedata.stripeStatus',
             'defaultDir' => SORT_DESC,
         ];
 

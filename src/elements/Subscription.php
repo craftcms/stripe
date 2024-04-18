@@ -246,22 +246,18 @@ class Subscription extends Element
         unset($sortOptions['stripeEdit']);
         unset($sortOptions['products']);
 
+        $sortOptions['title'] = self::displayName();
+
         $sortOptions['stripeId'] = [
             'label' => Craft::t('stripe', 'Stripe ID'),
-            'orderBy' => 'stripestore_subscriptiondata.stripeId',
-            'defaultDir' => SORT_DESC,
-        ];
-
-        $sortOptions['stripeStatus'] = [
-            'label' => Craft::t('stripe', 'Stripe Status'),
-            'orderBy' => 'stripestore_subscriptiondata.stripeStatus',
+            'orderBy' => 'stripeId',
             'defaultDir' => SORT_DESC,
         ];
 
         $sortOptions['customerEmail'] = [
             'label' => Craft::t('stripe', 'Customer Email'),
-            'orderBy' => 'stripestore_customerdata.email',
-            'defaultDir' => SORT_DESC,
+            'orderBy' => '[[stripestore_customerdata.email]]',
+            'defaultDir' => SORT_ASC,
         ];
 
         return $sortOptions;
@@ -270,8 +266,8 @@ class Subscription extends Element
     protected static function defineTableAttributes(): array
     {
         return [
-            'stripeId' => Craft::t('stripe', 'Stripe ID'),
-            'stripeEdit' => Craft::t('stripe', 'Stripe Edit'),
+            'stripeId' => ['label' => Craft::t('stripe', 'Stripe ID')],
+            'stripeEdit' => ['label' => Craft::t('stripe', 'Stripe Edit')],
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
@@ -287,7 +283,7 @@ class Subscription extends Element
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
-            'stripeStatus',
+            'stripeId',
             'customerEmail',
             'stripeEdit',
         ];

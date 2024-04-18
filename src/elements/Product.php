@@ -11,7 +11,10 @@ use craft\elements\NestedElementManager;
 use craft\elements\User;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\enums\CmsEdition;
 use craft\enums\PropagationMethod;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -234,6 +237,24 @@ class Product extends Element
     /**
      * @inheritdoc
      */
+    public function metaFieldsHtml(bool $static): string
+    {
+        /** @noinspection PhpUnhandledExceptionInspection */
+        Craft::$app->getView()->registerAssetBundle(StripeCpAsset::class);
+
+        $fields = [];
+
+        // Slug
+        $fields[] = $this->slugFieldHtml($static);
+
+        $fields[] = parent::metaFieldsHtml($static);
+
+        return implode("\n", $fields);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected static function defineSources(string $context): array
     {
         return [
@@ -259,15 +280,13 @@ class Product extends Element
     {
         $sortOptions = parent::defineSortOptions();
 
+        unset($sortOptions['stripeEdit']);
+
+        $sortOptions['title'] = self::displayName();
+
         $sortOptions['stripeId'] = [
             'label' => Craft::t('stripe', 'Stripe ID'),
-            'orderBy' => 'stripestore_productdata.stripeId',
-            'defaultDir' => SORT_DESC,
-        ];
-
-        $sortOptions['stripeStatus'] = [
-            'label' => Craft::t('stripe', 'Stripe Status'),
-            'orderBy' => 'stripestore_productdata.stripeStatus',
+            'orderBy' => 'stripeId',
             'defaultDir' => SORT_DESC,
         ];
 
@@ -277,8 +296,8 @@ class Product extends Element
     protected static function defineTableAttributes(): array
     {
         return [
-            'stripeId' => Craft::t('stripe', 'Stripe ID'),
-            'stripeEdit' => Craft::t('stripe', 'Stripe Edit'),
+            'stripeId' => ['label' => Craft::t('stripe', 'Stripe ID')],
+            'stripeEdit' => ['label' => Craft::t('stripe', 'Stripe Edit')],
             'slug' => ['label' => Craft::t('app', 'Slug')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
@@ -571,7 +590,7 @@ class Product extends Element
             }
 
             $price = $this->getPrices()
-                ->filter(fn(Price $price) => $price->stripeId === $this->getData()['default_price']['id'])
+                ->filter(fn(Price $price) => $price->stripeId === $this->getData()['default_price'])
                 ->first();
 
             if (!$price) {
