@@ -3,14 +3,21 @@
 namespace craft\stripe\elements\db;
 
 use Craft;
+use craft\base\Element;
+use craft\db\Table as CraftTable;
+use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
 use craft\elements\User;
 use craft\helpers\Db;
+use craft\stripe\db\Table;
+use craft\stripe\elements\Price;
 use craft\stripe\elements\Subscription;
 use craft\stripe\models\Customer;
 use craft\stripe\Plugin;
 use yii\db\Expression;
+use yii\db\QueryBuilder;
+use yii\db\Schema;
 
 /**
  * Subscription query
@@ -23,14 +30,101 @@ class SubscriptionQuery extends ElementQuery
     public mixed $stripeId = null;
 
     /**
-     * @var mixed
+     * @var mixed The user id of the subscriber
      */
-    public mixed $stripeStatus = null;
+    public mixed $userId = null;
+
+    /**
+     * @var mixed The user id of the subscriber
+     */
+    public mixed $userEmail = null;
+
+    /**
+     * @var mixed The Stripe Customer Id of the subscriber
+     */
+    public mixed $customerId = null;
+
+    /**
+     * @var mixed The subscription plan id
+     * @deprecated $priceId should be used instead
+     */
+    public mixed $planId = null;
+
+    /**
+     * @var mixed The subscription price id
+     */
+    public mixed $priceId = null;
+
+//    /**
+//     * @var mixed The gateway id
+//     */
+//    public mixed $gatewayId = null;
+//
+    /**
+     * @var mixed The id of the latest invoice that the subscription must be a part of.
+     */
+    public mixed $latestInvoiceId = null;
+
+    /**
+     * @var mixed The reference for subscription
+     * @deprecated $stripeId should be used instead
+     */
+    public mixed $reference = null;
+
+//    /**
+//     * @var mixed Number of trial days for the subscription
+//     */
+//    public mixed $trialDays = null;
+
+    /**
+     * @var bool|null Whether the subscription is currently on trial.
+     */
+    public ?bool $onTrial = null;
+
+    /**
+     * @var mixed Time of next payment for the subscription
+     */
+    public mixed $nextPaymentDate = null;
+
+    /**
+     * @var bool|null Whether the subscription is canceled
+     */
+    public ?bool $isCanceled = null;
+
+    /**
+     * @var bool|null Whether the subscription is suspended
+     */
+    public ?bool $isSuspended = null;
+
+    /**
+     * @var mixed The date the subscription ceased to be active
+     */
+    public mixed $dateSuspended = null;
+
+    /**
+     * @var bool|null Whether the subscription has started
+     */
+    public ?bool $hasStarted = null;
+
+    /**
+     * @var mixed The time the subscription was canceled
+     */
+    public mixed $dateCanceled = null;
+
+//    /**
+//     * @var bool|null Whether the subscription has expired
+//     */
+//    public ?bool $isExpired = null;
+
+//    /**
+//     * @var mixed The date the subscription ceased to be active
+//     */
+//    public mixed $dateExpired = null;
 
     /**
      * @inheritdoc
      */
-    protected array $defaultOrderBy = ['stripestore_subscriptiondata.stripeId' => SORT_ASC];
+    protected array $defaultOrderBy = ['stripestore_subscriptions.stripeId' => SORT_ASC];
 
     /**
      * @inheritdoc
@@ -39,19 +133,30 @@ class SubscriptionQuery extends ElementQuery
     {
         // Default status
         if (!isset($config['status'])) {
-            $config['status'] = 'enabled';
+            $config['status'] = Element::STATUS_ENABLED;
         }
 
         parent::__construct($elementType, $config);
     }
 
     /**
-     * Narrows the query results based on the Stripe status
+     * @inheritdoc
      */
-    public function stripeStatus(mixed $value): self
+    public function __set($name, $value)
     {
-        $this->stripeStatus = $value;
-        return $this;
+        switch ($name) {
+            case 'user':
+                $this->user($value);
+                break;
+            case 'plan':
+                $this->plan($value);
+                break;
+            case 'price':
+                $this->price($value);
+                break;
+            default:
+                parent::__set($name, $value);
+        }
     }
 
     /**
@@ -74,7 +179,7 @@ class SubscriptionQuery extends ElementQuery
      * | `'stripeScheduled'` | that are enabled, with a Scheduled Stripe Status.
      * | `'stripeCanceled'` | that are enabled, with a Canceled Stripe Status.
      * | `'disabled'` | that are disabled in Craft (Regardless of Stripe Status).
-     * | `['live', 'stripeScheduled']` | that are live or with an Scheduled Stripe Status.
+     * | `['live', 'stripeScheduled']` | that are live or with a Scheduled Stripe Status.
      *
      * ---
      *
@@ -95,6 +200,7 @@ class SubscriptionQuery extends ElementQuery
     public function status(array|string|null $value): static
     {
         parent::status($value);
+
         return $this;
     }
 
@@ -128,24 +234,106 @@ class SubscriptionQuery extends ElementQuery
     public function user(User|int|string $value): static
     {
         if (is_numeric($value)) {
+            //$this->userId = $value;
             $user = Craft::$app->getUsers()->getUserById($value);
+            $this->userEmail = $user->email;
         } elseif (is_string($value)) {
-            $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($value);
+            //$user = Craft::$app->getUsers()->getUserByUsernameOrEmail($value);
+            //$this->userId = $user->id;
+            $this->userEmail = $value;
         } elseif ($value instanceof User) {
-            $user = $value;
+            // $user = $value;
+            //$this->userId = $value->id;
+            $this->userEmail = $value->email;
         }
 
-        if (!empty($user)) {
-            // get stripe customers for this user
-            $customers = Plugin::getInstance()->getCustomers()->getCustomersByEmail($user->email);
-            $qb = Craft::$app->getDb()->getQueryBuilder();
-            $this->where([
-                'in',
-                $qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["customer"]),
-                array_keys($customers)]
-            );
-        }
+//        if (!empty($user)) {
+//            // get stripe customers for this user
+//            $customers = Plugin::getInstance()->getCustomers()->getCustomersByEmail($user->email);
+//            $qb = Craft::$app->getDb()->getQueryBuilder();
+//            // todo: you might hit a limit of 65sth k with 'in'
+//            // so maybe change that to a subquery
+//            $this->subQuery->andWhere([
+//                'in',
+//                $qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["customer"]),
+//                array_keys($customers)]
+//            );
+//        }
 
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the subscriptions’ user accounts’ IDs.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | for a user account with an ID of 1.
+     * | `[1, 2]` | for user accounts with an ID of 1 or 2.
+     * | `['not', 1, 2]` | for user accounts not with an ID of 1 or 2.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch the current user's subscriptions #}
+     * {% set {elements-var} = {twig-method}
+     *   .userId(currentUser.id)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch the current user's subscriptions
+     * $user = Craft::$app->user->getIdentity();
+     * ${elements-var} = {php-method}
+     *     ->userId($user->id)
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value The property value
+     * @return static self reference
+     */
+    public function userId(mixed $value): SubscriptionQuery
+    {
+        $this->userId = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the subscriptions’ user accounts’ email.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `'test@test.com'` | for a user account with an email of test@test.com.
+     * | `['test@test.com', 'test2@test.com']` | for user accounts with an email of test@test.com or test2@test.com.
+     * | `['not', 'test@test.com', 'test2@test.com']` | for user accounts not with an email of test@test.com or test2@test.com.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch the current user's subscriptions #}
+     * {% set {elements-var} = {twig-method}
+     *   .userEmail(currentUser.email)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch the current user's subscriptions
+     * $user = Craft::$app->user->getIdentity();
+     * ${elements-var} = {php-method}
+     *     ->userEmail($user->email)
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value The property value
+     * @return static self reference
+     */
+    public function userEmail(mixed $value): SubscriptionQuery
+    {
+        $this->userEmail = $value;
         return $this;
     }
 
@@ -153,31 +341,718 @@ class SubscriptionQuery extends ElementQuery
      * Narrows the query results based on the Stripe Customer Id related to this {elements}.
      *
      * ```twig
-     * {# Fetch subscriptions for userId 1 #}
+     * {# Fetch subscriptions for customer cus_Ab12Cd34Ef56Gh #}
      * {% set {elements-var} = {twig-method}
      *   .customerId('cus_Ab12Cd34Ef56Gh')
      *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch subscriptions for userId 1
+     * // Fetch subscriptions for customer cus_Ab12Cd34Ef56Gh
      * ${elements-var} = {element-class}::find()
      *     ->customerId('cus_Ab12Cd34Ef56Gh')
      *     ->all();
      * ```
      */
-    public function customerId(string $value): static
+    public function customerId(mixed $value): static
     {
-        $customerId = trim($value);
+        $this->customerId = $value;
+        return $this;
+    }
 
-        if (!empty($customerId)) {
-            $qb = Craft::$app->getDb()->getQueryBuilder();
-            $this->where([
-                $qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["customer"]) => $customerId
-            ]);
+    /**
+     * Narrows the query results based on the subscription price (plan).
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | for a price with an element id of `1`.
+     * | `[1, 2]` | for price with an element id of `1` or `2`.
+     * | a [[Plan|Plan]] object | for a price represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch subscriptions for a price with element id of 1 #}
+     * {% set {elements-var} = {twig-method}
+     *   .plan(1)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch subscriptions for a price with element id of 1
+     * ${elements-var} = {php-method}
+     *     ->plan(1)
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value
+     * @return static
+     * @deprecated price() should be used instead
+     */
+    public function plan(mixed $value): SubscriptionQuery
+    {
+        if ($value instanceof Price) {
+            $this->planId = $value->stripeId;
+        } elseif ($value !== null) {
+            $this->planId = (new Query())
+                ->select(['stripeId'])
+                ->from([Table::PRICES])
+                ->where(Db::parseParam('id', $value))
+                ->column();
+        } else {
+            $this->planId = null;
         }
 
         return $this;
+    }
+
+    /**
+     * Narrows the query results based on the subscription price.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | for a price with an element id of `1`.
+     * | `[1, 2]` | for price with an element id of `1` or `2`.
+     * | a [[Plan|Plan]] object | for a price represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch subscriptions for a price with element id of 1 #}
+     * {% set {elements-var} = {twig-method}
+     *   .plan(1)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch subscriptions for a price with element id of 1
+     * ${elements-var} = {php-method}
+     *     ->plan(1)
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value
+     * @return static
+     */
+    public function price(mixed $value): SubscriptionQuery
+    {
+        if ($value instanceof Price) {
+            $this->priceId = $value->stripeId;
+        } elseif ($value !== null) {
+            $this->priceId = (new Query())
+                ->select(['stripeId'])
+                ->from([Table::PRICES])
+                ->where(Db::parseParam('id', $value))
+                ->column();
+        } else {
+            $this->priceId = null;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the subscription plans’ IDs.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | for a plan with an ID of 1.
+     * | `[1, 2]` | for plans with an ID of 1 or 2.
+     * | `['not', 1, 2]` | for plans not with an ID of 1 or 2.
+     *
+     * @param mixed $value The property value
+     * @deprecated priceId() should be used instead
+     * @return static
+     */
+    public function planId(mixed $value): SubscriptionQuery
+    {
+        $this->planId = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the subscription price’ IDs.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | for a price with an ID of 1.
+     * | `[1, 2]` | for prices with an ID of 1 or 2.
+     * | `['not', 1, 2]` | for prices not with an ID of 1 or 2.
+     *
+     * @param mixed $value The property value
+     * @return static
+     */
+    public function priceId(mixed $value): SubscriptionQuery
+    {
+        $this->priceId = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the latest invoice, per its ID.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | with an order with an ID of 1.
+     * | `'not 1'` | not with an order with an ID of 1.
+     * | `[1, 2]` | with an order with an ID of 1 or 2.
+     * | `['not', 1, 2]` | not with an order with an ID of 1 or 2.
+     *
+     * @param mixed $value The property value
+     * @return static
+     */
+    public function latestInvoiceId(mixed $value): SubscriptionQuery
+    {
+        $this->latestInvoiceId = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the reference.
+     *
+     * @param mixed $value The property value
+     * @deprecated priceId() should be used instead
+     * @return static
+     */
+    public function reference(mixed $value): SubscriptionQuery
+    {
+        $this->reference = $value;
+        return $this;
+    }
+
+//    /**
+//     * Narrows the query results based on the number of trial days.
+//     *
+//     * @param mixed $value The property value
+//     * @return static
+//     */
+//    public function trialDays(mixed $value): SubscriptionQuery
+//    {
+//        $this->trialDays = $value;
+//        return $this;
+//    }
+
+    /**
+     * Narrows the query results to only subscriptions that are on trial.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch trialed subscriptions #}
+     * {% set {elements-var} = {twig-method}
+     *   .onTrial()
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch trialed subscriptions
+     * ${elements-var} = {element-class}::find()
+     *     ->isPaid()
+     *     ->all();
+     * ```
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     */
+    public function onTrial(?bool $value = true): SubscriptionQuery
+    {
+        $this->onTrial = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the subscriptions’ next payment dates.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `'>= 2018-04-01'` | with a next payment on or after 2018-04-01.
+     * | `'< 2018-05-01'` | with a next payment before 2018-05-01
+     * | `['and', '>= 2018-04-04', '< 2018-05-01']` | with a next payment between 2018-04-01 and 2018-05-01.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} with a payment due soon #}
+     * {% set aWeekFromNow = date('+7 days')|atom %}
+     *
+     * {% set {elements-var} = {twig-method}
+     *   .nextPaymentDate("< #{aWeekFromNow}")
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} with a payment due soon
+     * $aWeekFromNow = new \DateTime('+7 days')->format(\DateTime::ATOM);
+     *
+     * ${elements-var} = {php-method}
+     *     ->nextPaymentDate("< {$aWeekFromNow}")
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value The property value
+     * @return static self reference
+     */
+    public function nextPaymentDate(mixed $value): SubscriptionQuery
+    {
+        $this->nextPaymentDate = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results to only subscriptions that are canceled.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch canceled subscriptions #}
+     * {% set {elements-var} = {twig-method}
+     *   .isCanceled()
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch canceled subscriptions
+     * ${elements-var} = {element-class}::find()
+     *     ->isCanceled()
+     *     ->all();
+     * ```
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     */
+    public function isCanceled(?bool $value = true): SubscriptionQuery
+    {
+        $this->isCanceled = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the subscriptions’ cancellation date.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `'>= 2018-04-01'` | that were canceled on or after 2018-04-01.
+     * | `'< 2018-05-01'` | that were canceled before 2018-05-01
+     * | `['and', '>= 2018-04-04', '< 2018-05-01']` | that were canceled between 2018-04-01 and 2018-05-01.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} that were canceled recently #}
+     * {% set aWeekAgo = date('7 days ago')|atom %}
+     *
+     * {% set {elements-var} = {twig-method}
+     *   .dateCanceled(">= #{aWeekAgo}")
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} that were canceled recently
+     * $aWeekAgo = new \DateTime('7 days ago')->format(\DateTime::ATOM);
+     *
+     * ${elements-var} = {php-method}
+     *     ->dateCanceled(">= {$aWeekAgo}")
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value The property value
+     * @return static self reference
+     */
+    public function dateCanceled(mixed $value): SubscriptionQuery
+    {
+        $this->dateCanceled = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results to only subscriptions that have started.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch started subscriptions #}
+     * {% set {elements-var} = {twig-method}
+     *   .hasStarted()
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch started subscriptions
+     * ${elements-var} = {element-class}::find()
+     *     ->hasStarted()
+     *     ->all();
+     * ```
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     */
+    public function hasStarted(?bool $value = true): SubscriptionQuery
+    {
+        $this->hasStarted = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results to only subscriptions that are suspended.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch suspended subscriptions #}
+     * {% set {elements-var} = {twig-method}
+     *   .isSuspended()
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch suspended subscriptions
+     * ${elements-var} = {element-class}::find()
+     *     ->isSuspended()
+     *     ->all();
+     * ```
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     */
+    public function isSuspended(?bool $value = true): SubscriptionQuery
+    {
+        $this->isSuspended = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the subscriptions’ suspension date.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `'>= 2018-04-01'` | that were suspended on or after 2018-04-01.
+     * | `'< 2018-05-01'` | that were suspended before 2018-05-01
+     * | `['and', '>= 2018-04-04', '< 2018-05-01']` | that were suspended between 2018-04-01 and 2018-05-01.
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} that were suspended recently #}
+     * {% set aWeekAgo = date('7 days ago')|atom %}
+     *
+     * {% set {elements-var} = {twig-method}
+     *   .dateSuspended(">= #{aWeekAgo}")
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} that were suspended recently
+     * $aWeekAgo = new \DateTime('7 days ago')->format(\DateTime::ATOM);
+     *
+     * ${elements-var} = {php-method}
+     *     ->dateSuspended(">= {$aWeekAgo}")
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value The property value
+     * @return static self reference
+     */
+    public function dateSuspended(mixed $value): SubscriptionQuery
+    {
+        $this->dateSuspended = $value;
+        return $this;
+    }
+
+//    /**
+//     * Narrows the query results to only subscriptions that have expired.
+//     *
+//     * ---
+//     *
+//     * ```twig
+//     * {# Fetch expired subscriptions #}
+//     * {% set {elements-var} = {twig-method}
+//     *   .isExpired()
+//     *   .all() %}
+//     * ```
+//     *
+//     * ```php
+//     * // Fetch expired subscriptions
+//     * ${elements-var} = {element-class}::find()
+//     *     ->isExpired()
+//     *     ->all();
+//     * ```
+//     *
+//     * @param bool|null $value The property value
+//     * @return static self reference
+//     */
+//    public function isExpired(?bool $value = true): SubscriptionQuery
+//    {
+//        $this->isExpired = $value;
+//
+//        return $this;
+//    }
+
+//    /**
+//     * Narrows the query results based on the subscriptions’ expiration date.
+//     *
+//     * Possible values include:
+//     *
+//     * | Value | Fetches {elements}…
+//     * | - | -
+//     * | `'>= 2018-04-01'` | that expired on or after 2018-04-01.
+//     * | `'< 2018-05-01'` | that expired before 2018-05-01
+//     * | `['and', '>= 2018-04-04', '< 2018-05-01']` | that expired between 2018-04-01 and 2018-05-01.
+//     *
+//     * ---
+//     *
+//     * ```twig
+//     * {# Fetch {elements} that expired recently #}
+//     * {% set aWeekAgo = date('7 days ago')|atom %}
+//     *
+//     * {% set {elements-var} = {twig-method}
+//     *   .dateExpired(">= #{aWeekAgo}")
+//     *   .all() %}
+//     * ```
+//     *
+//     * ```php
+//     * // Fetch {elements} that expired recently
+//     * $aWeekAgo = new \DateTime('7 days ago')->format(\DateTime::ATOM);
+//     *
+//     * ${elements-var} = {php-method}
+//     *     ->dateExpired(">= {$aWeekAgo}")
+//     *     ->all();
+//     * ```
+//     *
+//     * @param mixed $value The property value
+//     * @return static self reference
+//     */
+//    public function dateExpired(mixed $value): SubscriptionQuery
+//    {
+//        $this->dateExpired = $value;
+//
+//        return $this;
+//    }
+
+    /**
+     * @inheritdoc
+     * @throws QueryAbortedException
+     */
+    protected function beforePrepare(): bool
+    {
+        if ($this->stripeId === [] || $this->priceId === [] || $this->planId === [] || $this->reference === []) {
+            return false;
+        }
+
+        $qb = Craft::$app->getDb()->getQueryBuilder();
+
+        $subscriptionTable = 'stripestore_subscriptions';
+        $subscriptionDataTable = 'stripestore_subscriptiondata';
+
+        // join standard subscription element table that only contains the stripeId
+        $this->joinElementTable($subscriptionTable);
+
+        $subscriptionDataJoinTable = [$subscriptionDataTable => "{{%$subscriptionDataTable}}"];
+        $this->query->innerJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
+        $this->subQuery->innerJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
+
+        $customerDataJoinTable = ['stripestore_customerdata' => '{{%stripestore_customerdata}}'];
+        $this->query->leftJoin(
+            $customerDataJoinTable,
+            "[[stripestore_customerdata.stripeId]] = ".$qb->jsonExtract("[[$subscriptionDataTable.data]]", ["customer"])
+        );
+        $this->subQuery->leftJoin(
+            $customerDataJoinTable,
+            "[[stripestore_customerdata.stripeId]] = ".$qb->jsonExtract("[[$subscriptionDataTable.data]]", ["customer"])
+        );
+
+        $this->query->select([
+            'stripestore_subscriptions.stripeId',
+            'stripestore_subscriptiondata.stripeStatus',
+            'stripestore_subscriptiondata.data',
+            'stripestore_customerdata.stripeId AS customerStripeId',
+            'stripestore_customerdata.email AS customerEmail',
+            'stripestore_customerdata.data AS customerData',
+        ]);
+
+        if (isset($this->stripeId)) {
+            $this->subQuery->andWhere(Db::parseParam('stripestore_subscriptiondata.stripeId', $this->stripeId));
+        }
+
+        if (isset($this->customerId)) {
+            $this->subQuery->andWhere(Db::parseParam('stripestore_customerdata.stripeId', $this->customerId));
+        }
+
+        if (isset($this->userId)) {
+            // TODO: there must be a better way that accounts for when user(s) is/are not found?
+            $userEmails = (new Query())
+                ->select('email')
+                ->from([CraftTable::USERS])
+                ->where(['id' => $this->userId])
+                ->column();
+
+            if (empty($userEmails)) {
+                $userEmails = ':empty:';
+            }
+            $this->subQuery->andWhere(Db::parseParam('stripestore_customerdata.email', $userEmails));
+        }
+
+        if (isset($this->userEmail)) {
+            $this->subQuery->andWhere(Db::parseParam('stripestore_customerdata.email', $this->userEmail));
+        }
+
+        if (isset($this->priceId) || isset($this->planId) || isset($this->reference)) {
+            $this->subQuery->leftJoin(
+                ['stripestore_prices' => '{{%stripestore_prices}}'],
+                "[[stripestore_prices.stripeId]] = ".$qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["plan", "id"])
+            );
+
+            if (isset($this->planId)) {
+                $this->subQuery->andWhere(Db::parseParam('stripestore_prices.stripeId', $this->planId));
+            }
+
+            if (isset($this->reference)) {
+                $this->subQuery->andWhere(Db::parseParam('stripestore_prices.stripeId', $this->reference));
+            }
+
+            if (isset($this->priceId)) {
+                $this->subQuery->andWhere(Db::parseParam('stripestore_prices.stripeId', $this->priceId));
+            }
+        }
+
+        if (isset($this->latestInvoiceId)) {
+            $this->subQuery->leftJoin(
+                ['stripestore_invoicedata' => '{{%stripestore_invoicedata}}'],
+                "[[stripestore_subscriptiondata.stripeId]] = ".$qb->jsonExtract("[[stripestore_invoicedata.data]]", ["subscription"])
+            );
+            $this->subQuery->andWhere(Db::parseParam(
+                $qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["latest_invoice"]),
+                $this->latestInvoiceId
+            ));
+        }
+
+//        if (isset($this->trialDays)) {
+//            // is on trial and (trial end - now in days) $operator $value
+//            $this->subQuery->andWhere(Db::parseParam(
+//                $qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["plan", "trial_period_days"]),
+//                $this->trialDays
+//            ));
+//            //$this->subQuery->andWhere(Db::parseParam('commerce_subscriptions.trialDays', $this->trialDays));
+//        }
+
+        if (isset($this->nextPaymentDate)) {
+            $this->subQuery->andWhere(Db::parseTimestampParam(
+                $qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["current_period_end"]),
+                $this->nextPaymentDate,
+            ));
+        }
+
+        if (isset($this->isCanceled)) {
+            if ($this->isCanceled) {
+                $this->subQuery->andWhere(Db::parseParam(
+                    'stripestore_subscriptiondata.stripeStatus',
+                    Subscription::STRIPE_STATUS_CANCELED
+                ));
+            } else {
+                $this->subQuery->andWhere(Db::parseParam(
+                    'stripestore_subscriptiondata.stripeStatus',
+                    Subscription::STRIPE_STATUS_CANCELED,
+                    'not'
+                ));
+            }
+        }
+
+        if (isset($this->dateCanceled)) {
+            $this->subQuery->andWhere(Db::parseTimestampParam(
+                $qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["canceled_at"]),
+                $this->dateCanceled,
+            ));
+        }
+
+        if (isset($this->hasStarted)) {
+            if ($this->hasStarted) {
+                $q = new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["start_date"]) . " <= NOW()");
+            } else {
+                $q = new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["start_date"]) . " > NOW()");
+            }
+            $this->subQuery->andWhere($q);
+        }
+
+        if (isset($this->isSuspended)) {
+            if ($this->isSuspended) {
+                $this->subQuery->andWhere(Db::parseParam(
+                    'stripestore_subscriptiondata.stripeStatus',
+                    \Stripe\Subscription::STATUS_PAST_DUE,
+                ));
+            } else {
+                $this->subQuery->andWhere(Db::parseParam(
+                    'stripestore_subscriptiondata.stripeStatus',
+                    \Stripe\Subscription::STATUS_PAST_DUE,
+                    'not'
+                ));
+            }
+        }
+
+        if (isset($this->dateSuspended)) {
+            // todo: should we check for isSuspended too?
+            $this->subQuery->leftJoin(
+                ['stripestore_invoicedata' => '{{%stripestore_invoicedata}}'],
+                "[[stripestore_subscriptiondata.stripeId]] = ".$qb->jsonExtract("[[stripestore_invoicedata.data]]", ["subscription"])
+            );
+
+            $this->subQuery->andWhere(Db::parseTimestampParam(
+                $qb->jsonExtract("[[stripestore_invoicedata.data]]", ["created"]),
+                $this->dateSuspended
+            ));
+        }
+
+//        if (isset($this->isExpired)) {
+//            $this->subQuery->andWhere(Db::parseBooleanParam('commerce_subscriptions.isExpired', $this->isExpired, false));
+//        }
+//
+//        if (isset($this->dateExpired)) {
+//            $this->subQuery->andWhere(Db::parseDateParam('commerce_subscriptions.dateExpired', $this->dateExpired));
+//        }
+
+        if (isset($this->onTrial)) {
+            $this->subQuery->andWhere($this->_getTrialCondition($this->onTrial, $qb));
+        }
+
+        return parent::beforePrepare();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function populate($rows): array
+    {
+        foreach ($rows as &$row) {
+            if (isset($row['customerData'])) {
+                $model = new Customer();
+                $model->setAttributes([
+                    'stripeId' => $row['customerStripeId'],
+                    'email' => $row['customerEmail'],
+                    'data' => $row['customerData'],
+                ], false);
+
+                $row['customer'] = $model;
+            }
+
+            unset($row['customerStripeId']);
+            unset($row['customerEmail']);
+            unset($row['customerData']);
+        }
+
+        return parent::populate($rows);
     }
 
     /**
@@ -208,79 +1083,44 @@ class SubscriptionQuery extends ElementQuery
     }
 
     /**
-     * @inheritdoc
-     * @throws QueryAbortedException
+     * Returns the SQL condition to use for trial status.
+     *
+     * @param bool $onTrial
+     * @param QueryBuilder $qb
+     * @return mixed
      */
-    protected function beforePrepare(): bool
+    private function _getTrialCondition(bool $onTrial, QueryBuilder $qb): array
     {
-        if ($this->stripeId === []) {
-            return false;
-        }
-
-        $subscriptionTable = 'stripestore_subscriptions';
-        $subscriptionDataTable = 'stripestore_subscriptiondata';
-
-        // join standard subscription element table that only contains the stripeId
-        $this->joinElementTable($subscriptionTable);
-
-        $subscriptionDataJoinTable = [$subscriptionDataTable => "{{%$subscriptionDataTable}}"];
-        $this->query->innerJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
-        $this->subQuery->innerJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
-
-        $customerDataJoinTable = ['stripestore_customerdata' => '{{%stripestore_customerdata}}'];
-        $qb = Craft::$app->getDb()->getQueryBuilder();
-
-        $this->query->leftJoin(
-            $customerDataJoinTable,
-            "[[stripestore_customerdata.stripeId]] = ".$qb->jsonExtract("[[$subscriptionDataTable.data]]", ["customer"])
-        );
-        $this->subQuery->leftJoin(
-            $customerDataJoinTable,
-            "[[stripestore_customerdata.stripeId]] = ".$qb->jsonExtract("[[$subscriptionDataTable.data]]", ["customer"])
-        );
-
-        $this->query->select([
-            'stripestore_subscriptions.stripeId',
-            'stripestore_subscriptiondata.stripeStatus',
-            'stripestore_subscriptiondata.data',
-            'stripestore_customerdata.stripeId AS customerStripeId',
-            'stripestore_customerdata.email AS customerEmail',
-            'stripestore_customerdata.data AS customerData',
-        ]);
-
-        if (isset($this->stripeId)) {
-            $this->subQuery->andWhere(Db::parseParam('stripestore_subscriptiondata.stripeId', $this->stripeId));
-        }
-
-        if (isset($this->stripeStatus)) {
-            $this->subQuery->andWhere(Db::parseParam('stripestore_subscriptiondata.stripeStatus', $this->stripeStatus));
-        }
-
-        return parent::beforePrepare();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function populate($rows): array
-    {
-        foreach ($rows as &$row) {
-            if (isset($row['customerData'])) {
-                $model = new Customer();
-                $model->setAttributes([
-                    'stripeId' => $row['customerStripeId'],
-                    'email' => $row['customerEmail'],
-                    'data' => $row['customerData'],
-                ], false);
-
-                $row['customer'] = $model;
+        if ($onTrial === true) {
+            // on trial so when trial start is <= now and trial end is > now
+            if (Craft::$app->getDb()->getIsPgsql()) {
+                return [
+                    'and',
+                    new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_start"]) . " <= EXTRACT(EPOCH FROM now())"),
+                    new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_end"]) . " > EXTRACT(EPOCH FROM now())"),
+                ];
             }
 
-            unset($row['customerStripeId']);
-            unset($row['customerEmail']);
-            unset($row['customerData']);
+            return [
+                'and',
+                new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_start"]) . " <= UNIX_TIMESTAMP()"),
+                new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_end"]) . " > UNIX_TIMESTAMP()"),
+            ];
         }
 
-        return parent::populate($rows);
+        // not on trial so when trial_start > now or trial_end < now
+        if (Craft::$app->getDb()->getIsPgsql()) {
+            return [
+                'or',
+                new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_start"]) . " > EXTRACT(EPOCH FROM now())"),
+                new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_end"]) . " < EXTRACT(EPOCH FROM now())"),
+            ];
+        }
+
+        return [
+            'or',
+            new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_start"]) . " > UNIX_TIMESTAMP()"),
+            new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_end"]) . " < UNIX_TIMESTAMP()"),
+        ];
     }
 }

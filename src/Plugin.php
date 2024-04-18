@@ -14,6 +14,7 @@ use craft\events\DefineEditUserScreensEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
+use craft\fieldlayoutelements\TitleField;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\services\Elements;
@@ -340,7 +341,12 @@ class Plugin extends BasePlugin
 
             switch ($fieldLayout->type) {
                 case Product::class:
+                    $event->fields[] = TitleField::class;
                     $event->fields[] = PricesField::class;
+                    break;
+                case Price::class:
+                case Subscription::class:
+                    $event->fields[] = TitleField::class;
                     break;
             }
         });

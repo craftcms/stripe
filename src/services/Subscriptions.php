@@ -92,7 +92,7 @@ class Subscriptions extends Component
         // Build our attribute set from the Stripe subscription data:
         $attributes = [
             'stripeId' => $subscription->id,
-            'title' => $subscription->id,
+            'title' => $subscription->description ?? $subscription->id,
             'stripeStatus' => $subscription->status,
             //'customerId' => $subscription->customer,
             'data' => Json::decode($subscription->toJSON()),

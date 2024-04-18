@@ -165,7 +165,7 @@ class Subscription
                     'id' => $subscription->id,
                 ]),
                 'swap' => 'outerHTML',
-                'trigger' => 'every 30s',
+                'trigger' => 'every 30m',
             ],
         ]);
     }

@@ -422,7 +422,7 @@ class Price extends Element implements NestedElementInterface
             'pricePerUnit' => PriceHelper::asPricePerUnit($this->getData()),
             'unitPrice' => PriceHelper::asUnitPrice($this->getData()),
             'currency' => strtoupper($this->getData()['currency']),
-            'interval' => PriceHelper::getInterval($this->getData()['recurring']),
+            'interval' => PriceHelper::getInterval($this->getData()),
             default => parent::attributeHtml($attribute),
         };
     }
