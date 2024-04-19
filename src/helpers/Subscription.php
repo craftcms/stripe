@@ -36,7 +36,6 @@ class Subscription
             'customer',
             'currentPeriod',
             'cancelAtPeriodEnd',
-            'description',
             'discount',
             'cancelAt',
             'canceledAt',
@@ -91,9 +90,6 @@ class Subscription
                             $stripeSubscription['cancel_at_period_end'] ?
                                 Craft::t('stripe', 'Yes') :
                                 Craft::t('stripe', 'No');
-                    case 'description':
-                        $meta[Craft::t('stripe', 'Description')] = $stripeSubscription['description'];
-                        break;
                     case 'discount':
                         $meta[Craft::t('stripe', 'Discounts')] = collect($stripeSubscription['discounts'])
                             ->filter()

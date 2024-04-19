@@ -68,9 +68,15 @@ class Api extends Component
         $paymentMethods = [];
 
         foreach ($customers as $customer) {
-            $results = $customer->allPaymentMethods($customer->id);
-            foreach ($results as $result) {
-                $paymentMethods[] = $result;
+            // get user for customer's email address
+            $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($customer->email);
+
+            // only get payment methods if the user exists
+            if ($user) {
+                $results = $customer->allPaymentMethods($customer->id);
+                foreach ($results as $result) {
+                    $paymentMethods[] = $result;
+                }
             }
         }
 

@@ -51,7 +51,7 @@ class Customer
 
     /**
      * Return URL to edit the customer in Stripe Dashboard by the passed customer id.
-     * 
+     *
      * @param $id
      * @return string
      */
