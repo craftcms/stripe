@@ -2,6 +2,7 @@
 
 namespace craft\stripe\migrations;
 
+use Craft;
 use craft\db\Migration;
 use craft\db\Table as CraftTable;
 use craft\stripe\db\Table;
@@ -102,7 +103,6 @@ class Install extends Migration
         $this->createTable(Table::PAYMENTMETHODDATA, [
             'id' => $this->primaryKey(),
             'stripeId' => $this->string()->notNull(),
-            //'customerDataId' => $this->integer()->notNull(), //$this->string(),
             'data' => $this->json(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -124,12 +124,64 @@ class Install extends Migration
         $this->createTable(Table::INVOICEDATA, [
             'id' => $this->primaryKey(),
             'stripeId' => $this->string()->notNull(),
-            //'customerDataId' => $this->integer()->notNull(), //$this->string(),
             'data' => $this->json(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->string(),
         ]);
+
+        // create generated columns
+        $this->createGeneratedColumns();
+    }
+
+    /**
+     * @return void
+     */
+    private function createGeneratedColumns(): void
+    {
+        $db = Craft::$app->getDb();
+        $qb = $db->getQueryBuilder();
+
+        // subscription data
+        // canceledAt
+        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " . $db->quoteColumnName('createdAt'). " VARCHAR(255) 
+     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['created_at']) . ") STORED;");
+        // currentPeriodEnd
+        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " . $db->quoteColumnName('currentPeriodEnd') . " VARCHAR(255)
+     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['current_period_end']) . ") STORED;");
+        // customerId
+        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " . $db->quoteColumnName('customerId') . " VARCHAR(255)
+     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['customer']) . ") STORED;");
+        // latestInvoiceId
+        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " . $db->quoteColumnName('latestInvoiceId') . " VARCHAR(255)
+     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['latest_invoice']) . ") STORED;");
+        // startDate
+        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " . $db->quoteColumnName('startDate') . " VARCHAR(255)
+     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['start_date']) . ") STORED;");
+        // trialStart
+        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " . $db->quoteColumnName('trialStart') . " VARCHAR(255)
+     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['trial_start']) . ") STORED;");
+        // trialEnd
+        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " . $db->quoteColumnName('trialEnd') . " VARCHAR(255)
+     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['trial_end']) . ") STORED;");
+
+        // invoice data
+        // created
+        $this->execute("ALTER TABLE " . Table::INVOICEDATA . " ADD COLUMN " . $db->quoteColumnName('created') . " VARCHAR(255)  
+     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['created']) . ") STORED;");
+        // customerEmail
+        $this->execute("ALTER TABLE " . Table::INVOICEDATA . " ADD COLUMN " . $db->quoteColumnName('customerEmail') . " VARCHAR(255) 
+     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['customer_email']) . ") STORED;");
+        // number
+        $this->execute("ALTER TABLE " . Table::INVOICEDATA . " ADD COLUMN " . $db->quoteColumnName('number') . " VARCHAR(255) 
+     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['number']) . ") STORED;");
+        // subscriptionId
+        $this->execute("ALTER TABLE " . Table::INVOICEDATA . " ADD COLUMN " . $db->quoteColumnName('subscriptionId') . " VARCHAR(255) 
+     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['subscription']) . ") STORED;");
+
+        // payment method data => customerId
+        $this->execute("ALTER TABLE " . Table::PAYMENTMETHODDATA . " ADD COLUMN " . $db->quoteColumnName('customerId') . " VARCHAR(255) 
+     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['customer']) . ") STORED;");
     }
 
     /**
@@ -138,11 +190,24 @@ class Install extends Migration
     public function createIndexes(): void
     {
         $this->createIndex(null, Table::PRODUCTDATA, ['stripeId'], true);
+
         $this->createIndex(null, Table::PRICEDATA, ['stripeId'], true);
+
         $this->createIndex(null, Table::SUBSCRIPTIONDATA, ['stripeId'], true);
+        $this->createIndex(null, Table::SUBSCRIPTIONDATA, ['customerId']);
+        $this->createIndex(null, Table::SUBSCRIPTIONDATA, ['latestInvoiceId'], true);
+        // todo: add for price id?
+
         $this->createIndex(null, Table::CUSTOMERDATA, ['stripeId'], true);
+        $this->createIndex(null, Table::CUSTOMERDATA, ['email']);
+
         $this->createIndex(null, Table::INVOICEDATA, ['stripeId'], true);
+        $this->createIndex(null, Table::INVOICEDATA, ['customerEmail']);
+        $this->createIndex(null, Table::INVOICEDATA, ['number']);
+        $this->createIndex(null, Table::INVOICEDATA, ['subscriptionId']);
+
         $this->createIndex(null, Table::PAYMENTMETHODDATA, ['stripeId'], true);
+        $this->createIndex(null, Table::PAYMENTMETHODDATA, ['customerId']);
     }
 
     /**

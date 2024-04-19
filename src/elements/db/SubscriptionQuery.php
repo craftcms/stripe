@@ -55,11 +55,6 @@ class SubscriptionQuery extends ElementQuery
      */
     public mixed $priceId = null;
 
-//    /**
-//     * @var mixed The gateway id
-//     */
-//    public mixed $gatewayId = null;
-//
     /**
      * @var mixed The id of the latest invoice that the subscription must be a part of.
      */
@@ -70,11 +65,6 @@ class SubscriptionQuery extends ElementQuery
      * @deprecated $stripeId should be used instead
      */
     public mixed $reference = null;
-
-//    /**
-//     * @var mixed Number of trial days for the subscription
-//     */
-//    public mixed $trialDays = null;
 
     /**
      * @var bool|null Whether the subscription is currently on trial.
@@ -110,16 +100,6 @@ class SubscriptionQuery extends ElementQuery
      * @var mixed The time the subscription was canceled
      */
     public mixed $dateCanceled = null;
-
-//    /**
-//     * @var bool|null Whether the subscription has expired
-//     */
-//    public ?bool $isExpired = null;
-
-//    /**
-//     * @var mixed The date the subscription ceased to be active
-//     */
-//    public mixed $dateExpired = null;
 
     /**
      * @inheritdoc
@@ -234,31 +214,13 @@ class SubscriptionQuery extends ElementQuery
     public function user(User|int|string $value): static
     {
         if (is_numeric($value)) {
-            //$this->userId = $value;
             $user = Craft::$app->getUsers()->getUserById($value);
             $this->userEmail = $user->email;
         } elseif (is_string($value)) {
-            //$user = Craft::$app->getUsers()->getUserByUsernameOrEmail($value);
-            //$this->userId = $user->id;
             $this->userEmail = $value;
         } elseif ($value instanceof User) {
-            // $user = $value;
-            //$this->userId = $value->id;
             $this->userEmail = $value->email;
         }
-
-//        if (!empty($user)) {
-//            // get stripe customers for this user
-//            $customers = Plugin::getInstance()->getCustomers()->getCustomersByEmail($user->email);
-//            $qb = Craft::$app->getDb()->getQueryBuilder();
-//            // todo: you might hit a limit of 65sth k with 'in'
-//            // so maybe change that to a subquery
-//            $this->subQuery->andWhere([
-//                'in',
-//                $qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["customer"]),
-//                array_keys($customers)]
-//            );
-//        }
 
         return $this;
     }
@@ -530,18 +492,6 @@ class SubscriptionQuery extends ElementQuery
         return $this;
     }
 
-//    /**
-//     * Narrows the query results based on the number of trial days.
-//     *
-//     * @param mixed $value The property value
-//     * @return static
-//     */
-//    public function trialDays(mixed $value): SubscriptionQuery
-//    {
-//        $this->trialDays = $value;
-//        return $this;
-//    }
-
     /**
      * Narrows the query results to only subscriptions that are on trial.
      *
@@ -773,76 +723,6 @@ class SubscriptionQuery extends ElementQuery
         return $this;
     }
 
-//    /**
-//     * Narrows the query results to only subscriptions that have expired.
-//     *
-//     * ---
-//     *
-//     * ```twig
-//     * {# Fetch expired subscriptions #}
-//     * {% set {elements-var} = {twig-method}
-//     *   .isExpired()
-//     *   .all() %}
-//     * ```
-//     *
-//     * ```php
-//     * // Fetch expired subscriptions
-//     * ${elements-var} = {element-class}::find()
-//     *     ->isExpired()
-//     *     ->all();
-//     * ```
-//     *
-//     * @param bool|null $value The property value
-//     * @return static self reference
-//     */
-//    public function isExpired(?bool $value = true): SubscriptionQuery
-//    {
-//        $this->isExpired = $value;
-//
-//        return $this;
-//    }
-
-//    /**
-//     * Narrows the query results based on the subscriptions’ expiration date.
-//     *
-//     * Possible values include:
-//     *
-//     * | Value | Fetches {elements}…
-//     * | - | -
-//     * | `'>= 2018-04-01'` | that expired on or after 2018-04-01.
-//     * | `'< 2018-05-01'` | that expired before 2018-05-01
-//     * | `['and', '>= 2018-04-04', '< 2018-05-01']` | that expired between 2018-04-01 and 2018-05-01.
-//     *
-//     * ---
-//     *
-//     * ```twig
-//     * {# Fetch {elements} that expired recently #}
-//     * {% set aWeekAgo = date('7 days ago')|atom %}
-//     *
-//     * {% set {elements-var} = {twig-method}
-//     *   .dateExpired(">= #{aWeekAgo}")
-//     *   .all() %}
-//     * ```
-//     *
-//     * ```php
-//     * // Fetch {elements} that expired recently
-//     * $aWeekAgo = new \DateTime('7 days ago')->format(\DateTime::ATOM);
-//     *
-//     * ${elements-var} = {php-method}
-//     *     ->dateExpired(">= {$aWeekAgo}")
-//     *     ->all();
-//     * ```
-//     *
-//     * @param mixed $value The property value
-//     * @return static self reference
-//     */
-//    public function dateExpired(mixed $value): SubscriptionQuery
-//    {
-//        $this->dateExpired = $value;
-//
-//        return $this;
-//    }
-
     /**
      * @inheritdoc
      * @throws QueryAbortedException
@@ -868,11 +748,11 @@ class SubscriptionQuery extends ElementQuery
         $customerDataJoinTable = ['stripestore_customerdata' => '{{%stripestore_customerdata}}'];
         $this->query->leftJoin(
             $customerDataJoinTable,
-            "[[stripestore_customerdata.stripeId]] = ".$qb->jsonExtract("[[$subscriptionDataTable.data]]", ["customer"])
+            "[[stripestore_customerdata.stripeId]] = [[$subscriptionDataTable.customerId]]",
         );
         $this->subQuery->leftJoin(
             $customerDataJoinTable,
-            "[[stripestore_customerdata.stripeId]] = ".$qb->jsonExtract("[[$subscriptionDataTable.data]]", ["customer"])
+            "[[stripestore_customerdata.stripeId]] = [[$subscriptionDataTable.customerId]]",
         );
 
         $this->query->select([
@@ -911,47 +791,39 @@ class SubscriptionQuery extends ElementQuery
         }
 
         if (isset($this->priceId) || isset($this->planId) || isset($this->reference)) {
-            $this->subQuery->leftJoin(
-                ['stripestore_prices' => '{{%stripestore_prices}}'],
-                "[[stripestore_prices.stripeId]] = ".$qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["plan", "id"])
-            );
-
             if (isset($this->planId)) {
-                $this->subQuery->andWhere(Db::parseParam('stripestore_prices.stripeId', $this->planId));
+                $this->subQuery->andWhere(
+                    $qb->jsonContains("[[stripestore_subscriptiondata.data]]->>'$.items.data[*].price.id'", $this->planId)
+                );
             }
 
             if (isset($this->reference)) {
-                $this->subQuery->andWhere(Db::parseParam('stripestore_prices.stripeId', $this->reference));
+                $this->subQuery->andWhere(
+                    $qb->jsonContains("[[stripestore_subscriptiondata.data]]->>'$.items.data[*].price.id'", $this->reference)
+                );
             }
 
             if (isset($this->priceId)) {
-                $this->subQuery->andWhere(Db::parseParam('stripestore_prices.stripeId', $this->priceId));
+                $this->subQuery->andWhere(
+                    $qb->jsonContains("[[stripestore_subscriptiondata.data]]->>'$.items.data[*].price.id'", $this->priceId)
+                );
             }
         }
 
         if (isset($this->latestInvoiceId)) {
             $this->subQuery->leftJoin(
                 ['stripestore_invoicedata' => '{{%stripestore_invoicedata}}'],
-                "[[stripestore_subscriptiondata.stripeId]] = ".$qb->jsonExtract("[[stripestore_invoicedata.data]]", ["subscription"])
+                "[[stripestore_subscriptiondata.stripeId]] = [[stripestore_invoicedata.subscriptionId]]",
             );
             $this->subQuery->andWhere(Db::parseParam(
-                $qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["latest_invoice"]),
+                "stripestore_subscriptiondata.latestInvoiceId",
                 $this->latestInvoiceId
             ));
         }
 
-//        if (isset($this->trialDays)) {
-//            // is on trial and (trial end - now in days) $operator $value
-//            $this->subQuery->andWhere(Db::parseParam(
-//                $qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["plan", "trial_period_days"]),
-//                $this->trialDays
-//            ));
-//            //$this->subQuery->andWhere(Db::parseParam('commerce_subscriptions.trialDays', $this->trialDays));
-//        }
-
         if (isset($this->nextPaymentDate)) {
             $this->subQuery->andWhere(Db::parseTimestampParam(
-                $qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["current_period_end"]),
+                "stripestore_subscriptiondata.currentPeriodEnd",
                 $this->nextPaymentDate,
             ));
         }
@@ -972,17 +844,17 @@ class SubscriptionQuery extends ElementQuery
         }
 
         if (isset($this->dateCanceled)) {
-            $this->subQuery->andWhere(Db::parseTimestampParam(
-                $qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["canceled_at"]),
+            $this->subQuery->andWhere(Db::parseParam(
+                "stripestore_subscriptiondata.canceledAt",
                 $this->dateCanceled,
             ));
         }
 
         if (isset($this->hasStarted)) {
             if ($this->hasStarted) {
-                $q = new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["start_date"]) . " <= NOW()");
+                $q = new Expression("stripestore_subscriptiondata.startDate <= NOW()");
             } else {
-                $q = new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["start_date"]) . " > NOW()");
+                $q = new Expression("stripestore_subscriptiondata.startDate > NOW()");
             }
             $this->subQuery->andWhere($q);
         }
@@ -1006,22 +878,14 @@ class SubscriptionQuery extends ElementQuery
             // todo: should we check for isSuspended too?
             $this->subQuery->leftJoin(
                 ['stripestore_invoicedata' => '{{%stripestore_invoicedata}}'],
-                "[[stripestore_subscriptiondata.stripeId]] = ".$qb->jsonExtract("[[stripestore_invoicedata.data]]", ["subscription"])
+                "[[stripestore_subscriptiondata.stripeId]] = [[stripestore_invoicedata.subscriptionId",
             );
 
             $this->subQuery->andWhere(Db::parseTimestampParam(
-                $qb->jsonExtract("[[stripestore_invoicedata.data]]", ["created"]),
+                "stripestore_invoicedata.created",
                 $this->dateSuspended
             ));
         }
-
-//        if (isset($this->isExpired)) {
-//            $this->subQuery->andWhere(Db::parseBooleanParam('commerce_subscriptions.isExpired', $this->isExpired, false));
-//        }
-//
-//        if (isset($this->dateExpired)) {
-//            $this->subQuery->andWhere(Db::parseDateParam('commerce_subscriptions.dateExpired', $this->dateExpired));
-//        }
 
         if (isset($this->onTrial)) {
             $this->subQuery->andWhere($this->_getTrialCondition($this->onTrial, $qb));
@@ -1096,15 +960,15 @@ class SubscriptionQuery extends ElementQuery
             if (Craft::$app->getDb()->getIsPgsql()) {
                 return [
                     'and',
-                    new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_start"]) . " <= EXTRACT(EPOCH FROM now())"),
-                    new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_end"]) . " > EXTRACT(EPOCH FROM now())"),
+                    new Expression("stripestore_subscriptiondata.trialStart <= EXTRACT(EPOCH FROM now())"),
+                    new Expression("stripestore_subscriptiondata.trialEnd > EXTRACT(EPOCH FROM now())"),
                 ];
             }
 
             return [
                 'and',
-                new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_start"]) . " <= UNIX_TIMESTAMP()"),
-                new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_end"]) . " > UNIX_TIMESTAMP()"),
+                new Expression("stripestore_subscriptiondata.trialStart <= UNIX_TIMESTAMP()"),
+                new Expression("stripestore_subscriptiondata.trialEnd > UNIX_TIMESTAMP()"),
             ];
         }
 
@@ -1112,15 +976,15 @@ class SubscriptionQuery extends ElementQuery
         if (Craft::$app->getDb()->getIsPgsql()) {
             return [
                 'or',
-                new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_start"]) . " > EXTRACT(EPOCH FROM now())"),
-                new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_end"]) . " < EXTRACT(EPOCH FROM now())"),
+                new Expression("stripestore_subscriptiondata.trialStart > EXTRACT(EPOCH FROM now())"),
+                new Expression("stripestore_subscriptiondata.trialEnd < EXTRACT(EPOCH FROM now())"),
             ];
         }
 
         return [
             'or',
-            new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_start"]) . " > UNIX_TIMESTAMP()"),
-            new Expression($qb->jsonExtract("[[stripestore_subscriptiondata.data]]", ["trial_end"]) . " < UNIX_TIMESTAMP()"),
+            new Expression("stripestore_subscriptiondata.trialStart > UNIX_TIMESTAMP()"),
+            new Expression("stripestore_subscriptiondata.trialEnd < UNIX_TIMESTAMP()"),
         ];
     }
 }

@@ -69,17 +69,17 @@ class InvoicesController extends Controller
         if ($search) {
             $sqlQuery->andWhere([
                 'or',
-                ['like', $qb->jsonExtract("[[stripestore_invoicedata.data]]", ["number"]), $search],
-                ['like', $qb->jsonExtract("[[stripestore_invoicedata.data]]", ["customer_email"]), $search],
+                ['like', "stripestore_invoicedata.number", $search],
+                ['like', "stripestore_invoicedata.customer_email", $search],
             ]);
         }
 
         // ordering
-        $orderBy = [$qb->jsonExtract("[[stripestore_invoicedata.data]]", ["created"]) => SORT_DESC];
+        $orderBy = ["stripestore_invoicedata.created" => SORT_DESC];
         if (!empty($sort)) {
             $sort = $sort[0];
             $field = substr($sort['sortField'], 0, strpos($sort['sortField'], '|'));
-            $orderBy = [$qb->jsonExtract("[[stripestore_invoicedata.data]]", ["$field"]) => SORT_DESC];
+            $orderBy = ["stripestore_invoicedata.$field" => SORT_DESC];
         }
         $sqlQuery->orderBy($orderBy);
 
