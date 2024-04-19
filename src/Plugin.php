@@ -33,7 +33,7 @@ use craft\stripe\services\PaymentMethods;
 use craft\stripe\services\Prices;
 use craft\stripe\services\Products;
 use craft\stripe\services\Subscriptions;
-use craft\stripe\services\Webhook;
+use craft\stripe\services\Webhooks;
 use craft\stripe\utilities\Sync;
 use craft\stripe\web\twig\CraftVariableBehavior;
 use craft\stripe\web\twig\Extension;
@@ -107,7 +107,7 @@ class Plugin extends BasePlugin
                 'products' => ['class' => Products::class],
                 'subscriptions' => ['class' => Subscriptions::class],
                 'paymentMethods' => ['class' => PaymentMethods::class],
-                'webhook' => ['class' => Webhook::class],
+                'webhooks' => ['class' => Webhooks::class],
             ],
         ];
     }
@@ -249,14 +249,14 @@ class Plugin extends BasePlugin
     }
 
     /**
-     * Returns the Webhook service
+     * Returns the Webhooks service
      *
-     * @return Webhook The Webhook service
+     * @return Webhooks The Webhooks service
      * @throws InvalidConfigException
      */
-    public function getWebhook(): Webhook
+    public function getWebhooks(): Webhooks
     {
-        return $this->get('webhook');
+        return $this->get('webhooks');
     }
 
     /**
@@ -458,7 +458,7 @@ class Plugin extends BasePlugin
     private function registerSiteRoutes(): void
     {
         Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function(RegisterUrlRulesEvent $event) {
-            $event->rules['stripe/webhook/handle'] = 'stripe/webhook/handle';
+            $event->rules['stripe/webhooks/handle'] = 'stripe/webhooks/handle';
         });
     }
 

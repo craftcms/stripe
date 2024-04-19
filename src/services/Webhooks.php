@@ -11,11 +11,11 @@ use yii\base\Component;
 use Stripe\StripeClient;
 
 /**
- * Webhook service
+ * Webhooks service
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
-class Webhook extends Component
+class Webhooks extends Component
 {
     /**
      * Process events received from Stripe

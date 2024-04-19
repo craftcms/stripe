@@ -8,21 +8,23 @@
 namespace craft\stripe\controllers;
 
 use Craft;
+use craft\helpers\UrlHelper;
 use craft\stripe\Plugin;
 use craft\web\Controller;
 use craft\web\Response;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Exception\UnexpectedValueException;
 use Stripe\Webhook;
+use yii\base\InvalidConfigException;
 use yii\web\Response as YiiResponse;
 
 
 /**
- * The WebhookController handles Stripe webhook event.
+ * The WebhooksController handles Stripe webhook event.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
-class WebhookController extends Controller
+class WebhooksController extends Controller
 {
     public $defaultAction = 'handle';
     public $enableCsrfValidation = false;
@@ -31,19 +33,19 @@ class WebhookController extends Controller
     /**
      * Handle incoming Stripe webhook event
      *
-     * @return bool|int
+     * @return YiiResponse
      */
     public function actionHandle(): YiiResponse
     {
         $apiService = Plugin::getInstance()->getApi();
-        $webhookService = Plugin::getInstance()->getWebhook();
-        $client = $apiService->getClient();
+        $webhookService = Plugin::getInstance()->getWebhooks();
+        //$client = $apiService->getClient();
         $endpointSecret = $apiService->getEndpointSecret();
 
         // verify
         $payload = @file_get_contents('php://input');
         $signatureHeader = $_SERVER['HTTP_STRIPE_SIGNATURE'];
-        $event = null;
+        //$event = null;
 
         try {
             $event = Webhook::constructEvent(
@@ -67,4 +69,3 @@ class WebhookController extends Controller
         $this->response->setStatusCode(200);
         return $this->asRaw('OK');
     }
-}

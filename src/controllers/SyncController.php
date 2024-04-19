@@ -18,7 +18,7 @@ use yii\web\Response as YiiResponse;
 
 
 /**
- * The WebhookController handles Stripe webhook event.
+ * The SyncController handles syncing data from Stripe.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
