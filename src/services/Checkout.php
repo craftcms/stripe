@@ -117,7 +117,7 @@ class Checkout extends Component
      * @param array $lineItems
      * @param string|null $successUrl
      * @param string|null $cancelUrl
-     * @return string
+     * @return string|null
      * @throws \Stripe\Exception\ApiErrorException
      * @throws \craft\errors\SiteNotFoundException
      * @throws \yii\base\InvalidConfigException
@@ -127,7 +127,7 @@ class Checkout extends Component
         Customer|string|null $customer = null,
         ?string $successUrl = null,
         ?string $cancelUrl = null,
-    ): string
+    ): ?string
     {
         $stripe = Plugin::getInstance()->getApi()->getClient();
 
@@ -157,8 +157,12 @@ class Checkout extends Component
             $data += $event->params;
         }
 
-        $session = $stripe->checkout->sessions->create($data);
+        try {
+            $session = $stripe->checkout->sessions->create($data);
+        } catch (\Exception $e) {
+            Craft::error('Unable to start Stripe checkout session: ' . $e->getMessage());
+        }
 
-        return $session->url;
+        return $session?->url;
     }
 }

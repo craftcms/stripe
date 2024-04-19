@@ -130,42 +130,48 @@ class WebhooksController extends Controller
         }
 
         $stripe = $plugin->getApi()->getClient();
-        $response = $stripe->webhookEndpoints->create([
-            'enabled_events' => [
-                'product.created',
-                'product.updated',
-                'product.deleted',
-                'price.created',
-                'price.updated',
-                'price.deleted',
-                'customer.subscription.created',
-                'customer.subscription.updated',
-                'customer.subscription.paused',
-                'customer.subscription.resumed',
-                'customer.subscription.pending_update_applied',
-                'customer.subscription.pending_update_expired',
-                'customer.subscription.deleted',
-                'customer.created',
-                'customer.deleted',
-                'payment_method.attached',
-                'payment_method.automatically_updated',
-                'payment_method.updated',
-                'payment_method.detached',
-                'invoice.created',
-                'invoice.finalized',
-                'invoice.marked_uncollectible',
-                'invoice.overdue',
-                'invoice.paid',
-                'invoice.payment_action_required',
-                'invoice.payment_failed',
-                'invoice.payment_succeeded',
-                'invoice.updated',
-                'invoice.voided',
-                'invoice.deleted',
-            ],
-            'url' => UrlHelper::siteUrl('/stripe/webhooks/handle'),
-            'api_version' => $plugin->getApi()::STRIPE_API_VERSION,
-        ]);
+        try {
+            $response = $stripe->webhookEndpoints->create([
+                'enabled_events' => [
+                    'product.created',
+                    'product.updated',
+                    'product.deleted',
+                    'price.created',
+                    'price.updated',
+                    'price.deleted',
+                    'customer.subscription.created',
+                    'customer.subscription.updated',
+                    'customer.subscription.paused',
+                    'customer.subscription.resumed',
+                    'customer.subscription.pending_update_applied',
+                    'customer.subscription.pending_update_expired',
+                    'customer.subscription.deleted',
+                    'customer.created',
+                    'customer.deleted',
+                    'payment_method.attached',
+                    'payment_method.automatically_updated',
+                    'payment_method.updated',
+                    'payment_method.detached',
+                    'invoice.created',
+                    'invoice.finalized',
+                    'invoice.marked_uncollectible',
+                    'invoice.overdue',
+                    'invoice.paid',
+                    'invoice.payment_action_required',
+                    'invoice.payment_failed',
+                    'invoice.payment_succeeded',
+                    'invoice.updated',
+                    'invoice.voided',
+                    'invoice.deleted',
+                ],
+                'url' => UrlHelper::siteUrl('/stripe/webhooks/handle'),
+                'api_version' => $plugin->getApi()::STRIPE_API_VERSION,
+            ]);
+        } catch(\Exception $e) {
+            Craft::error("Unable to create webhook: " . $e->getMessage());
+            $this->setFailFlash(Craft::t('stripe', 'Unable to create webhook'));
+            return $this->redirectToPostedUrl();
+        }
 
         // get the webhook signing secret
         $this->saveWebhookData($plugin, $pluginSettings, $response);
