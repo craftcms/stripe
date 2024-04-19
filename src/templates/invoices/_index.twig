@@ -2,6 +2,7 @@
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
 {% set title = "Stripe Invoices"|t('stripe') %}
+{% set selectedSubnavItem = 'stripeInvoices' %}
 
 {% block actionButton %}
     {% if newInvoiceUrl %}

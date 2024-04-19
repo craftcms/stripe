@@ -1,0 +1,66 @@
+{% extends "_layouts/cp" %}
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+{% set selectedSubnavItem = 'stripeWebhooks' %}
+
+{% set title = "Webhooks"|t('stripe') %}
+
+{% set navItems = {} %}
+
+{% block content %}
+
+    <h3>{{ "Webhook Management"|t('stripe') }}</h3>
+
+    <div class="{{ hasWebhook ? 'hidden' : '' }}">
+        <p>{{ "Create the webhook for the current environment."|t('stripe') }}</p>
+        <form method="POST">
+            {{ actionInput('stripe/webhooks/create') }}
+            {{ redirectInput('stripe/webhooks') }}
+            {{ csrfInput() }}
+            <button class="btn primary" type="submit">{{ "Create"|t('stripe') }}</button>
+        </form>
+    </div>
+
+    {# Divs needed for the Admin Table js below #}
+    <div class="field">
+        <div id="webhooks-container">
+        </div>
+    </div>
+
+{% set tableData = [] %}
+    {% if webhookInfo is not empty %}
+        {% set tableData = [{
+            id: webhookInfo.id,
+            title: webhookInfo.description ?? webhookInfo.id,
+            apiVersion: webhookInfo.api_version,
+            livemode: webhookInfo.livemode,
+            whStatus: webhookInfo.status,
+            address: webhookInfo.url,
+        }] %}
+    {% endif %}
+
+    {% js %}
+        var columns = [
+        { name: '__slot:title', title: '{{ 'Topic'|t('stripe') }}' },
+        { name: 'apiVersion', title: '{{ 'API Version'|t('stripe') }}' },
+        { name: 'livemode', title: '{{ 'Live Mode'|t('stripe') }}' },
+        { name: 'whStatus', title: '{{ 'Status'|t('stripe') }}' },
+        { name: 'address', title: '{{ 'URL'|t('stripe') }}' },
+        ];
+
+        new Craft.VueAdminTable({
+            fullPane: false,
+            columns: columns,
+            container: '#webhooks-container',
+            deleteAction: 'stripe/webhooks/delete',
+            deleteConfirmationMessage: Craft.t('stripe', "Are you sure you want to delete this webhook?"),
+            deleteFailMessage: Craft.t('stripe', "Webhook could not be deleted"),
+            deleteSuccessMessage: Craft.t('stripe', "Webhook deleted"),
+            emptyMessage: Craft.t('shopify', 'No webhooks exist yet.'),
+            tableData: {{ tableData|json_encode|raw }},
+            deleteCallback: function(){
+            window.location.reload(); // We need to reload to get the create button showing again
+        }
+        });
+    {% endjs %}
+{% endblock %}
+

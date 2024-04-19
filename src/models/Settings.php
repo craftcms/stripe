@@ -34,6 +34,11 @@ class Settings extends Model
     /**
      * @var string
      */
+    public string $webhookId = '';
+
+    /**
+     * @var string
+     */
     public string $productUriFormat = '';
 
     /**

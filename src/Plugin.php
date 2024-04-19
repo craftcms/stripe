@@ -447,8 +447,7 @@ class Plugin extends BasePlugin
             $event->rules['myaccount/stripe'] = 'stripe/customers/index';
             $event->rules['users/<userId:\\d+>/stripe'] = 'stripe/customers/index';
 
-//            $event->rules['stripe/sync-products'] = 'stripe/products/sync';
-//            $event->rules['stripe/webhooks'] = 'stripe/webhooks/edit';
+            $event->rules['stripe/webhooks'] = 'stripe/webhooks/edit';
         });
     }
 
@@ -494,12 +493,12 @@ class Plugin extends BasePlugin
             ];
         }
 
-//        if (Craft::$app->getUser()->getIsAdmin()) {
-//            $ret['subnav']['webhooks'] = [
-//                'label' => Craft::t('stripe', 'Webhooks'),
-//                'url' => 'stripe/webhooks',
-//            ];
-//        }
+        if (Craft::$app->getUser()->getIsAdmin()) {
+            $ret['subnav']['stripeWebhooks'] = [
+                'label' => Craft::t('stripe', 'Webhooks'),
+                'url' => 'stripe/webhooks',
+            ];
+        }
 
 
         return $ret;
