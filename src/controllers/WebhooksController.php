@@ -180,7 +180,7 @@ class WebhooksController extends Controller
     }
 
     /**
-     * Deletes a webhook from the Shopify API.
+     * Deletes a webhook from the Stripe API.
      *
      * @return YiiResponse
      */

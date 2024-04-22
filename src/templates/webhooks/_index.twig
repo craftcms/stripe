@@ -55,7 +55,7 @@
             deleteConfirmationMessage: Craft.t('stripe', "Are you sure you want to delete this webhook?"),
             deleteFailMessage: Craft.t('stripe', "Webhook could not be deleted"),
             deleteSuccessMessage: Craft.t('stripe', "Webhook deleted"),
-            emptyMessage: Craft.t('shopify', 'No webhooks exist yet.'),
+            emptyMessage: Craft.t('stripe', 'No webhooks exist yet.'),
             tableData: {{ tableData|json_encode|raw }},
             deleteCallback: function(){
             window.location.reload(); // We need to reload to get the create button showing again

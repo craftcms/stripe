@@ -19,6 +19,21 @@ class SyncController extends Controller
     public $defaultAction = 'all';
 
     /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        parent::beforeAction($action);
+
+        if (empty(Plugin::getInstance()->getApi()->getApiKey())) {
+            $this->stderr("Please go to Stripe > Settings and provide keys and secrets first.\n", Console::FG_RED);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * stripe/sync/all command
      */
     public function actionAll(): int
