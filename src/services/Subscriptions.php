@@ -94,7 +94,6 @@ class Subscriptions extends Component
             'stripeId' => $subscription->id,
             'title' => $subscription->description ?? $subscription->id,
             'stripeStatus' => $subscription->status,
-            //'customerId' => $subscription->customer,
             'data' => Json::decode($subscription->toJSON()),
         ];
 

@@ -23,18 +23,16 @@ class SyncController extends Controller
      */
     public function actionAll(): int
     {
-        $this->stdout('This command will sync Stripe Products, Prices, Subscriptions, Customers, Invoices and Payment Methods…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Syncing Stripe Products, Prices, Subscriptions, Customers, Invoices and Payment Methods…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
-        if ($this->confirm('Do you want to continue?')) {
-            $this->syncProducts();
-            $this->syncPrices();
-            $this->syncSubscriptions();
-            $this->syncCustomers();
-            $this->syncPaymentMethods();
-            $this->syncInvoices();
+        $this->syncProducts();
+        $this->syncPrices();
+        $this->syncSubscriptions();
+        $this->syncCustomers();
+        $this->syncPaymentMethods();
+        $this->syncInvoices();
 
-            $this->stdout('Finished syncing all Stripe data…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
-        }
+        $this->stdout('Finished syncing all Stripe data…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
         return ExitCode::OK;
     }

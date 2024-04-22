@@ -799,8 +799,8 @@ class SubscriptionQuery extends ElementQuery
         $this->joinElementTable($subscriptionTable);
 
         $subscriptionDataJoinTable = [$subscriptionDataTable => "{{%$subscriptionDataTable}}"];
-        $this->query->innerJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
-        $this->subQuery->innerJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
+        $this->query->leftJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
+        $this->subQuery->leftJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
 
         $customerDataJoinTable = ['stripestore_customerdata' => '{{%stripestore_customerdata}}'];
         $this->query->leftJoin(
@@ -822,7 +822,7 @@ class SubscriptionQuery extends ElementQuery
         ]);
 
         if (isset($this->stripeId)) {
-            $this->subQuery->andWhere(Db::parseParam('stripestore_subscriptiondata.stripeId', $this->stripeId));
+            $this->subQuery->andWhere(Db::parseParam('stripestore_subscriptions.stripeId', $this->stripeId));
         }
 
         if (isset($this->customerId)) {
@@ -884,7 +884,7 @@ class SubscriptionQuery extends ElementQuery
         if (isset($this->latestInvoiceId)) {
             $this->subQuery->leftJoin(
                 ['stripestore_invoicedata' => '{{%stripestore_invoicedata}}'],
-                "[[stripestore_subscriptiondata.stripeId]] = [[stripestore_invoicedata.subscriptionId]]",
+                "[[stripestore_subscriptions.stripeId]] = [[stripestore_invoicedata.subscriptionId]]",
             );
             $this->subQuery->andWhere(Db::parseParam(
                 "stripestore_subscriptiondata.latestInvoiceId",
@@ -949,7 +949,7 @@ class SubscriptionQuery extends ElementQuery
             // todo: should we check for isSuspended too?
             $this->subQuery->leftJoin(
                 ['stripestore_invoicedata' => '{{%stripestore_invoicedata}}'],
-                "[[stripestore_subscriptiondata.stripeId]] = [[stripestore_invoicedata.subscriptionId",
+                "[[stripestore_subscriptions.stripeId]] = [[stripestore_invoicedata.subscriptionId",
             );
 
             $this->subQuery->andWhere(Db::parseTimestampParam(
