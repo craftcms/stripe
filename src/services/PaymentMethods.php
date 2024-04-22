@@ -191,17 +191,6 @@ class PaymentMethods extends Component
         return $tableData;
     }
 
-    private function showLast4(array $data): ?string
-    {
-        $last4 = null;
-
-        if (isset($data[$data['type']]) && isset($data[$data['type']]['last4'])) {
-            $last4 = $data[$data['type']]['last4'];
-        }
-
-        return $last4;
-    }
-
     /**
      * Deletes payment method data by Stripe id.
      *
@@ -215,6 +204,38 @@ class PaymentMethods extends Component
         if ($paymentMethodData = PaymentMethodDataRecord::find()->where(['stripeId' => $stripeId])->one()) {
             $paymentMethodData->delete();
         }
+    }
+
+    /**
+     * Deletes payment method data by customer's Stripe id.
+     *
+     * @param string $stripeId
+     * @return void
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function deletePaymentMethodsByCustomerId(string $stripeId): void
+    {
+        if ($paymentMethodData = PaymentMethodDataRecord::find()->where(['customerId' => $stripeId])->one()) {
+            $paymentMethodData->delete();
+        }
+    }
+
+    /**
+     * Returns last 4 digits of the payment method if payment method has that property.
+     *
+     * @param array $data
+     * @return string|null
+     */
+    private function showLast4(array $data): ?string
+    {
+        $last4 = null;
+
+        if (isset($data[$data['type']]) && isset($data[$data['type']]['last4'])) {
+            $last4 = $data[$data['type']]['last4'];
+        }
+
+        return $last4;
     }
 
     /**

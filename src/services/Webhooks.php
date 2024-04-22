@@ -48,16 +48,15 @@ class Webhooks extends Component
             case 'customer.subscription.resumed':
             case 'customer.subscription.pending_update_applied':
             case 'customer.subscription.pending_update_expired':
-                $plugin->getSubscriptions()->createOrUpdateSubscription($eventObject);
-                break;
             case 'customer.subscription.deleted':
-                $plugin->getSubscriptions()->deleteSubscriptionByStripeId($eventObject->id);
+                $plugin->getSubscriptions()->createOrUpdateSubscription($eventObject);
                 break;
             case 'customer.created':
                 $plugin->getCustomers()->createOrUpdateCustomer($eventObject);
                 break;
             case 'customer.deleted':
                 $plugin->getCustomers()->deleteCustomerByStripeId($eventObject->id);
+                $plugin->getPaymentMethods()->deletePaymentMethodsByCustomerId($eventObject->id);
                 break;
             case 'payment_method.attached':
             case 'payment_method.automatically_updated':
@@ -67,7 +66,7 @@ class Webhooks extends Component
             case 'payment_method.detached':
                 $plugin->getPaymentMethods()->deletePaymentMethodByStripeId($eventObject->id);
                 break;
-            // this gets triggered when creating a draft invoice; not sure if we want to deal with those
+            // this gets triggered when creating a draft invoice
             case 'invoice.created':
             case 'invoice.finalized':
             case 'invoice.marked_uncollectible':
@@ -81,11 +80,10 @@ class Webhooks extends Component
             case 'invoice.voided':
                 $plugin->getInvoices()->createOrUpdateInvoice($eventObject);
                 break;
+            // this can only happen when it's a draft invoice
             case 'invoice.deleted':
                 $plugin->getInvoices()->deleteInvoiceByStripeId($eventObject->id);
                 break;
-//            default:
-//                echo 'Received unknown event type ' . $event->type;
         }
     }
 }
