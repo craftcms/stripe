@@ -67,11 +67,12 @@ class Subscription
         $meta = [];
 
         $meta[Craft::t('stripe', 'Status')] = $subscription->getStripeStatusHtml();
-        $meta[Craft::t('stripe', 'Stripe ID')] = Html::tag(
-            'code',
-            (string)$subscription->stripeId,
-            ['class' => 'break-word no-scroll'],
-        );
+        $meta[Craft::t('stripe', 'Stripe ID')] =
+            Cp::renderTemplate('_includes/forms/copytext.twig', [
+                'id' => "stripe-subscription-stripeId",
+                'class' => ['code', 'text', 'fullwidth'],
+                'value' => (string)$subscription->stripeId,
+            ]);
 
         if (count($stripeSubscription) > 0) {
             foreach ($properties as $property) {

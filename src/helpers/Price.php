@@ -170,11 +170,12 @@ class Price
         $meta = [];
 
         $meta[Craft::t('stripe', 'Status')] = $price->getStripeStatusHtml();
-        $meta[Craft::t('stripe', 'Stripe ID')] = Html::tag(
-            'code',
-            (string)$price->stripeId,
-            ['class' => 'break-word no-scroll'],
-        );
+        $meta[Craft::t('stripe', 'Stripe ID')] =
+            Cp::renderTemplate('_includes/forms/copytext.twig', [
+                'id' => "stripe-price-stripeId",
+                'class' => ['code', 'text', 'fullwidth'],
+                'value' => (string)$price->stripeId,
+            ]);
         $meta[Craft::t('stripe', 'Product')] =
             Cp::elementChipHtml($price->product, ['size' => Cp::CHIP_SIZE_SMALL]);
 

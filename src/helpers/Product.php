@@ -54,11 +54,12 @@ class Product
         $meta = [];
 
         $meta[Craft::t('stripe', 'Status')] = $product->getStripeStatusHtml();
-        $meta[Craft::t('stripe', 'Stripe ID')] = Html::tag(
-            'code',
-            (string)$product->stripeId,
-            ['class' => 'break-word no-scroll'],
-        );
+        $meta[Craft::t('stripe', 'Stripe ID')] =
+            Cp::renderTemplate('_includes/forms/copytext.twig', [
+                'id' => "stripe-product-stripeId",
+                'class' => ['code', 'text', 'fullwidth'],
+                'value' => (string)$product->stripeId,
+            ]);
 
         // Data
         $dataAttributesToDisplay = [

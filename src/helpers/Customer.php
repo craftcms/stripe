@@ -34,7 +34,11 @@ class Customer
 
         // if we can't find the customer - just return the id
         if ($customer === null) {
-            return $id;
+            return Cp::renderTemplate('_includes/forms/copytext.twig', [
+                'id' => "stripe-customer-stripeId",
+                'class' => ['code', 'text', 'fullwidth'],
+                'value' => (string)$id,
+            ]);
         }
 
         $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($customer->email);
