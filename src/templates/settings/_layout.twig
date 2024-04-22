@@ -21,7 +21,7 @@
     {%- apply spaceless %}
         {% set config = craft.app.config.getConfigFromFile(file) %}
         {% if config[setting] is defined %}
-            {{ "This is being overridden by the {setting} config setting in `config/{file}.php`."|t('stripe', {
+            {{ "This is being overridden by the {setting} config setting in `config/{file}.php`."|t('app', {
                 setting: setting,
                 file: file,
             })|raw }}

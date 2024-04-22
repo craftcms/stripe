@@ -236,7 +236,7 @@ class WebhooksController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t(
                 'stripe',
                 'Webhook registered successfully, but we had trouble saving the Endpoint Secret. 
-            Please go to your Stripe Dashboard, get the webhook signing secret and add it to your plugin\'s settings.')
+            Please go to your Stripe Dashboard, get the webhook signing secret and add it to your plugin’s settings.')
             );
         } else {
             $this->setSuccessFlash(Craft::t(

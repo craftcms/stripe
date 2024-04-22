@@ -87,7 +87,7 @@ class Subscription
                             $formatter->asDatetime($stripeSubscription['current_period_end'], 'php:d M');
                         break;
                     case 'cancelAtPeriodEnd':
-                        $meta[Craft::t('stripe', 'Cancel at period end?')] =
+                        $meta[Craft::t('stripe', 'Cancel at period end')] =
                             $stripeSubscription['cancel_at_period_end'] ?
                                 Craft::t('stripe', 'Yes') :
                                 Craft::t('stripe', 'No');

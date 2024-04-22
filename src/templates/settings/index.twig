@@ -1,10 +1,6 @@
 {% extends "stripe/settings/_layout" %}
 {% import '_includes/forms.twig' as forms %}
 {% set fullPageForm = true %}
-{#{% do view.registerTranslations('stripe', [
-    "Topic",
-    "Address"
-]) %}#}
 
 {% block content %}
     {% set headlessMode = craft.app.config.general.headlessMode %}
