@@ -21,7 +21,7 @@ class StripeStatusConditionRule extends BaseMultiSelectConditionRule implements 
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function options(): array
     {
@@ -32,7 +32,7 @@ class StripeStatusConditionRule extends BaseMultiSelectConditionRule implements 
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getExclusiveQueryParams(): array
     {
@@ -40,8 +40,7 @@ class StripeStatusConditionRule extends BaseMultiSelectConditionRule implements 
     }
 
     /**
-     * @inheritDoc
-     * @param Product $element
+     * @inheritdoc
      */
     public function matchElement(ElementInterface $element): bool
     {
@@ -49,7 +48,7 @@ class StripeStatusConditionRule extends BaseMultiSelectConditionRule implements 
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {

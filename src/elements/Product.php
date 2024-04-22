@@ -11,10 +11,7 @@ use craft\elements\NestedElementManager;
 use craft\elements\User;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\enums\CmsEdition;
 use craft\enums\PropagationMethod;
-use craft\helpers\ArrayHelper;
-use craft\helpers\Cp;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -70,7 +67,7 @@ class Product extends Element
     private ?array $_data = null;
 
     /**
-     * @see getPricesManager()
+     * @see getPriceManager()
      */
     private NestedElementManager $_priceManager;
 

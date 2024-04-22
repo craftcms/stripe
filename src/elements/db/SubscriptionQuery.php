@@ -15,10 +15,8 @@ use craft\stripe\db\Table;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Subscription;
 use craft\stripe\models\Customer;
-use craft\stripe\Plugin;
 use yii\db\Expression;
 use yii\db\QueryBuilder;
-use yii\db\Schema;
 
 /**
  * Subscription query

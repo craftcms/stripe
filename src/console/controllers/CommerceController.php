@@ -8,7 +8,6 @@ use craft\helpers\Console;
 use craft\commerce\elements\Subscription as CommerceSubscription;
 use craft\helpers\StringHelper;
 use craft\stripe\elements\Subscription;
-use craft\stripe\Plugin;
 use yii\console\ExitCode;
 
 /**
