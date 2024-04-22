@@ -353,13 +353,13 @@ class Plugin extends BasePlugin
 
             switch ($fieldLayout->type) {
                 case Product::class:
-                    $event->fields[] = TitleField::class;
+//                    $event->fields[] = TitleField::class;
                     $event->fields[] = PricesField::class;
                     break;
-                case Price::class:
-                case Subscription::class:
-                    $event->fields[] = TitleField::class;
-                    break;
+//                case Price::class:
+//                case Subscription::class:
+//                    $event->fields[] = TitleField::class;
+//                    break;
             }
         });
     }
