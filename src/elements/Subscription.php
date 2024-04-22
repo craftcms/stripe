@@ -355,6 +355,32 @@ class Subscription extends Element
         ];
     }
 
+    protected function destructiveActionMenuItems(): array
+    {
+        $items = parent::destructiveActionMenuItems();
+
+        $items[] = [
+            'icon' => 'ban',
+            'label' => Craft::t('stripe', 'Cancel Immediately'),
+            'action' => 'stripe/subscriptions/cancel',
+            'params' => [
+                'stripeId' => $this->stripeId,
+                'immediately' => true,
+            ],
+        ];
+        $items[] = [
+            'icon' => 'ban',
+            'label' => Craft::t('stripe', 'Cancel at period end'),
+            'action' => 'stripe/subscriptions/cancel',
+            'params' => [
+                'stripeId' => $this->stripeId,
+                'immediately' => false,
+            ],
+        ];
+
+        return $items;
+    }
+
     /**
      * @inheritdoc
      */

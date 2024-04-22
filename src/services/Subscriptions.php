@@ -186,4 +186,33 @@ class Subscriptions extends Component
             }
         }
     }
+
+    /**
+     * Cancels subscription by Stripe id.
+     *
+     * @param string $stripeId
+     * @param bool $immediately
+     * @return bool
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function cancelSubscriptionByStripeId(string $stripeId, bool $immediately = false): bool
+    {
+        $stripe = Plugin::getInstance()->getApi()->getClient();
+
+        try {
+            if ($immediately) {
+                $stripe->subscriptions->cancel($stripeId);
+            } else {
+                $stripe->subscriptions->update($stripeId, [
+                    'cancel_at_period_end' => true,
+                ]);
+            }
+        } catch (\Exception $exception) {
+            Craft::error($exception->getMessage(), 'stripe');
+            return false;
+        }
+
+        return true;
+    }
 }
