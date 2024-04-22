@@ -4,6 +4,7 @@ namespace craft\stripe\elements\db;
 
 use Craft;
 use craft\base\Element;
+use craft\db\QueryParam;
 use craft\db\Table as CraftTable;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
@@ -54,6 +55,11 @@ class SubscriptionQuery extends ElementQuery
      * @var mixed The subscription price id
      */
     public mixed $priceId = null;
+
+    /**
+     * @var mixed The subscription price Stripe id
+     */
+    public mixed $stripePriceId = null;
 
     /**
      * @var mixed The id of the latest invoice that the subscription must be a part of.
@@ -323,31 +329,7 @@ class SubscriptionQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the subscription price (plan).
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches {elements}…
-     * | - | -
-     * | `1` | for a price with an element id of `1`.
-     * | `[1, 2]` | for price with an element id of `1` or `2`.
-     * | a [[Plan|Plan]] object | for a price represented by the object.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch subscriptions for a price with element id of 1 #}
-     * {% set {elements-var} = {twig-method}
-     *   .plan(1)
-     *   .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch subscriptions for a price with element id of 1
-     * ${elements-var} = {php-method}
-     *     ->plan(1)
-     *     ->all();
-     * ```
+     * Narrows the query results based on the subscription price (formerly plan).
      *
      * @param mixed $value
      * @return static
@@ -356,15 +338,19 @@ class SubscriptionQuery extends ElementQuery
     public function plan(mixed $value): SubscriptionQuery
     {
         if ($value instanceof Price) {
-            $this->planId = $value->stripeId;
+            $this->stripePriceId = $value->stripeId;
         } elseif ($value !== null) {
-            $this->planId = (new Query())
-                ->select(['stripeId'])
-                ->from([Table::PRICES])
-                ->where(Db::parseParam('id', $value))
-                ->column();
+            if (is_numeric($value)) {
+                $this->stripePriceId = (new Query())
+                    ->select(['stripeId'])
+                    ->from([Table::PRICES])
+                    ->where(Db::parseParam('id', $value))
+                    ->column();
+            } else {
+                $this->stripePriceId = $value;
+            }
         } else {
-            $this->planId = null;
+            $this->stripePriceId = null;
         }
 
         return $this;
@@ -377,23 +363,23 @@ class SubscriptionQuery extends ElementQuery
      *
      * | Value | Fetches {elements}…
      * | - | -
-     * | `1` | for a price with an element id of `1`.
-     * | `[1, 2]` | for price with an element id of `1` or `2`.
-     * | a [[Plan|Plan]] object | for a price represented by the object.
+     * | `1` | for a price with an ID of 1.
+     * | `[1, 2]` | for prices with an ID of 1 or 2.
+     * | a [[Price|Price]] object | for a price represented by the object.
      *
      * ---
      *
      * ```twig
-     * {# Fetch subscriptions for a price with element id of 1 #}
+     * {# Fetch subscriptions for a price with an id of 1 #}
      * {% set {elements-var} = {twig-method}
-     *   .plan(1)
+     *   .price(1)
      *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch subscriptions for a price with element id of 1
+     * // Fetch subscriptions for a price with an id of 1
      * ${elements-var} = {php-method}
-     *     ->plan(1)
+     *     ->price(1)
      *     ->all();
      * ```
      *
@@ -403,30 +389,69 @@ class SubscriptionQuery extends ElementQuery
     public function price(mixed $value): SubscriptionQuery
     {
         if ($value instanceof Price) {
-            $this->priceId = $value->stripeId;
+            $this->stripePriceId = $value->stripeId;
         } elseif ($value !== null) {
-            $this->priceId = (new Query())
-                ->select(['stripeId'])
-                ->from([Table::PRICES])
-                ->where(Db::parseParam('id', $value))
-                ->column();
+            if (is_numeric($value)) {
+                $this->stripePriceId = (new Query())
+                    ->select(['stripeId'])
+                    ->from([Table::PRICES])
+                    ->where(Db::parseParam('id', $value))
+                    ->column();
+            } else {
+                $this->stripePriceId = $value;
+            }
         } else {
-            $this->priceId = null;
+            $this->stripePriceId = null;
         }
 
         return $this;
     }
 
     /**
-     * Narrows the query results based on the subscription plans’ IDs.
+     * Narrows the query results based on the subscription price.
      *
      * Possible values include:
      *
      * | Value | Fetches {elements}…
      * | - | -
-     * | `1` | for a plan with an ID of 1.
-     * | `[1, 2]` | for plans with an ID of 1 or 2.
-     * | `['not', 1, 2]` | for plans not with an ID of 1 or 2.
+     * | `'price_1234'` | for a price with a Stripe ID of 'price_1234'.
+     * | `['price_1234', 'price_5678']` | for prices with a Stripe ID of 'price_1234' or 'price_5678'.
+     * | a [[Price|Price]] object | for a price represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch subscriptions for a price with Stripe id of 'price_1234' #}
+     * {% set {elements-var} = {twig-method}
+     *   .price('price_1234')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch subscriptions for a price with Stripe id of 'price_1234'
+     * ${elements-var} = {php-method}
+     *     ->price('price_1234')
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value
+     * @return static
+     */
+    public function stripePrice(mixed $value): SubscriptionQuery
+    {
+        if ($value instanceof Price) {
+            $this->stripePriceId = $value->stripeId;
+        } elseif ($value !== null) {
+            $this->stripePriceId = $value;
+        } else {
+            $this->stripePriceId = null;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the subscription prices’ IDs.
      *
      * @param mixed $value The property value
      * @deprecated priceId() should be used instead
@@ -434,27 +459,55 @@ class SubscriptionQuery extends ElementQuery
      */
     public function planId(mixed $value): SubscriptionQuery
     {
-        $this->planId = $value;
+        $this->stripePriceId = (new Query())
+            ->select(['stripeId'])
+            ->from([Table::PRICES])
+            ->where(Db::parseParam('id', $value))
+            ->column();
         return $this;
     }
 
     /**
-     * Narrows the query results based on the subscription price’ IDs.
+     * Narrows the query results based on the subscription prices’ IDs.
      *
      * Possible values include:
      *
      * | Value | Fetches {elements}…
      * | - | -
-     * | `1` | for a price with an ID of 1.
-     * | `[1, 2]` | for prices with an ID of 1 or 2.
-     * | `['not', 1, 2]` | for prices not with an ID of 1 or 2.
+     * | `1` | for a plan with a Stripe ID of 1.
+     * | `[1, 2]` | for plans with a Stripe ID of 1 or 2.
+     * | `['not', 1, 2]` | for plans not with a Stipe ID of 1 or 2.
      *
      * @param mixed $value The property value
      * @return static
      */
     public function priceId(mixed $value): SubscriptionQuery
     {
-        $this->priceId = $value;
+        $this->stripePriceId = (new Query())
+            ->select(['stripeId'])
+            ->from([Table::PRICES])
+            ->where(Db::parseParam('id', $value))
+            ->column();
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the subscription prices’ Stripe IDs.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `'price_1234'` | for a plan with a Stripe ID of 'price_1234'.
+     * | `['price_1234', 'price_5678']` | for plans with a Stripe ID of 'price_1234' or 'price_5678'.
+     * | `['not', 'price_1234', 'price_5678']` | for plans not with a Stipe ID of 'price_1234' or 'price_5678'.
+     *
+     * @param mixed $value The property value
+     * @return static
+     */
+    public function stripePriceId(mixed $value): SubscriptionQuery
+    {
+        $this->stripePriceId = $value;
         return $this;
     }
 
@@ -488,7 +541,11 @@ class SubscriptionQuery extends ElementQuery
      */
     public function reference(mixed $value): SubscriptionQuery
     {
-        $this->reference = $value;
+        $this->stripePriceId = (new Query())
+            ->select(['stripeId'])
+            ->from([Table::PRICES])
+            ->where(Db::parseParam('id', $value))
+            ->column();
         return $this;
     }
 
@@ -512,7 +569,7 @@ class SubscriptionQuery extends ElementQuery
      * ```
      *
      * @param bool|null $value The property value
-     * @return static self reference
+     * @return static
      */
     public function onTrial(?bool $value = true): SubscriptionQuery
     {
@@ -552,7 +609,7 @@ class SubscriptionQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return static
      */
     public function nextPaymentDate(mixed $value): SubscriptionQuery
     {
@@ -580,7 +637,7 @@ class SubscriptionQuery extends ElementQuery
      * ```
      *
      * @param bool|null $value The property value
-     * @return static self reference
+     * @return static
      */
     public function isCanceled(?bool $value = true): SubscriptionQuery
     {
@@ -620,7 +677,7 @@ class SubscriptionQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return static
      */
     public function dateCanceled(mixed $value): SubscriptionQuery
     {
@@ -648,7 +705,7 @@ class SubscriptionQuery extends ElementQuery
      * ```
      *
      * @param bool|null $value The property value
-     * @return static self reference
+     * @return static
      */
     public function hasStarted(?bool $value = true): SubscriptionQuery
     {
@@ -676,7 +733,7 @@ class SubscriptionQuery extends ElementQuery
      * ```
      *
      * @param bool|null $value The property value
-     * @return static self reference
+     * @return static
      */
     public function isSuspended(?bool $value = true): SubscriptionQuery
     {
@@ -715,7 +772,7 @@ class SubscriptionQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return static
      */
     public function dateSuspended(mixed $value): SubscriptionQuery
     {
@@ -729,7 +786,7 @@ class SubscriptionQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
-        if ($this->stripeId === [] || $this->priceId === [] || $this->planId === [] || $this->reference === []) {
+        if ($this->stripeId === [] || $this->stripePriceId === [] || $this->priceId === [] || $this->planId === [] || $this->reference === []) {
             return false;
         }
 
@@ -792,22 +849,36 @@ class SubscriptionQuery extends ElementQuery
 
         if (isset($this->priceId) || isset($this->planId) || isset($this->reference)) {
             if (isset($this->planId)) {
-                $this->subQuery->andWhere(
-                    $qb->jsonContains("[[stripestore_subscriptiondata.data]]->>'$.items.data[*].price.id'", $this->planId)
-                );
+                $this->stripePriceId = (new Query())
+                    ->select(['stripeId'])
+                    ->from([Table::PRICES])
+                    ->where(Db::parseParam('id', $this->planId))
+                    ->column();
             }
 
             if (isset($this->reference)) {
-                $this->subQuery->andWhere(
-                    $qb->jsonContains("[[stripestore_subscriptiondata.data]]->>'$.items.data[*].price.id'", $this->reference)
-                );
+                $this->stripePriceId = (new Query())
+                    ->select(['stripeId'])
+                    ->from([Table::PRICES])
+                    ->where(Db::parseParam('id', $this->reference))
+                    ->column();
             }
 
             if (isset($this->priceId)) {
-                $this->subQuery->andWhere(
-                    $qb->jsonContains("[[stripestore_subscriptiondata.data]]->>'$.items.data[*].price.id'", $this->priceId)
-                );
+                $this->stripePriceId = (new Query())
+                    ->select(['stripeId'])
+                    ->from([Table::PRICES])
+                    ->where(Db::parseParam('id', $this->priceId))
+                    ->column();
+                //$qb->jsonContains("[[stripestore_subscriptiondata.prices]]", $this->priceId)
             }
+        }
+
+        if (isset($this->stripePriceId)) {
+            $stripePriceId = $this->prepareForPriceIdSearch('stripePriceId');
+            $this->subQuery->andWhere(
+                Db::parseParam('stripestore_subscriptiondata.prices', $stripePriceId)
+            );
         }
 
         if (isset($this->latestInvoiceId)) {
@@ -888,7 +959,7 @@ class SubscriptionQuery extends ElementQuery
         }
 
         if (isset($this->onTrial)) {
-            $this->subQuery->andWhere($this->_getTrialCondition($this->onTrial, $qb));
+            $this->subQuery->andWhere($this->getTrialCondition($this->onTrial, $qb));
         }
 
         return parent::beforePrepare();
@@ -947,13 +1018,46 @@ class SubscriptionQuery extends ElementQuery
     }
 
     /**
+     * Prepare parameter for searching through subscription price ids.
+     *
+     * @param string $param
+     * @return string|string[]
+     */
+    private function prepareForPriceIdSearch(string $param): string|array
+    {
+        // Prices are stored as a string representation of an array.
+        // In order to support the usual syntax e.g. ['id1', 'id2'] or ['not', 'id1', 'id2']
+        // we need to search with `like` condition.
+        // So if the parameter is an array, all the query values need to start and end with '*'.
+
+        $result = $this->{$param};
+
+        if (is_array($this->{$param})) {
+            $queryParam = QueryParam::parse($this->{$param});
+            if (!empty($queryParam->values)) {
+                $queryParam->values = array_map(function ($val) {
+                    if (!str_starts_with($val, ':')) {
+                        return "*" . $val . "*";
+                    }
+                    return $val;
+
+                }, $queryParam->values);
+
+                $result = array_merge([$queryParam->operator], $queryParam->values);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Returns the SQL condition to use for trial status.
      *
      * @param bool $onTrial
      * @param QueryBuilder $qb
      * @return mixed
      */
-    private function _getTrialCondition(bool $onTrial, QueryBuilder $qb): array
+    private function getTrialCondition(bool $onTrial, QueryBuilder $qb): array
     {
         if ($onTrial === true) {
             // on trial so when trial start is <= now and trial end is > now

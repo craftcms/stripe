@@ -76,9 +76,7 @@ class Product
             foreach ($product->getData() as $key => $value) {
                 $label = StringHelper::titleize(implode(' ', StringHelper::toWords($key, false, true)));
                 if (in_array($key, $dataAttributesToDisplay)) {
-                    if (!is_array($value)) {
-                    }
-                    else {
+                    if (is_array($value)) {
                         switch ($key) {
                             case 'images':
                                 // despite it being called "images" it looks like you can only have one?

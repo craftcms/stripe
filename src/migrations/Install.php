@@ -144,44 +144,60 @@ class Install extends Migration
 
         // subscription data
         // canceledAt
-        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " . $db->quoteColumnName('createdAt'). " VARCHAR(255) 
-     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['created_at']) . ") STORED;");
+        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " .
+            $db->quoteColumnName('canceledAt') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['canceled_at']) . ") STORED;");
         // currentPeriodEnd
-        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " . $db->quoteColumnName('currentPeriodEnd') . " VARCHAR(255)
-     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['current_period_end']) . ") STORED;");
+        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " .
+            $db->quoteColumnName('currentPeriodEnd') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['current_period_end']) . ") STORED;");
         // customerId
-        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " . $db->quoteColumnName('customerId') . " VARCHAR(255)
-     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['customer']) . ") STORED;");
+        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " .
+            $db->quoteColumnName('customerId') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['customer']) . ") STORED;");
         // latestInvoiceId
-        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " . $db->quoteColumnName('latestInvoiceId') . " VARCHAR(255)
-     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['latest_invoice']) . ") STORED;");
+        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " .
+            $db->quoteColumnName('latestInvoiceId') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['latest_invoice']) . ") STORED;");
         // startDate
-        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " . $db->quoteColumnName('startDate') . " VARCHAR(255)
-     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['start_date']) . ") STORED;");
+        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " .
+            $db->quoteColumnName('startDate') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['start_date']) . ") STORED;");
         // trialStart
-        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " . $db->quoteColumnName('trialStart') . " VARCHAR(255)
-     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['trial_start']) . ") STORED;");
+        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " .
+            $db->quoteColumnName('trialStart') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['trial_start']) . ") STORED;");
         // trialEnd
-        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " . $db->quoteColumnName('trialEnd') . " VARCHAR(255)
-     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['trial_end']) . ") STORED;");
+        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " .
+            $db->quoteColumnName('trialEnd') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['trial_end']) . ") STORED;");
+        // prices
+        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " .
+            $db->quoteColumnName('prices') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['items', 'data[*]', 'price', 'id']) . ") STORED;");
 
         // invoice data
         // created
-        $this->execute("ALTER TABLE " . Table::INVOICEDATA . " ADD COLUMN " . $db->quoteColumnName('created') . " VARCHAR(255)  
-     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['created']) . ") STORED;");
+        $this->execute("ALTER TABLE " . Table::INVOICEDATA . " ADD COLUMN " .
+            $db->quoteColumnName('created') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['created']) . ") STORED;");
         // customerEmail
-        $this->execute("ALTER TABLE " . Table::INVOICEDATA . " ADD COLUMN " . $db->quoteColumnName('customerEmail') . " VARCHAR(255) 
-     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['customer_email']) . ") STORED;");
+        $this->execute("ALTER TABLE " . Table::INVOICEDATA . " ADD COLUMN " .
+            $db->quoteColumnName('customerEmail') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['customer_email']) . ") STORED;");
         // number
-        $this->execute("ALTER TABLE " . Table::INVOICEDATA . " ADD COLUMN " . $db->quoteColumnName('number') . " VARCHAR(255) 
-     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['number']) . ") STORED;");
+        $this->execute("ALTER TABLE " . Table::INVOICEDATA . " ADD COLUMN " .
+            $db->quoteColumnName('number') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['number']) . ") STORED;");
         // subscriptionId
-        $this->execute("ALTER TABLE " . Table::INVOICEDATA . " ADD COLUMN " . $db->quoteColumnName('subscriptionId') . " VARCHAR(255) 
-     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['subscription']) . ") STORED;");
+        $this->execute("ALTER TABLE " . Table::INVOICEDATA . " ADD COLUMN " .
+            $db->quoteColumnName('subscriptionId') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['subscription']) . ") STORED;");
 
         // payment method data => customerId
-        $this->execute("ALTER TABLE " . Table::PAYMENTMETHODDATA . " ADD COLUMN " . $db->quoteColumnName('customerId') . " VARCHAR(255) 
-     GENERATED ALWAYS AS (" . $qb->jsonExtract('data', ['customer']) . ") STORED;");
+        $this->execute("ALTER TABLE " . Table::PAYMENTMETHODDATA . " ADD COLUMN " .
+            $db->quoteColumnName('customerId') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['customer']) . ") STORED;");
     }
 
     /**
