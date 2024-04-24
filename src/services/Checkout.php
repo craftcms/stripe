@@ -157,11 +157,7 @@ class Checkout extends Component
             $data += $event->params;
         }
 
-        try {
-            $session = $stripe->checkout->sessions->create($data);
-        } catch (\Exception $e) {
-            Craft::error('Unable to start Stripe checkout session: ' . $e->getMessage());
-        }
+        $session = $stripe->checkout->sessions->create($data);
 
         return $session?->url;
     }
