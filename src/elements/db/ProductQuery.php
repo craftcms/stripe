@@ -2,11 +2,15 @@
 
 namespace craft\stripe\elements\db;
 
+use Craft;
 use craft\base\Element;
+use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
+use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
+use yii\db\Expression;
 
 /**
  * Product query
@@ -22,6 +26,11 @@ class ProductQuery extends ElementQuery
      * @var mixed
      */
     public mixed $stripeStatus = null;
+
+    /**
+     * @var mixed only return products that match the resulting price query.
+     */
+    public mixed $hasPrice = null;
 
     /**
      * @inheritdoc
@@ -116,6 +125,25 @@ class ProductQuery extends ElementQuery
     }
 
     /**
+     * Narrows the query results to only products that have certain prices.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | a [[PriceQuery|PriceQuery]] object | with prices that match the query.
+     *
+     * @param PriceQuery|array $value The property value
+     * @return static self reference
+     * @noinspection PhpUnused
+     */
+    public function hasPrice(mixed $value): static
+    {
+        $this->hasPrice = $value;
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      * @throws QueryAbortedException
      */
@@ -149,6 +177,39 @@ class ProductQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('stripe_productdata.stripeStatus', $this->stripeStatus));
         }
 
+        $this->_applyHasPriceParam();
+
         return parent::beforePrepare();
+    }
+
+    /**
+     * Applies the hasPrice query condition
+     */
+    private function _applyHasPriceParam(): void
+    {
+        if ($this->hasPrice === null) {
+            return;
+        }
+
+        if ($this->hasPrice instanceof PriceQuery) {
+            $priceQuery = $this->hasPrice;
+        } elseif (is_array($this->hasPrice)) {
+            $query = Price::find();
+            $priceQuery = Craft::configure($query, $this->hasPrice);
+        } else {
+            throw new QueryAbortedException('Invalid param used. ProductQuery::hasPrice param only expects a price query or price query config.');
+        }
+
+        $priceQuery->limit = null;
+        $priceQuery->select('stripe_prices.primaryOwnerId');
+
+        // Remove any blank product IDs (if any)
+        $priceQuery->andWhere(['not', ['stripe_prices.primaryOwnerId' => null]]);
+
+        // Uses exists subquery for speed to check for the variant
+        $existsQuery = (new Query())
+            ->from(['existssub' => $priceQuery])
+            ->where(['existssub.primaryOwnerId' => new Expression('[[stripe_products.id]]')]);
+        $this->subQuery->andWhere(['exists', $existsQuery]);
     }
 }
