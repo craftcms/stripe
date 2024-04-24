@@ -30,14 +30,18 @@ class Webhooks extends Component
         switch ($event->type) {
             case 'product.created':
             case 'product.updated':
-                $plugin->getProducts()->createOrUpdateProduct($eventObject);
+                // retrieve the product again as we need some expandable info too
+                $product = $plugin->getApi()->fetchProductById($eventObject->id);
+                $plugin->getProducts()->createOrUpdateProduct($product);
                 break;
             case 'product.deleted':
                 $plugin->getProducts()->deleteProductByStripeId($eventObject->id);
                 break;
             case 'price.created':
             case 'price.updated':
-                $plugin->getPrices()->createOrUpdatePrice($eventObject);
+                // retrieve the price again as we need some expandable info too
+                $price = $plugin->getApi()->fetchPriceById($eventObject->id);
+                $plugin->getPrices()->createOrUpdatePrice($price);
                 break;
             case 'price.deleted':
                 $plugin->getPrices()->deletePriceByStripeId($eventObject->id);
@@ -49,19 +53,25 @@ class Webhooks extends Component
             case 'customer.subscription.pending_update_applied':
             case 'customer.subscription.pending_update_expired':
             case 'customer.subscription.deleted':
-                $plugin->getSubscriptions()->createOrUpdateSubscription($eventObject);
+                // retrieve the subscription again as we need some expandable info too
+                $subscription = $plugin->getApi()->fetchSubscriptionById($eventObject->id);
+                $plugin->getSubscriptions()->createOrUpdateSubscription($subscription);
                 break;
             case 'customer.created':
-                $plugin->getCustomers()->createOrUpdateCustomer($eventObject);
+                // retrieve the customer again as we need some expandable info too
+                $customer = $plugin->getApi()->fetchCustomerById($eventObject->id);
+                $plugin->getCustomers()->createOrUpdateCustomer($customer);
                 break;
             case 'customer.deleted':
-                $plugin->getCustomers()->deleteCustomerByStripeId($eventObject->id);
+                $plugin->getCustomers()->deleteCustomerDataByStripeId($eventObject->id);
                 $plugin->getPaymentMethods()->deletePaymentMethodsByCustomerId($eventObject->id);
                 break;
             case 'payment_method.attached':
             case 'payment_method.automatically_updated':
             case 'payment_method.updated':
-                $plugin->getPaymentMethods()->createOrUpdatePaymentMethod($eventObject);
+                // retrieve the payment method again as we need some expandable info too
+                $paymentMethod = $plugin->getApi()->fetchPaymentMethodByIds($eventObject->customer, $eventObject->id);
+                $plugin->getPaymentMethods()->createOrUpdatePaymentMethod($paymentMethod);
                 break;
             case 'payment_method.detached':
                 $plugin->getPaymentMethods()->deletePaymentMethodByStripeId($eventObject->id);
@@ -78,7 +88,9 @@ class Webhooks extends Component
             // this gets triggered all the time when creating an invoice; when you change a due date, add an item or amend it
             case 'invoice.updated':
             case 'invoice.voided':
-                $plugin->getInvoices()->createOrUpdateInvoice($eventObject);
+                // retrieve the invoice again as we need some expandable info too
+                $invoice = $plugin->getApi()->fetchInvoiceById($eventObject->id);
+                $plugin->getInvoices()->createOrUpdateInvoice($invoice);
                 break;
             // this can only happen when it's a draft invoice
             case 'invoice.deleted':

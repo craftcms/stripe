@@ -12,6 +12,12 @@ use craft\stripe\models\Customer;
 use craft\stripe\models\Invoice;
 use craft\stripe\models\PaymentMethod;
 use craft\stripe\Plugin;
+use Stripe\Customer as StripeCustomer;
+use Stripe\Invoice as StripeInvoice;
+use Stripe\PaymentMethod as StripePaymentMethod;
+use Stripe\Price as StripePrice;
+use Stripe\Product as StripeProduct;
+use Stripe\Subscription as StripeSubscription;
 use Stripe\Stripe;
 use yii\base\Component;
 use Stripe\StripeClient;
@@ -44,6 +50,16 @@ class Api extends Component
             'expand' => $this->prepExpandForFetchAll(Product::$expandParams),
         ]);
     }
+
+    /**
+     * Retrieve a product by id.
+     *
+     * @param string $id
+     * @return StripeProduct
+     */
+    public function fetchProductById(string $id): StripeProduct
+    {
+        return $this->fetchOne($id, 'products', ['expand' => Product::$expandParams]);
     }
 
     /**
@@ -57,6 +73,16 @@ class Api extends Component
             'expand' => $this->prepExpandForFetchAll(Price::$expandParams)
         ]);
     }
+
+    /**
+     * Retrieve a price by id.
+     *
+     * @param string $id
+     * @return StripePrice
+     */
+    public function fetchPriceById(string $id): StripePrice
+    {
+        return $this->fetchOne($id, 'prices', ['expand' => Price::$expandParams]);
     }
 
     /**
@@ -71,6 +97,19 @@ class Api extends Component
             'expand' => $this->prepExpandForFetchAll(Subscription::$expandParams),
         ]);
     }
+
+    /**
+     * Retrieve a subscription by id.
+     *
+     * @param string $id
+     * @return StripeSubscription
+     */
+    public function fetchSubscriptionById(string $id): StripeSubscription
+    {
+        return $this->fetchOne($id, 'subscriptions', [
+            'status' => 'all',
+            'expand' => Subscription::$expandParams,
+        ]);
     }
 
     /**
@@ -102,6 +141,22 @@ class Api extends Component
     }
 
     /**
+     * Retrieve a payment method by customer id and payment id.
+     *
+     * @param string $customerId
+     * @param string $paymentMethodId
+     * @return StripePaymentMethod
+     */
+    public function fetchPaymentMethodByIds(string $customerId, string $paymentMethodId): StripePaymentMethod
+    {
+        return $this->getClient()->customers->retrievePaymentMethod(
+            $customerId,
+            $paymentMethodId,
+            ['expand' => PaymentMethod::$expandParams],
+        );
+    }
+
+    /**
      * Retrieve all customers.
      *
      * @return array
@@ -112,6 +167,16 @@ class Api extends Component
             'expand' => $this->prepExpandForFetchAll(Customer::$expandParams)
         ]);
     }
+
+    /**
+     * Retrieve a customer by id.
+     *
+     * @param string $id
+     * @return StripeCustomer
+     */
+    public function fetchCustomerById(string $id): StripeCustomer
+    {
+        return $this->fetchOne($id, 'customers', ['expand' => Customer::$expandParams]);
     }
 
     /**
@@ -125,6 +190,16 @@ class Api extends Component
             'expand' => $this->prepExpandForFetchAll(Invoice::$expandParams)
         ]);
     }
+
+    /**
+     * Retrieve an invoice by id.
+     *
+     * @param string $id
+     * @return StripeInvoice
+     */
+    public function fetchInvoiceById(string $id): StripeInvoice
+    {
+        return $this->fetchOne($id, 'invoices', ['expand' => Invoice::$expandParams]);
     }
 
     /**
@@ -147,6 +222,19 @@ class Api extends Component
         }
 
         return $resources;
+    }
+
+    /**
+     * Retrieves single API resource by ID.
+     *
+     * @param string $id Stripe ID of the object to fetch
+     * @param string $type name of the Stripe resource
+     * @param array $params
+     * @return mixed
+     */
+    public function fetchOne(string $id, string $type, array $params = []): mixed
+    {
+        return $this->getClient()->$type->retrieve($id, $params);
     }
 
     /**
