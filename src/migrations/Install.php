@@ -58,7 +58,7 @@ class Install extends Migration
         $this->archiveTableIfExists(Table::PRICES);
         $this->createTable(Table::PRICES, [
             'id' => $this->primaryKey(),
-            'primaryOwnerId' => $this->integer()->defaultValue(NULL),
+            'primaryOwnerId' => $this->integer()->defaultValue(null),
             'stripeId' => $this->string(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -75,6 +75,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->string(),
+            'currencies' => $this->text()->defaultValue(null),
         ]);
 
 
@@ -141,6 +142,24 @@ class Install extends Migration
     {
         $db = Craft::$app->getDb();
         $qb = $db->getQueryBuilder();
+
+        // price data
+        // priceType
+        $this->execute("ALTER TABLE " . Table::PRICEDATA . " ADD COLUMN " .
+            $db->quoteColumnName('priceType') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['type']) . ") STORED;");
+        // productId
+        $this->execute("ALTER TABLE " . Table::PRICEDATA . " ADD COLUMN " .
+            $db->quoteColumnName('productId') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['product']) . ") STORED;");
+//        // unitAmount
+//        $this->execute("ALTER TABLE " . Table::PRICEDATA . " ADD COLUMN " .
+//            $db->quoteColumnName('unitAmount') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+//            $qb->jsonExtract('data', ['unit_amount_decimal']) . ") STORED;");
+        // primary currency
+        $this->execute("ALTER TABLE " . Table::PRICEDATA . " ADD COLUMN " .
+            $db->quoteColumnName('primaryCurrency') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $qb->jsonExtract('data', ['currency']) . ") STORED;");
 
         // subscription data
         // canceledAt

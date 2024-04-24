@@ -4,11 +4,13 @@ namespace craft\stripe\elements\db;
 
 use craft\base\ElementInterface;
 use craft\db\QueryAbortedException;
+use craft\db\QueryParam;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\stripe\elements\Product;
+use craft\stripe\enums\PriceType;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -26,6 +28,26 @@ class PriceQuery extends ElementQuery
      * @var mixed
      */
     public mixed $stripeStatus = null;
+
+    /**
+     * @var mixed|null Type of the price one-time or recurring
+     */
+    public mixed $priceType = null;
+
+    /**
+     * @var mixed|null Price's main currency
+     */
+    public mixed $primaryCurrency = null;
+
+    /**
+     * @var mixed|null Price's currency
+     */
+    public mixed $currency = null;
+
+    /**
+     * @var mixed|null Stripe id of the product the price is associated with
+     */
+    public mixed $stripeProductId = null;
 
     /**
      * @var mixed The primary owner element ID(s) that the resulting addresses must belong to.
@@ -92,6 +114,118 @@ class PriceQuery extends ElementQuery
     public function stripeId(mixed $value): self
     {
         $this->stripeId = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the price's type.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `'one_time'` | that are one-time prices.
+     * | `'recurring'` | that are recurring prices.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch recurring prices #}
+     * {% set {elements-var} = {twig-method}
+     *   .priceType('recurring')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch recurring prices
+     * ${elements-var} = {element-class}::find()
+     *     ->priceType(PriceType::Recurring)
+     *     ->all();
+     * ```
+     */
+    public function priceType(mixed $value): self
+    {
+        if ($value instanceof PriceType) {
+            $this->priceType = $value->value;
+        } else {
+            $this->priceType = $value;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the primary currency.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch prices where the primary currency is GBP #}
+     * {% set {elements-var} = {twig-method}
+     *   .primaryCurrency('GBP')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch prices where the primary currency is GBP
+     * ${elements-var} = {element-class}::find()
+     *     ->primaryCurrency('GBP')
+     *     ->all();
+     * ```
+     */
+    public function primaryCurrency(mixed $value): self
+    {
+        $this->primaryCurrency = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the currencies supported by the price.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch prices where the currency is GBP #}
+     * {% set {elements-var} = {twig-method}
+     *   .currency('GBP')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch prices where the currency is GBP
+     * ${elements-var} = {element-class}::find()
+     *     ->currency('GBP')
+     *     ->all();
+     * ```
+     */
+    public function currency(mixed $value): self
+    {
+        $this->currency = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the product associated with the price.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch prices where the product id is prod_abcdefghi #}
+     * {% set {elements-var} = {twig-method}
+     *   .stripeProductId('prod_abcdefghi')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch prices where the product id is prod_abcdefghi
+     * ${elements-var} = {element-class}::find()
+     *     ->stripeProductId('prod_abcdefghi')
+     *     ->all();
+     * ```
+     */
+    public function stripeProductId(mixed $value): self
+    {
+        $this->stripeProductId = $value;
         return $this;
     }
 
@@ -367,6 +501,10 @@ class PriceQuery extends ElementQuery
             'stripe_prices.stripeId',
             'stripe_prices.primaryOwnerId',
             'stripe_pricedata.stripeStatus',
+            'stripe_pricedata.priceType',
+            'stripe_pricedata.primaryCurrency',
+            'stripe_pricedata.currencies',
+            'stripe_pricedata.productId as stripeProductId',
             'stripe_pricedata.data',
         ]);
 
@@ -425,6 +563,23 @@ class PriceQuery extends ElementQuery
 
         if (isset($this->stripeStatus)) {
             $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.stripeStatus', $this->stripeStatus));
+        }
+
+        if (isset($this->priceType)) {
+            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.priceType', $this->priceType));
+        }
+
+        if (isset($this->primaryCurrency)) {
+            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.primaryCurrency', $this->primaryCurrency));
+        }
+
+        if (isset($this->currency)) {
+            $currency = \craft\stripe\helpers\Db::prepareForLikeSearch($this, 'currency');
+            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.currencies', $currency));
+        }
+
+        if (isset($this->stripeProductId)) {
+            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.productId', $this->stripeProductId));
         }
 
         return parent::beforePrepare();

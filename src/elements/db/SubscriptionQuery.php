@@ -873,7 +873,7 @@ class SubscriptionQuery extends ElementQuery
         }
 
         if (isset($this->stripePriceId)) {
-            $stripePriceId = $this->prepareForPriceIdSearch('stripePriceId');
+            $stripePriceId = \craft\stripe\helpers\Db::prepareForLikeSearch($this, 'stripePriceId');
             $this->subQuery->andWhere(
                 Db::parseParam('stripe_subscriptiondata.prices', $stripePriceId)
             );
@@ -1013,39 +1013,6 @@ class SubscriptionQuery extends ElementQuery
         };
 
         return $res;
-    }
-
-    /**
-     * Prepare parameter for searching through subscription price ids.
-     *
-     * @param string $param
-     * @return string|string[]
-     */
-    private function prepareForPriceIdSearch(string $param): string|array
-    {
-        // Prices are stored as a string representation of an array.
-        // In order to support the usual syntax e.g. ['id1', 'id2'] or ['not', 'id1', 'id2']
-        // we need to search with `like` condition.
-        // So if the parameter is an array, all the query values need to start and end with '*'.
-
-        $result = $this->{$param};
-
-        if (is_array($this->{$param})) {
-            $queryParam = QueryParam::parse($this->{$param});
-            if (!empty($queryParam->values)) {
-                $queryParam->values = array_map(function ($val) {
-                    if (!str_starts_with($val, ':')) {
-                        return "*" . $val . "*";
-                    }
-                    return $val;
-
-                }, $queryParam->values);
-
-                $result = array_merge([$queryParam->operator], $queryParam->values);
-            }
-        }
-
-        return $result;
     }
 
     /**

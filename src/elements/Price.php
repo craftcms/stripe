@@ -14,7 +14,6 @@ use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\stripe\db\Table;
 use craft\stripe\Plugin;
@@ -60,6 +59,26 @@ class Price extends Element implements NestedElementInterface
      * @var string
      */
     public string $stripeStatus = 'active';
+
+    /**
+     * @var string|null
+     */
+    public ?string $priceType = null;
+
+    /**
+     * @var string|null
+     */
+    public ?string $primaryCurrency = null;
+
+    /**
+     * @var array|null
+     */
+    public ?array $currencies = null;
+
+    /**
+     * @var string|null
+     */
+    public ?string $stripeProductId = null;
 
     /**
      * @var array|null
@@ -300,7 +319,6 @@ class Price extends Element implements NestedElementInterface
         $sortOptions = parent::defineSortOptions();
 
         unset($sortOptions['stripeEdit']);
-        unset($sortOptions['type']);
         unset($sortOptions['unitPrice']);
         unset($sortOptions['pricePerUnit']);
         unset($sortOptions['interval']);
@@ -313,6 +331,11 @@ class Price extends Element implements NestedElementInterface
             'orderBy' => 'stripe_pricedata.stripeId',
             'defaultDir' => SORT_DESC,
         ];
+        $sortOptions['priceType'] = [
+            'label' => Craft::t('stripe', 'Price Type'),
+            'orderBy' => 'stripe_pricedata.priceType',
+            'defaultDir' => SORT_DESC,
+        ];
 
         return $sortOptions;
     }
@@ -322,7 +345,7 @@ class Price extends Element implements NestedElementInterface
         return [
             'stripeId' => Craft::t('stripe', 'Stripe ID'),
             'stripeEdit' => Craft::t('stripe', 'Stripe Edit'),
-            'type' => Craft::t('stripe', 'Type'),
+            'priceType' => Craft::t('stripe', 'Price Type'),
             'unitPrice' => Craft::t('stripe', 'Unit Price'),
             'pricePerUnit' => Craft::t('stripe', 'Price per Unit'),
             'interval' => Craft::t('stripe', 'Interval'),
@@ -342,7 +365,7 @@ class Price extends Element implements NestedElementInterface
         return [
             'stripeId',
             'stripeStatus',
-            'type',
+            'priceType',
             'unitPrice',
         ];
     }
@@ -486,11 +509,11 @@ class Price extends Element implements NestedElementInterface
         return match ($attribute) {
             'stripeEdit' => Html::a('', $this->getStripeEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]),
             'stripeStatus' => $this->getStripeStatusHtml(),
-            'type' => $this->getData()['type'],
-            'pricePerUnit' => PriceHelper::asPricePerUnit($this->getData()),
-            'unitPrice' => PriceHelper::asUnitPrice($this->getData()),
-            'currency' => strtoupper($this->getData()['currency']),
-            'interval' => PriceHelper::getInterval($this->getData()),
+            'priceType' => $this->priceType ?? '',
+            'pricePerUnit' => $this->pricePerUnit(),
+            'unitPrice' => $this->unitPrice(),
+            'currency' => strtoupper($this->primaryCurrency),
+            'interval' => $this->interval(),
             default => parent::attributeHtml($attribute),
         };
     }

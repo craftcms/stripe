@@ -89,7 +89,7 @@ class Checkout extends Component
 
     /**
      * Returns checkout mode based on the line items for the checkout.
-     * If there are only one-off products in the $lineItems, the mode should be 'payment'.
+     * If there are only one-time products in the $lineItems, the mode should be 'payment'.
      * If there are any recurring products in the $lineItems, the mode should be 'subscription'.
      *
      * @param array $lineItems

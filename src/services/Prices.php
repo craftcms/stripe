@@ -97,6 +97,10 @@ class Prices extends Component
             'data' => Json::decode($price->toJSON()),
         ];
 
+        if (!empty($price->currency_options)) {
+            $attributes['currencies'] = array_keys($price->currency_options->toArray());
+        }
+
         // get the product for this price
         $productElement = ProductElement::find()
             ->stripeId($price->product)

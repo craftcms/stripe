@@ -69,6 +69,7 @@ return [
     'Payment Methods' => 'Payment Methods',
     'Preset Amount' => 'Preset Amount',
     'Price per Unit' => 'Price per Unit',
+    'Price Type' => 'Price Type',
     'Prices' => 'Prices',
     'Product Template' => 'Product Template',
     'Product URI format' => 'Product URI format',
