@@ -26,7 +26,7 @@ class ProductQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected array $defaultOrderBy = ['stripestore_productdata.stripeId' => SORT_ASC];
+    protected array $defaultOrderBy = ['stripe_productdata.stripeId' => SORT_ASC];
 
     /**
      * @inheritdoc
@@ -102,12 +102,12 @@ class ProductQuery extends ElementQuery
             strtolower(Product::STATUS_LIVE) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripestore_productdata.stripeStatus' => 'active',
+                'stripe_productdata.stripeStatus' => 'active',
             ],
             strtolower(Product::STATUS_STRIPE_ARCHIVED) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripestore_productdata.stripeStatus' => 'archived',
+                'stripe_productdata.stripeStatus' => 'archived',
             ],
             default => parent::statusCondition($status),
         };
@@ -125,8 +125,8 @@ class ProductQuery extends ElementQuery
             return false;
         }
 
-        $productTable = 'stripestore_products';
-        $productDataTable = 'stripestore_productdata';
+        $productTable = 'stripe_products';
+        $productDataTable = 'stripe_productdata';
 
         // join standard product element table that only contains the stripeId
         $this->joinElementTable($productTable);
@@ -136,17 +136,17 @@ class ProductQuery extends ElementQuery
         $this->subQuery->innerJoin($productDataJoinTable, "[[$productDataTable.stripeId]] = [[$productTable.stripeId]]");
 
         $this->query->select([
-            'stripestore_products.stripeId',
-            'stripestore_productdata.stripeStatus',
-            'stripestore_productdata.data',
+            'stripe_products.stripeId',
+            'stripe_productdata.stripeStatus',
+            'stripe_productdata.data',
         ]);
 
         if (isset($this->stripeId)) {
-            $this->subQuery->andWhere(Db::parseParam('stripestore_productdata.stripeId', $this->stripeId));
+            $this->subQuery->andWhere(Db::parseParam('stripe_productdata.stripeId', $this->stripeId));
         }
 
         if (isset($this->stripeStatus)) {
-            $this->subQuery->andWhere(Db::parseParam('stripestore_productdata.stripeStatus', $this->stripeStatus));
+            $this->subQuery->andWhere(Db::parseParam('stripe_productdata.stripeStatus', $this->stripeStatus));
         }
 
         return parent::beforePrepare();

@@ -62,7 +62,7 @@ class PriceQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected array $defaultOrderBy = ['stripestore_pricedata.stripeId' => SORT_ASC];
+    protected array $defaultOrderBy = ['stripe_pricedata.stripeId' => SORT_ASC];
 
     /**
      * @inheritdoc
@@ -138,12 +138,12 @@ class PriceQuery extends ElementQuery
             strtolower(Product::STATUS_LIVE) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripestore_pricedata.stripeStatus' => 'active',
+                'stripe_pricedata.stripeStatus' => 'active',
             ],
             strtolower(Product::STATUS_STRIPE_ARCHIVED) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripestore_pricedata.stripeStatus' => 'archived',
+                'stripe_pricedata.stripeStatus' => 'archived',
             ],
             default => parent::statusCondition($status),
         };
@@ -353,8 +353,8 @@ class PriceQuery extends ElementQuery
         }
 
 
-        $priceTable = 'stripestore_prices';
-        $priceDataTable = 'stripestore_pricedata';
+        $priceTable = 'stripe_prices';
+        $priceDataTable = 'stripe_pricedata';
 
         // join standard price element table that only contains the stripeId
         $this->joinElementTable($priceTable);
@@ -364,10 +364,10 @@ class PriceQuery extends ElementQuery
         $this->subQuery->innerJoin($priceDataJoinTable, "[[$priceDataTable.stripeId]] = [[$priceTable.stripeId]]");
 
         $this->query->select([
-            'stripestore_prices.stripeId',
-            'stripestore_prices.primaryOwnerId',
-            'stripestore_pricedata.stripeStatus',
-            'stripestore_pricedata.data',
+            'stripe_prices.stripeId',
+            'stripe_prices.primaryOwnerId',
+            'stripe_pricedata.stripeStatus',
+            'stripe_pricedata.data',
         ]);
 
         if (!empty($this->ownerId) || !empty($this->primaryOwnerId)) {
@@ -375,7 +375,7 @@ class PriceQuery extends ElementQuery
             $ownersCondition = [
                 'and',
                 '[[elements_owners.elementId]] = [[elements.id]]',
-                $this->ownerId ? ['elements_owners.ownerId' => $this->ownerId] : '[[elements_owners.ownerId]] = [[stripestore_prices.primaryOwnerId]]',
+                $this->ownerId ? ['elements_owners.ownerId' => $this->ownerId] : '[[elements_owners.ownerId]] = [[stripe_prices.primaryOwnerId]]',
             ];
 
             $this->query
@@ -389,7 +389,7 @@ class PriceQuery extends ElementQuery
             //$this->subQuery->andWhere(['addresses.fieldId' => $this->fieldId]);
 
             if ($this->primaryOwnerId) {
-                $this->subQuery->andWhere(['stripestore_prices.primaryOwnerId' => $this->primaryOwnerId]);
+                $this->subQuery->andWhere(['stripe_prices.primaryOwnerId' => $this->primaryOwnerId]);
             }
 
             // Ignore revision/draft blocks by default
@@ -399,7 +399,7 @@ class PriceQuery extends ElementQuery
             if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
                 $this->subQuery->innerJoin(
                     ['owners' => Table::ELEMENTS],
-                    $this->ownerId ? '[[owners.id]] = [[elements_owners.ownerId]]' : '[[owners.id]] = [[stripestore_prices.primaryOwnerId]]'
+                    $this->ownerId ? '[[owners.id]] = [[elements_owners.ownerId]]' : '[[owners.id]] = [[stripe_prices.primaryOwnerId]]'
                 );
 
                 if (!$allowOwnerDrafts) {
@@ -416,15 +416,15 @@ class PriceQuery extends ElementQuery
             if (!$this->primaryOwnerId && !$this->ownerId) {
                 throw new QueryAbortedException();
             }
-            $this->subQuery->andWhere(['stripestore_prices.primaryOwnerId' => $this->primaryOwnerId ?? $this->ownerId]);
+            $this->subQuery->andWhere(['stripe_prices.primaryOwnerId' => $this->primaryOwnerId ?? $this->ownerId]);
         }
 
         if (isset($this->stripeId)) {
-            $this->subQuery->andWhere(Db::parseParam('stripestore_pricedata.stripeId', $this->stripeId));
+            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.stripeId', $this->stripeId));
         }
 
         if (isset($this->stripeStatus)) {
-            $this->subQuery->andWhere(Db::parseParam('stripestore_pricedata.stripeStatus', $this->stripeStatus));
+            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.stripeStatus', $this->stripeStatus));
         }
 
         return parent::beforePrepare();

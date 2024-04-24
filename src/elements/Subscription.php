@@ -256,7 +256,7 @@ class Subscription extends Element
 
         $sortOptions['customerEmail'] = [
             'label' => Craft::t('stripe', 'Customer Email'),
-            'orderBy' => '[[stripestore_customerdata.email]]',
+            'orderBy' => '[[stripe_customerdata.email]]',
             'defaultDir' => SORT_ASC,
         ];
 

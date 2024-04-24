@@ -108,7 +108,7 @@ class SubscriptionQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected array $defaultOrderBy = ['stripestore_subscriptions.stripeId' => SORT_ASC];
+    protected array $defaultOrderBy = ['stripe_subscriptions.stripeId' => SORT_ASC];
 
     /**
      * @inheritdoc
@@ -790,8 +790,8 @@ class SubscriptionQuery extends ElementQuery
 
         $qb = Craft::$app->getDb()->getQueryBuilder();
 
-        $subscriptionTable = 'stripestore_subscriptions';
-        $subscriptionDataTable = 'stripestore_subscriptiondata';
+        $subscriptionTable = 'stripe_subscriptions';
+        $subscriptionDataTable = 'stripe_subscriptiondata';
 
         // join standard subscription element table that only contains the stripeId
         $this->joinElementTable($subscriptionTable);
@@ -800,31 +800,31 @@ class SubscriptionQuery extends ElementQuery
         $this->query->leftJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
         $this->subQuery->leftJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
 
-        $customerDataJoinTable = ['stripestore_customerdata' => '{{%stripestore_customerdata}}'];
+        $customerDataJoinTable = ['stripe_customerdata' => '{{%stripe_customerdata}}'];
         $this->query->leftJoin(
             $customerDataJoinTable,
-            "[[stripestore_customerdata.stripeId]] = [[$subscriptionDataTable.customerId]]",
+            "[[stripe_customerdata.stripeId]] = [[$subscriptionDataTable.customerId]]",
         );
         $this->subQuery->leftJoin(
             $customerDataJoinTable,
-            "[[stripestore_customerdata.stripeId]] = [[$subscriptionDataTable.customerId]]",
+            "[[stripe_customerdata.stripeId]] = [[$subscriptionDataTable.customerId]]",
         );
 
         $this->query->select([
-            'stripestore_subscriptions.stripeId',
-            'stripestore_subscriptiondata.stripeStatus',
-            'stripestore_subscriptiondata.data',
-            'stripestore_customerdata.stripeId AS customerStripeId',
-            'stripestore_customerdata.email AS customerEmail',
-            'stripestore_customerdata.data AS customerData',
+            'stripe_subscriptions.stripeId',
+            'stripe_subscriptiondata.stripeStatus',
+            'stripe_subscriptiondata.data',
+            'stripe_customerdata.stripeId AS customerStripeId',
+            'stripe_customerdata.email AS customerEmail',
+            'stripe_customerdata.data AS customerData',
         ]);
 
         if (isset($this->stripeId)) {
-            $this->subQuery->andWhere(Db::parseParam('stripestore_subscriptions.stripeId', $this->stripeId));
+            $this->subQuery->andWhere(Db::parseParam('stripe_subscriptions.stripeId', $this->stripeId));
         }
 
         if (isset($this->customerId)) {
-            $this->subQuery->andWhere(Db::parseParam('stripestore_customerdata.stripeId', $this->customerId));
+            $this->subQuery->andWhere(Db::parseParam('stripe_customerdata.stripeId', $this->customerId));
         }
 
         if (isset($this->userId)) {
@@ -838,11 +838,11 @@ class SubscriptionQuery extends ElementQuery
             if (empty($userEmails)) {
                 $userEmails = ':empty:';
             }
-            $this->subQuery->andWhere(Db::parseParam('stripestore_customerdata.email', $userEmails));
+            $this->subQuery->andWhere(Db::parseParam('stripe_customerdata.email', $userEmails));
         }
 
         if (isset($this->userEmail)) {
-            $this->subQuery->andWhere(Db::parseParam('stripestore_customerdata.email', $this->userEmail));
+            $this->subQuery->andWhere(Db::parseParam('stripe_customerdata.email', $this->userEmail));
         }
 
         if (isset($this->priceId) || isset($this->planId) || isset($this->reference)) {
@@ -868,31 +868,31 @@ class SubscriptionQuery extends ElementQuery
                     ->from([Table::PRICES])
                     ->where(Db::parseParam('id', $this->priceId))
                     ->column();
-                //$qb->jsonContains("[[stripestore_subscriptiondata.prices]]", $this->priceId)
+                //$qb->jsonContains("[[stripe_subscriptiondata.prices]]", $this->priceId)
             }
         }
 
         if (isset($this->stripePriceId)) {
             $stripePriceId = $this->prepareForPriceIdSearch('stripePriceId');
             $this->subQuery->andWhere(
-                Db::parseParam('stripestore_subscriptiondata.prices', $stripePriceId)
+                Db::parseParam('stripe_subscriptiondata.prices', $stripePriceId)
             );
         }
 
         if (isset($this->latestInvoiceId)) {
             $this->subQuery->leftJoin(
-                ['stripestore_invoicedata' => '{{%stripestore_invoicedata}}'],
-                "[[stripestore_subscriptions.stripeId]] = [[stripestore_invoicedata.subscriptionId]]",
+                ['stripe_invoicedata' => '{{%stripe_invoicedata}}'],
+                "[[stripe_subscriptions.stripeId]] = [[stripe_invoicedata.subscriptionId]]",
             );
             $this->subQuery->andWhere(Db::parseParam(
-                "stripestore_subscriptiondata.latestInvoiceId",
+                "stripe_subscriptiondata.latestInvoiceId",
                 $this->latestInvoiceId
             ));
         }
 
         if (isset($this->nextPaymentDate)) {
             $this->subQuery->andWhere(Db::parseTimestampParam(
-                "stripestore_subscriptiondata.currentPeriodEnd",
+                "stripe_subscriptiondata.currentPeriodEnd",
                 $this->nextPaymentDate,
             ));
         }
@@ -900,12 +900,12 @@ class SubscriptionQuery extends ElementQuery
         if (isset($this->isCanceled)) {
             if ($this->isCanceled) {
                 $this->subQuery->andWhere(Db::parseParam(
-                    'stripestore_subscriptiondata.stripeStatus',
+                    'stripe_subscriptiondata.stripeStatus',
                     Subscription::STRIPE_STATUS_CANCELED
                 ));
             } else {
                 $this->subQuery->andWhere(Db::parseParam(
-                    'stripestore_subscriptiondata.stripeStatus',
+                    'stripe_subscriptiondata.stripeStatus',
                     Subscription::STRIPE_STATUS_CANCELED,
                     'not'
                 ));
@@ -914,16 +914,16 @@ class SubscriptionQuery extends ElementQuery
 
         if (isset($this->dateCanceled)) {
             $this->subQuery->andWhere(Db::parseParam(
-                "stripestore_subscriptiondata.canceledAt",
+                "stripe_subscriptiondata.canceledAt",
                 $this->dateCanceled,
             ));
         }
 
         if (isset($this->hasStarted)) {
             if ($this->hasStarted) {
-                $q = new Expression("stripestore_subscriptiondata.startDate <= NOW()");
+                $q = new Expression("stripe_subscriptiondata.startDate <= NOW()");
             } else {
-                $q = new Expression("stripestore_subscriptiondata.startDate > NOW()");
+                $q = new Expression("stripe_subscriptiondata.startDate > NOW()");
             }
             $this->subQuery->andWhere($q);
         }
@@ -931,12 +931,12 @@ class SubscriptionQuery extends ElementQuery
         if (isset($this->isSuspended)) {
             if ($this->isSuspended) {
                 $this->subQuery->andWhere(Db::parseParam(
-                    'stripestore_subscriptiondata.stripeStatus',
+                    'stripe_subscriptiondata.stripeStatus',
                     \Stripe\Subscription::STATUS_PAST_DUE,
                 ));
             } else {
                 $this->subQuery->andWhere(Db::parseParam(
-                    'stripestore_subscriptiondata.stripeStatus',
+                    'stripe_subscriptiondata.stripeStatus',
                     \Stripe\Subscription::STATUS_PAST_DUE,
                     'not'
                 ));
@@ -946,12 +946,12 @@ class SubscriptionQuery extends ElementQuery
         if (isset($this->dateSuspended)) {
             // todo: should we check for isSuspended too?
             $this->subQuery->leftJoin(
-                ['stripestore_invoicedata' => '{{%stripestore_invoicedata}}'],
-                "[[stripestore_subscriptions.stripeId]] = [[stripestore_invoicedata.subscriptionId",
+                ['stripe_invoicedata' => '{{%stripe_invoicedata}}'],
+                "[[stripe_subscriptions.stripeId]] = [[stripe_invoicedata.subscriptionId",
             );
 
             $this->subQuery->andWhere(Db::parseTimestampParam(
-                "stripestore_invoicedata.created",
+                "stripe_invoicedata.created",
                 $this->dateSuspended
             ));
         }
@@ -997,17 +997,17 @@ class SubscriptionQuery extends ElementQuery
             strtolower(Subscription::STATUS_LIVE) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripestore_subscriptiondata.stripeStatus' => 'active',
+                'stripe_subscriptiondata.stripeStatus' => 'active',
             ],
             strtolower(Subscription::STATUS_STRIPE_SCHEDULED) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripestore_subscriptiondata.stripeStatus' => 'scheduled',
+                'stripe_subscriptiondata.stripeStatus' => 'scheduled',
             ],
             strtolower(Subscription::STATUS_STRIPE_CANCELED) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripestore_subscriptiondata.stripeStatus' => 'canceled',
+                'stripe_subscriptiondata.stripeStatus' => 'canceled',
             ],
             default => parent::statusCondition($status),
         };
@@ -1062,15 +1062,15 @@ class SubscriptionQuery extends ElementQuery
             if (Craft::$app->getDb()->getIsPgsql()) {
                 return [
                     'and',
-                    new Expression("stripestore_subscriptiondata.trialStart <= EXTRACT(EPOCH FROM now())"),
-                    new Expression("stripestore_subscriptiondata.trialEnd > EXTRACT(EPOCH FROM now())"),
+                    new Expression("stripe_subscriptiondata.trialStart <= EXTRACT(EPOCH FROM now())"),
+                    new Expression("stripe_subscriptiondata.trialEnd > EXTRACT(EPOCH FROM now())"),
                 ];
             }
 
             return [
                 'and',
-                new Expression("stripestore_subscriptiondata.trialStart <= UNIX_TIMESTAMP()"),
-                new Expression("stripestore_subscriptiondata.trialEnd > UNIX_TIMESTAMP()"),
+                new Expression("stripe_subscriptiondata.trialStart <= UNIX_TIMESTAMP()"),
+                new Expression("stripe_subscriptiondata.trialEnd > UNIX_TIMESTAMP()"),
             ];
         }
 
@@ -1078,15 +1078,15 @@ class SubscriptionQuery extends ElementQuery
         if (Craft::$app->getDb()->getIsPgsql()) {
             return [
                 'or',
-                new Expression("stripestore_subscriptiondata.trialStart > EXTRACT(EPOCH FROM now())"),
-                new Expression("stripestore_subscriptiondata.trialEnd < EXTRACT(EPOCH FROM now())"),
+                new Expression("stripe_subscriptiondata.trialStart > EXTRACT(EPOCH FROM now())"),
+                new Expression("stripe_subscriptiondata.trialEnd < EXTRACT(EPOCH FROM now())"),
             ];
         }
 
         return [
             'or',
-            new Expression("stripestore_subscriptiondata.trialStart > UNIX_TIMESTAMP()"),
-            new Expression("stripestore_subscriptiondata.trialEnd < UNIX_TIMESTAMP()"),
+            new Expression("stripe_subscriptiondata.trialStart > UNIX_TIMESTAMP()"),
+            new Expression("stripe_subscriptiondata.trialEnd < UNIX_TIMESTAMP()"),
         ];
     }
 }
