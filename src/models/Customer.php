@@ -23,6 +23,11 @@ class Customer extends Model
     public ?string $email = null;
 
     /**
+     * @var array|string[] Array of params that should be expanded when fetching Customer from the Stripe API
+     */
+    public static array $expandParams = [];
+
+    /**
      * Return URL to edit the customer in Stripe Dashboard
      *
      * @return string

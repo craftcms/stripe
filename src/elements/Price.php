@@ -72,6 +72,14 @@ class Price extends Element implements NestedElementInterface
      */
     private ?Product $_product = null;
 
+    /**
+     * @var array|string[] Array of params that should be expanded when fetching Price from the Stripe API
+     */
+    public static array $expandParams = [
+        'currency_options',
+        'tiers',
+    ];
+
 
     // Methods
     // -------------------------------------------------------------------------

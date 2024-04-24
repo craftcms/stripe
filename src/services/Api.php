@@ -5,6 +5,12 @@ namespace craft\stripe\services;
 use Craft;
 use craft\helpers\App;
 use craft\log\MonologTarget;
+use craft\stripe\elements\Price;
+use craft\stripe\elements\Product;
+use craft\stripe\elements\Subscription;
+use craft\stripe\models\Customer;
+use craft\stripe\models\Invoice;
+use craft\stripe\models\PaymentMethod;
 use craft\stripe\Plugin;
 use Stripe\Stripe;
 use yii\base\Component;
@@ -34,7 +40,10 @@ class Api extends Component
      */
     public function fetchAllProducts(): array
     {
-        return $this->fetchAll('products', ['expand' => ['data.default_price']]);
+        return $this->fetchAll('products', [
+            'expand' => $this->prepExpandForFetchAll(Product::$expandParams),
+        ]);
+    }
     }
 
     /**
@@ -44,7 +53,10 @@ class Api extends Component
      */
     public function fetchAllPrices(): array
     {
-        return $this->fetchAll('prices'/*, ['expand' => ['data.product']]*/);
+        return $this->fetchAll('prices', [
+            'expand' => $this->prepExpandForFetchAll(Price::$expandParams)
+        ]);
+    }
     }
 
     /**
@@ -54,7 +66,11 @@ class Api extends Component
      */
     public function fetchAllSubscriptions(): array
     {
-        return $this->fetchAll('subscriptions', ['status' => 'all']);
+        return $this->fetchAll('subscriptions', [
+            'status' => 'all',
+            'expand' => $this->prepExpandForFetchAll(Subscription::$expandParams),
+        ]);
+    }
     }
 
     /**
@@ -73,7 +89,9 @@ class Api extends Component
 
             // only get payment methods if the user exists
             if ($user) {
-                $results = $customer->allPaymentMethods($customer->id);
+                $results = $customer->allPaymentMethods($customer->id, [
+                    'expand' => $this->prepExpandForFetchAll(PaymentMethod::$expandParams),
+                ]);
                 foreach ($results as $result) {
                     $paymentMethods[] = $result;
                 }
@@ -90,7 +108,10 @@ class Api extends Component
      */
     public function fetchAllCustomers(): array
     {
-        return $this->fetchAll('customers');
+        return $this->fetchAll('customers', [
+            'expand' => $this->prepExpandForFetchAll(Customer::$expandParams)
+        ]);
+    }
     }
 
     /**
@@ -100,7 +121,10 @@ class Api extends Component
      */
     public function fetchAllInvoices(): array
     {
-        return $this->fetchAll('invoices');
+        return $this->fetchAll('invoices', [
+            'expand' => $this->prepExpandForFetchAll(Invoice::$expandParams)
+        ]);
+    }
     }
 
     /**
@@ -169,5 +193,20 @@ class Api extends Component
     {
         $settings = Plugin::getInstance()->getSettings();
         return App::parseEnv($settings->endpointSecret);
+    }
+
+    /**
+     * Prepares expand params for use with fetchAll.
+     * When fetching lists (all), expand params need to be prepended with 'data.'.
+     * https://docs.stripe.com/api/expanding_objects
+     *
+     * @param array $params
+     * @return array
+     */
+    private function prepExpandForFetchAll(array $params): array
+    {
+        array_walk($params, fn(&$item) => $item = 'data.'.$item);
+
+        return $params;
     }
 }

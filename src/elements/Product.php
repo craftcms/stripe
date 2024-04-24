@@ -83,6 +83,13 @@ class Product extends Element
      */
     private ?Price $_defaultPrice;
 
+    /**
+     * @var array|string[] Array of params that should be expanded when fetching Product from the Stripe API
+     */
+    public static array $expandParams = [
+        'default_price'
+    ];
+
 
     // Methods
     // -------------------------------------------------------------------------

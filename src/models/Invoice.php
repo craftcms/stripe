@@ -18,6 +18,11 @@ use craft\stripe\Plugin;
 class Invoice extends Model
 {
     /**
+     * @var array|string[] Array of params that should be expanded when fetching Invoice from the Stripe API
+     */
+    public static array $expandParams = [];
+
+    /**
      * Return URL to edit the invoice in Stripe Dashboard
      *
      * @return string

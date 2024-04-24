@@ -126,7 +126,7 @@ class Customers extends Component
      * @throws \Throwable
      * @throws \yii\db\StaleObjectException
      */
-    public function deleteCustomerByStripeId(string $stripeId): void
+    public function deleteCustomerDataByStripeId(string $stripeId): void
     {
         if ($customerData = CustomerDataRecord::find()->where(['stripeId' => $stripeId])->one()) {
             $customerData->delete();
