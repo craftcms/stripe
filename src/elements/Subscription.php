@@ -160,6 +160,14 @@ class Subscription extends Element
     /**
      * @inheritdoc
      */
+    public function showStatusField(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function statuses(): array
     {
         return [
