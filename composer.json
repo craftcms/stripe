@@ -2,7 +2,13 @@
   "name": "craftcms/stripe",
   "description": "Stripe Integration for Craft CMS",
   "type": "craft-plugin",
-  "license": "mit",
+  "keywords": [
+    "cms",
+    "craftcms",
+    "stripe"
+  ],
+  "homepage": "https://github.com/craftcms/stripe",
+  "license": "MIT",
   "support": {
     "email": "support@craftcms.com",
     "issues": "https://github.com/craftcms/stripe/issues?state=open",
@@ -10,6 +16,8 @@
     "docs": "https://github.com/craftcms/stripe",
     "rss": "https://github.com/craftcms/stripe/releases.atom"
   },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "require": {
     "php": "^8.2",
     "craftcms/cms": "^5.0.0",
@@ -18,7 +26,6 @@
   "require-dev": {
     "craftcms/ecs": "dev-main",
     "craftcms/phpstan": "dev-main",
-    "craftcms/generator": "2.0.1",
     "craftcms/rector": "dev-main",
     "vlucas/phpdotenv": "^5.4.1"
   },
@@ -30,6 +37,7 @@
   "extra": {
     "handle": "stripe",
     "name": "Stripe",
+    "description": "Synchronize and extend product, price and subscription data from Stripe.",
     "developer": "Pixel & Tonic",
     "documentationUrl": "https://github.com/craftcms/stripe"
   },
@@ -40,9 +48,6 @@
   },
   "config": {
     "sort-packages": true,
-    "platform": {
-      "php": "8.2"
-    },
     "allow-plugins": {
       "yiisoft/yii2-composer": true,
       "craftcms/plugin-installer": true
