@@ -84,7 +84,7 @@ class Customers extends Component
      * Returns Customer(s) by email address
      *
      * @param string|null $email
-     * @return array
+     * @return Customer[]
      */
     public function getCustomersByEmail(?string $email = null): array
     {

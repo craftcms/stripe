@@ -1,14 +1,29 @@
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 {% do view.registerAssetBundle('craft\\stripe\\web\\assets\\stripecp\\StripeCpAsset') -%}
 
-<h3>{{ 'Subscriptions'|t('stripe') }}</h3>
-{{ subscriptions|raw }}
+{% if customers is empty %}
+    <p class="zilch">{{ 'This user isn’t a Stripe customer'|t('stripe') }}</p>
+{% else %}
+    <h3>{{ 'Stripe Customer Accounts linked to this user'|t('stripe') }}</h3>
+    <ul class="user-customers">
+        {% for customer in customers %}
+            <li>
+                <a href="{{ customer.getStripeEditUrl() }}" target="_blank">
+                    {{ customer.data.name }} ({{ customer.email }}) <span data-icon="external"></span>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
 
-<h3>{{ 'Invoices'|t('stripe') }}</h3>
-<div id="invoices-vue-admin-table"></div>
+    <h3>{{ 'Subscriptions'|t('stripe') }}</h3>
+    {{ subscriptions|raw }}
 
-<h3>{{ 'Payment Methods'|t('stripe') }}</h3>
-<div id="payment-methods-vue-admin-table"></div>
+    <h3>{{ 'Invoices'|t('stripe') }}</h3>
+    <div id="invoices-vue-admin-table"></div>
+
+    <h3>{{ 'Payment Methods'|t('stripe') }}</h3>
+    <div id="payment-methods-vue-admin-table"></div>
+{% endif %}
 
 {% js %}
     var invoiceColumns = [

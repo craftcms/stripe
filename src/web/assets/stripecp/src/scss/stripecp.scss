@@ -1,5 +1,19 @@
 @import "node_modules/craftcms-sass/_mixins";
 
+.user-customers {
+  li {
+    padding: 0.5em 0;
+  }
+  a {
+    position: relative;
+
+    span {
+      position: absolute;
+      top: -0.25em;
+    }
+  }
+}
+
 .proxy-element-card {
   position: relative;
   padding-top: 15px;
