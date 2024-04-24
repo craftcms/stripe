@@ -25,16 +25,19 @@ class Price
 {
     /**
      * Returns price amount as number & currency.
-     * E.g. £10.50; $13.35
      *
-     * @param int|null $val
+     * examples:
+     * £10.50
+     * $13.35
+     *
+     * @param int|null $unitAmount
      * @param string $currency
      * @return string
      * @throws InvalidConfigException
      */
-    public static function asPriceAmount(?int $val, string $currency): string
+    public static function asPriceAmount(?int $unitAmount, string $currency): string
     {
-        return Craft::$app->getFormatter()->asCurrency($val / 100, $currency);
+        return Craft::$app->getFormatter()->asCurrency($unitAmount / 100, $currency);
     }
 
     /**
@@ -104,6 +107,10 @@ class Price
 
     /**
      * Returns the interval of the price.
+     *
+     * examples:
+     * One-time
+     * Every 1 month
      *
      * @param mixed $stripePrice
      * @return string

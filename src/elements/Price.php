@@ -213,6 +213,70 @@ class Price extends Element implements NestedElementInterface
     }
 
     /**
+     * Returns price amount as number & currency.
+     *
+     * examples:
+     * £10.50
+     * $13.35
+     *
+     * @return string
+     * @throws InvalidConfigException
+     */
+    public function priceAmount(): string
+    {
+        return PriceHelper::asPriceAmount($this->_data['unit_amount'], $this->_data['currency']);
+    }
+
+    /**
+     * Returns the unit price of the Stripe Price object.
+     * It can be loosely thought of as price per unit + interval.
+     *
+     * examples:
+     * £10.00
+     * £10.00/month
+     * £30 every 3 month
+     * £5.00 per group of 10 every 3 month
+     * Customer input price
+     *
+     * @return string
+     * @throws InvalidConfigException
+     */
+    public function unitPrice(): string
+    {
+        return PriceHelper::asUnitPrice($this->_data);
+    }
+
+    /**
+     * Returns the price per unit
+     *
+     * examples:
+     * £10.00
+     * £5.00 per group of 10
+     * Customer chooses
+     *
+     * @return string
+     * @throws InvalidConfigException
+     */
+    public function pricePerUnit(): string
+    {
+        return PriceHelper::asPricePerUnit($this->_data);
+    }
+
+    /**
+     * Returns the interval of the price.
+     *
+     * examples:
+     * One-time
+     * Every 1 month
+     *
+     * @return string
+     */
+    public function interval(): string
+    {
+        return PriceHelper::getInterval($this->_data);
+    }
+
+    /**
      * @inheritdoc
      */
     protected static function includeSetStatusAction(): bool
