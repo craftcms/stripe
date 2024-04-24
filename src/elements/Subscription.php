@@ -212,7 +212,7 @@ class Subscription extends Element
         /** @noinspection PhpUnhandledExceptionInspection */
         Craft::$app->getView()->registerAssetBundle(StripeCpAsset::class);
         $subscriptionCard = SubscriptionHelper::renderCardHtml($this);
-        return $subscriptionCard . parent::getSidebarHtml($static);
+        return parent::getSidebarHtml($static) . $subscriptionCard;
     }
 
     /**

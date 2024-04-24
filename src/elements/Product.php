@@ -228,7 +228,7 @@ class Product extends Element
         /** @noinspection PhpUnhandledExceptionInspection */
         Craft::$app->getView()->registerAssetBundle(StripeCpAsset::class);
         $productCard = ProductHelper::renderCardHtml($this);
-        return $productCard . parent::getSidebarHtml($static);
+        return parent::getSidebarHtml($static) . $productCard;
     }
 
     /**

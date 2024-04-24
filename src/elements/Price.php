@@ -209,7 +209,7 @@ class Price extends Element implements NestedElementInterface
         /** @noinspection PhpUnhandledExceptionInspection */
         Craft::$app->getView()->registerAssetBundle(StripeCpAsset::class);
         $priceCard = PriceHelper::renderCardHtml($this);
-        return $priceCard . parent::getSidebarHtml($static);
+        return parent::getSidebarHtml($static) . $priceCard;
     }
 
     /**
