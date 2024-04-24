@@ -11,6 +11,7 @@
  * @package   Stripe
  */
 return [
+    '{unitPrice} per group of {divideBy}' => '{unitPrice} per group of {divideBy}',
     'Add a product' => 'Add a product',
     'All products' => 'All products',
     'All subscriptions' => 'All subscriptions',
@@ -29,6 +30,7 @@ return [
     'Couldn’t save settings.' => 'Couldn’t save settings.',
     'Create the webhook for the current environment.' => 'Create the webhook for the current environment.',
     'Create' => 'Create',
+    'Created {duration} ago.' => 'Created {duration} ago.',
     'Created at' => 'Created at',
     'Created' => 'Created',
     'Currency' => 'Currency',
@@ -41,6 +43,7 @@ return [
     'Due' => 'Due',
     'Ended at' => 'Ended at',
     'Endpoint Secret' => 'Endpoint Secret',
+    'Every {intervalCount} {interval}' => 'Every {intervalCount} {interval}',
     'Frequency' => 'Frequency',
     'General' => 'General',
     'ID' => 'ID',

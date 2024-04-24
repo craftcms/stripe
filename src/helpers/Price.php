@@ -95,7 +95,10 @@ class Price
         if ($stripePrice['transform_quantity'] === null) {
             $pricePerUnit = $unitPrice;
         } else {
-            $pricePerUnit = $unitPrice . " per group of " . $stripePrice['transform_quantity']['divide_by'];
+            $pricePerUnit = Craft::t('stripe', '{unitPrice} per group of {divideBy}', [
+                'unitPrice' => $unitPrice,
+                'divideBy' => $stripePrice['transform_quantity']['divide_by'],
+            ]);
         }
 
         if ($stripePrice['custom_unit_amount']) {
@@ -120,7 +123,10 @@ class Price
         if ($stripePrice['recurring'] === null) {
             $interval = Craft::t('stripe', 'One-time');
         } else {
-            $interval = "Every {$stripePrice['recurring']['interval_count']} {$stripePrice['recurring']['interval']}";
+            $interval = Craft::t('stripe', 'Every {intervalCount} {interval}', [
+                'intervalCount' => $stripePrice['recurring']['interval_count'],
+                'interval' => $stripePrice['recurring']['interval'],
+            ]);
         }
 
         return $interval;
@@ -257,9 +263,13 @@ class Price
         $now = new \DateTime();
         $diff = $now->diff($dateCreated);
         $duration = DateTimeHelper::humanDuration($diff, false);
-        $footer = Html::tag('div', 'Created ' . $duration . ' ago.' . $spinner, [
-            'class' => 'pec-footer',
-        ]);
+        $footer = Html::tag(
+            'div',
+            Craft::t('stripe', 'Created {duration} ago.', ['duration' => $duration]) . $spinner,
+            [
+                'class' => 'pec-footer',
+            ]
+        );
 
         return Html::tag('div', $cardHeader . $hr . $metadataHtml . $footer, [
             'class' => 'meta proxy-element-card',
