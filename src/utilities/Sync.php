@@ -15,7 +15,7 @@ class Sync extends Utility
      */
     public static function displayName(): string
     {
-        return Craft::t('stripe', 'Stripe Sync');
+        return Craft::t('stripe', 'Stripe Sync All');
     }
 
     /**
@@ -23,7 +23,7 @@ class Sync extends Utility
      */
     static function id(): string
     {
-        return 'stripe-sync';
+        return 'stripe-sync-all';
     }
 
     /**
