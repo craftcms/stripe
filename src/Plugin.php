@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\stripe;
 
@@ -47,7 +52,7 @@ use yii\base\InvalidConfigException;
  *
  * @method static Plugin getInstance()
  * @method Settings getSettings()
- * @author Pixel & Tonic <support@craftcms.com>
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Pixel & Tonic
  * @license MIT
  * @property-read Products $products
@@ -119,7 +124,7 @@ class Plugin extends BasePlugin
         // Defer most setup tasks until Craft is fully initialized
         Craft::$app->onInit(function() {
             $request = Craft::$app->getRequest();
-            
+
             $this->registerElementTypes();
             $this->registerUtilityTypes();
             $this->registerUserEditScreens();

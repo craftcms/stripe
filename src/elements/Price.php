@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\stripe\elements;
 
@@ -27,6 +32,7 @@ use yii\base\InvalidConfigException;
  * Price element type
  *
  * @property-read Product|null $product the product this price belongs to
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class Price extends Element implements NestedElementInterface
 {

@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\stripe\services;
 
@@ -17,6 +22,8 @@ use yii\db\Expression;
 
 /**
  * Payment Methods service
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class PaymentMethods extends Component
 {

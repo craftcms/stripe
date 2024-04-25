@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\stripe\migrations;
 
@@ -14,6 +19,8 @@ use yii\base\NotSupportedException;
 
 /**
  * Install migration.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class Install extends Migration
 {

@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\stripe\elements;
 
@@ -30,6 +35,7 @@ use yii\helpers\Html as HtmlHelper;
  * Product element type
  *
  * @property-read Price[]|null $prices the product’s prices
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class Product extends Element
 {

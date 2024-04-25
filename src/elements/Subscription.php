@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\stripe\elements;
 
@@ -23,6 +28,7 @@ use craft\stripe\web\assets\stripecp\StripeCpAsset;
  * Subscription element type
  *
  * @property-read Product[]|null $products the products in this subscription
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class Subscription extends Element
 {

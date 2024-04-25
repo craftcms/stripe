@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\stripe\console\controllers;
 
@@ -12,6 +17,8 @@ use yii\console\ExitCode;
 
 /**
  * Sync controller
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class SyncController extends Controller
 {

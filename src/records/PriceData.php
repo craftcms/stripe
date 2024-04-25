@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\stripe\records;
 
@@ -8,6 +13,8 @@ use yii\db\ActiveQueryInterface;
 
 /**
  * Price Data record
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @property string $stripeId
  * @property string $productId

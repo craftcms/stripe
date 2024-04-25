@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\stripe\services;
 
@@ -18,6 +23,8 @@ use yii\base\Component;
 
 /**
  * Prices service
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class Prices extends Component
 {

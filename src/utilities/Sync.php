@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\stripe\utilities;
 
@@ -7,6 +12,8 @@ use craft\base\Utility;
 
 /**
  * Sync utility
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class Sync extends Utility
 {
