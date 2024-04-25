@@ -98,7 +98,7 @@ class Checkout extends Component
      * @param array $lineItems
      * @return string
      */
-    private function getCheckoutMode(array|object $lineItems): string
+    private function getCheckoutMode(array $lineItems): string
     {
         // figure out checkout mode based on whether there are any recurring prices in the $lineItems
         $mode = StripeCheckoutSession::MODE_PAYMENT;
