@@ -10,9 +10,7 @@ namespace craft\stripe\controllers;
 use Craft;
 use craft\stripe\elements\Price;
 use craft\stripe\helpers\Price as PriceHelper;
-use craft\stripe\Plugin;
 use craft\web\Controller;
-use yii\web\Response;
 
 /**
  * The PricesController handles listing and showing Stripe prices elements.

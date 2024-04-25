@@ -6,22 +6,22 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
+use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
-use craft\elements\conditions\ElementConditionInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\enums\PropagationMethod;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\stripe\Plugin;
 use craft\stripe\db\Table;
 use craft\stripe\elements\conditions\products\ProductCondition;
 use craft\stripe\elements\db\PriceQuery;
 use craft\stripe\elements\db\ProductQuery;
 use craft\stripe\helpers\Product as ProductHelper;
+use craft\stripe\Plugin;
 use craft\stripe\records\Product as ProductRecord;
 use craft\stripe\web\assets\stripecp\StripeCpAsset;
 use yii\helpers\Html as HtmlHelper;
@@ -87,7 +87,7 @@ class Product extends Element
      * @var array|string[] Array of params that should be expanded when fetching Product from the Stripe API
      */
     public static array $expandParams = [
-        'default_price'
+        'default_price',
     ];
 
 
@@ -589,7 +589,7 @@ class Product extends Element
     public function getDefaultPrice(): Price|null
     {
         if (!isset($this->_defaultPrice)) {
-            if ( $this->getData()['default_price'] === null) {
+            if ($this->getData()['default_price'] === null) {
                 return null;
             }
 

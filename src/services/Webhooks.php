@@ -2,13 +2,9 @@
 
 namespace craft\stripe\services;
 
-use Craft;
-use craft\helpers\App;
-use craft\log\MonologTarget;
 use craft\stripe\Plugin;
 use Stripe\Stripe;
 use yii\base\Component;
-use Stripe\StripeClient;
 
 /**
  * Webhooks service

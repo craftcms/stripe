@@ -7,20 +7,14 @@
 
 namespace craft\stripe\controllers;
 
-use Craft;
 use craft\controllers\EditUserTrait;
-use craft\db\Query;
-use craft\helpers\AdminTable;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use craft\stripe\db\Table;
 use craft\stripe\elements\Subscription;
-use craft\stripe\models\Invoice;
 use craft\stripe\Plugin;
 use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
-use yii\db\Expression;
-use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 /**
@@ -54,7 +48,7 @@ class CustomersController extends Controller
             'context' => 'embedded-index',
             'jsSettings' => [
                 'criteria' => ['userId' => $user->id],
-            ]
+            ],
         ]);
         $customers = Plugin::getInstance()->getCustomers()->getCustomersByEmail($user->email);
 

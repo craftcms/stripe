@@ -4,10 +4,9 @@ namespace craft\stripe\elements\db;
 
 use Craft;
 use craft\base\Element;
-use craft\db\QueryParam;
-use craft\db\Table as CraftTable;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
+use craft\db\Table as CraftTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\User;
 use craft\helpers\Db;

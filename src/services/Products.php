@@ -12,8 +12,8 @@ use craft\stripe\elements\Product;
 use craft\stripe\elements\Product as ProductElement;
 use craft\stripe\elements\Subscription;
 use craft\stripe\events\StripeProductSyncEvent;
-use craft\stripe\records\ProductData as ProductDataRecord;
 use craft\stripe\Plugin;
+use craft\stripe\records\ProductData as ProductDataRecord;
 use Stripe\Product as StripeProduct;
 use yii\base\Component;
 

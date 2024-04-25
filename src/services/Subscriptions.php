@@ -5,17 +5,15 @@ namespace craft\stripe\services;
 use Craft;
 use craft\events\ConfigEvent;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Cp;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
 use craft\stripe\elements\Subscription as SubscriptionElement;
 use craft\stripe\events\StripeSubscriptionSyncEvent;
-use craft\stripe\records\SubscriptionData as SubscriptionDataRecord;
 use craft\stripe\Plugin;
+use craft\stripe\records\SubscriptionData as SubscriptionDataRecord;
 use Stripe\Subscription as StripeSubscription;
 use yii\base\Component;
-use yii\base\InvalidConfigException;
 
 /**
  * Subscriptions service

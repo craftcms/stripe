@@ -20,7 +20,6 @@ use Stripe\WebhookEndpoint;
 use yii\base\InvalidConfigException;
 use yii\web\Response as YiiResponse;
 
-
 /**
  * The WebhooksController handles Stripe webhook event.
  *
@@ -53,12 +52,12 @@ class WebhooksController extends Controller
             $event = Webhook::constructEvent(
                 $payload, $signatureHeader, $endpointSecret
             );
-        } catch(UnexpectedValueException $e) {
+        } catch (UnexpectedValueException $e) {
             Craft::error("Stripe webhook handler failed with message:" . $e->getMessage());
             // Invalid payload
             $this->response->setStatusCode(400);
             return $this->asRaw('Err');
-        } catch(SignatureVerificationException $e) {
+        } catch (SignatureVerificationException $e) {
             Craft::error("Stripe webhook handler failed with message:" . $e->getMessage());
             // Invalid signature
             $this->response->setStatusCode(400);
@@ -94,7 +93,7 @@ class WebhooksController extends Controller
             try {
                 $response = $this->getWebhookInfo($plugin, $webhookId);
                 $webhookInfo = $response->toArray();
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 Craft::error("Couldn't retrieve webhook with ID $webhookId: " . $e->getMessage());
                 $hasWebhook = false;
             }
@@ -167,7 +166,7 @@ class WebhooksController extends Controller
                 'url' => UrlHelper::siteUrl('/stripe/webhooks/handle'),
                 'api_version' => $plugin->getApi()::STRIPE_API_VERSION,
             ]);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             Craft::error("Unable to create webhook: " . $e->getMessage());
             $this->setFailFlash(Craft::t('stripe', 'Unable to create webhook'));
             return $this->redirectToPostedUrl();
@@ -193,7 +192,7 @@ class WebhooksController extends Controller
 
         try {
             $stripe->webhookEndpoints->delete($id);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             Craft::error('Webhook could not be deleted: ' . $e->getMessage());
             return $this->asFailure(Craft::t('stripe', 'Webhook could not be deleted'));
         }

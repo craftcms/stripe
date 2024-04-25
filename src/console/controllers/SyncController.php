@@ -2,7 +2,6 @@
 
 namespace craft\stripe\console\controllers;
 
-use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
 use craft\stripe\elements\Price;

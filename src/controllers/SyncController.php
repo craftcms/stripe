@@ -10,12 +10,7 @@ namespace craft\stripe\controllers;
 use Craft;
 use craft\stripe\Plugin;
 use craft\web\Controller;
-use craft\web\Response;
-use Stripe\Exception\SignatureVerificationException;
-use Stripe\Exception\UnexpectedValueException;
-use Stripe\Webhook;
 use yii\web\Response as YiiResponse;
-
 
 /**
  * The SyncController handles syncing data from Stripe.

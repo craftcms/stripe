@@ -35,12 +35,11 @@ class Db
         if (is_array($query->{$param})) {
             $queryParam = QueryParam::parse($query->{$param});
             if (!empty($queryParam->values)) {
-                $queryParam->values = array_map(function ($val) {
+                $queryParam->values = array_map(function($val) {
                     if (!str_starts_with($val, ':')) {
                         return "*" . $val . "*";
                     }
                     return $val;
-
                 }, $queryParam->values);
 
                 $result = array_merge([$queryParam->operator], $queryParam->values);

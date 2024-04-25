@@ -2,10 +2,8 @@
 
 namespace craft\stripe\records;
 
-use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
 use craft\stripe\db\Table;
-use craft\stripe\records\db\InvoiceQuery;
 
 /**
  * Invoice Data record

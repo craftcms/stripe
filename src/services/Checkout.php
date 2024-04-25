@@ -5,13 +5,13 @@ namespace craft\stripe\services;
 use Craft;
 use craft\elements\User;
 use craft\helpers\UrlHelper;
+use craft\stripe\elements\Price;
 use craft\stripe\events\CheckoutSessionEvent;
 use craft\stripe\models\Customer;
 use craft\stripe\Plugin;
-use craft\stripe\elements\Price;
-use yii\base\Component;
 use Stripe\Checkout\Session as StripeCheckoutSession;
 use Stripe\Price as StripePrice;
+use yii\base\Component;
 
 /**
  * Checkout service
@@ -41,9 +41,8 @@ class Checkout extends Component
         array $lineItems = [],
         string|User|null $user = null,
         ?string $successUrl = null,
-        ?string $cancelUrl = null
-    ): string
-    {
+        ?string $cancelUrl = null,
+    ): string {
         $customer = null;
 
         // if passed in user is a string - it should be an email address
@@ -100,7 +99,7 @@ class Checkout extends Component
         // figure out checkout mode based on whether there are any recurring prices in the $lineItems
         $mode = StripeCheckoutSession::MODE_PAYMENT;
         $prices = $lineItems;
-        array_walk($prices, function (&$price) {
+        array_walk($prices, function(&$price) {
             $price['price'] = Price::find()->stripeId($price['price'])->one();
         });
         if (!empty(collect($prices)->firstWhere('price.data.type', '=', StripePrice::TYPE_RECURRING))) {
@@ -127,8 +126,7 @@ class Checkout extends Component
         Customer|string|null $customer = null,
         ?string $successUrl = null,
         ?string $cancelUrl = null,
-    ): ?string
-    {
+    ): ?string {
         $stripe = Plugin::getInstance()->getApi()->getClient();
 
         // Trigger a 'beforeStartCheckoutSession' event

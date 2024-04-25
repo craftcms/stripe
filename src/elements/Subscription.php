@@ -4,19 +4,18 @@ namespace craft\stripe\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\elements\ElementCollection;
-use craft\elements\User;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\User;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\stripe\models\Customer;
-use craft\stripe\Plugin;
 use craft\stripe\elements\db\SubscriptionQuery;
 use craft\stripe\helpers\Subscription as SubscriptionHelper;
+use craft\stripe\models\Customer;
+use craft\stripe\Plugin;
 use craft\stripe\records\Subscription as SubscriptionRecord;
 use craft\stripe\web\assets\stripecp\StripeCpAsset;
 

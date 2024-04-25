@@ -17,10 +17,10 @@ use Stripe\Invoice as StripeInvoice;
 use Stripe\PaymentMethod as StripePaymentMethod;
 use Stripe\Price as StripePrice;
 use Stripe\Product as StripeProduct;
-use Stripe\Subscription as StripeSubscription;
 use Stripe\Stripe;
-use yii\base\Component;
 use Stripe\StripeClient;
+use Stripe\Subscription as StripeSubscription;
+use yii\base\Component;
 
 /**
  * Api service
@@ -70,7 +70,7 @@ class Api extends Component
     public function fetchAllPrices(): array
     {
         return $this->fetchAll('prices', [
-            'expand' => $this->prepExpandForFetchAll(Price::$expandParams)
+            'expand' => $this->prepExpandForFetchAll(Price::$expandParams),
         ]);
     }
 
@@ -164,7 +164,7 @@ class Api extends Component
     public function fetchAllCustomers(): array
     {
         return $this->fetchAll('customers', [
-            'expand' => $this->prepExpandForFetchAll(Customer::$expandParams)
+            'expand' => $this->prepExpandForFetchAll(Customer::$expandParams),
         ]);
     }
 
@@ -187,7 +187,7 @@ class Api extends Component
     public function fetchAllInvoices(): array
     {
         return $this->fetchAll('invoices', [
-            'expand' => $this->prepExpandForFetchAll(Invoice::$expandParams)
+            'expand' => $this->prepExpandForFetchAll(Invoice::$expandParams),
         ]);
     }
 
@@ -293,7 +293,7 @@ class Api extends Component
      */
     private function prepExpandForFetchAll(array $params): array
     {
-        array_walk($params, fn(&$item) => $item = 'data.'.$item);
+        array_walk($params, fn(&$item) => $item = 'data.' . $item);
 
         return $params;
     }

@@ -37,8 +37,8 @@ use craft\stripe\services\Webhooks;
 use craft\stripe\utilities\Sync;
 use craft\stripe\web\twig\CraftVariableBehavior;
 use craft\stripe\web\twig\Extension;
-use craft\web\UrlManager;
 use craft\web\twig\variables\CraftVariable;
+use craft\web\UrlManager;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 
@@ -313,7 +313,7 @@ class Plugin extends BasePlugin
      */
     private function registerElementTypes(): void
     {
-        Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, function (RegisterComponentTypesEvent $event) {
+        Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, function(RegisterComponentTypesEvent $event) {
             $event->types[] = Product::class;
             $event->types[] = Price::class;
             $event->types[] = Subscription::class;
@@ -322,7 +322,7 @@ class Plugin extends BasePlugin
 
     private function registerUserEditScreens(): void
     {
-        Event::on(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS, function (DefineEditUserScreensEvent $event) {
+        Event::on(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS, function(DefineEditUserScreensEvent $event) {
             $event->screens['stripe'] = [
                 'label' => Craft::t('stripe', 'Stripe'),
             ];
@@ -346,7 +346,8 @@ class Plugin extends BasePlugin
      *
      * @return void
      */
-    private function registerFieldLayoutElements(): void {
+    private function registerFieldLayoutElements(): void
+    {
         Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
             /** @var FieldLayout $fieldLayout */
             $fieldLayout = $event->sender;

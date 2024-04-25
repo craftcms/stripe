@@ -14,7 +14,6 @@ use craft\helpers\UrlHelper;
 use craft\stripe\db\Table;
 use craft\stripe\Plugin;
 use craft\web\Controller;
-use yii\db\Expression;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 

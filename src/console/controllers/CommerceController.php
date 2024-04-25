@@ -3,9 +3,9 @@
 namespace craft\stripe\console\controllers;
 
 use Craft;
+use craft\commerce\elements\Subscription as CommerceSubscription;
 use craft\console\Controller;
 use craft\helpers\Console;
-use craft\commerce\elements\Subscription as CommerceSubscription;
 use craft\helpers\StringHelper;
 use craft\stripe\elements\Subscription;
 use yii\console\ExitCode;

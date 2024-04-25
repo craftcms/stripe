@@ -21,7 +21,7 @@ class Sync extends Utility
     /**
      * @inheritdoc
      */
-    static function id(): string
+    public static function id(): string
     {
         return 'stripe-sync-all';
     }

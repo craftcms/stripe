@@ -65,7 +65,7 @@ return [
     'One-time' => 'One-time',
     'Open in Stripe' => 'Open in Stripe',
     'Partial packages' => 'Partial packages',
-    'Payment Method Id' =>'Payment Method Id',
+    'Payment Method Id' => 'Payment Method Id',
     'Payment Methods' => 'Payment Methods',
     'Preset Amount' => 'Preset Amount',
     'Price per Unit' => 'Price per Unit',

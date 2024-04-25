@@ -11,8 +11,8 @@ use craft\models\FieldLayout;
 use craft\stripe\elements\Price as PriceElement;
 use craft\stripe\elements\Product as ProductElement;
 use craft\stripe\events\StripePriceSyncEvent;
-use craft\stripe\records\PriceData as PriceDataRecord;
 use craft\stripe\Plugin;
+use craft\stripe\records\PriceData as PriceDataRecord;
 use Stripe\Price as StripePrice;
 use yii\base\Component;
 

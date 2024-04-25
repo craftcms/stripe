@@ -4,7 +4,6 @@ namespace craft\stripe\elements\db;
 
 use craft\base\ElementInterface;
 use craft\db\QueryAbortedException;
-use craft\db\QueryParam;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\helpers\ArrayHelper;

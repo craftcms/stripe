@@ -91,6 +91,7 @@ class Subscription
                             $stripeSubscription['cancel_at_period_end'] ?
                                 Craft::t('stripe', 'Yes') :
                                 Craft::t('stripe', 'No');
+                        break;
                     case 'discount':
                         $meta[Craft::t('stripe', 'Discounts')] = collect($stripeSubscription['discounts'])
                             ->filter()
@@ -107,11 +108,13 @@ class Subscription
                             $meta[Craft::t('stripe', 'Canceled at')] =
                                 $formatter->asDatetime($stripeSubscription['canceled_at'], Formatter::FORMAT_WIDTH_SHORT);
                         }
+                        break;
                     case 'endedAt':
                         if ($stripeSubscription['ended_at'] !== null) {
                             $meta[Craft::t('stripe', 'Ended at')] =
                                 $formatter->asDatetime($stripeSubscription['ended_at'], Formatter::FORMAT_WIDTH_SHORT);
                         }
+                        break;
                     case 'products':
                         $products = $subscription->getProducts();
                         $html = '<ul class="elements chips">';
