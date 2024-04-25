@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\stripe\elements\conditions\products;
 
@@ -11,6 +16,11 @@ use craft\stripe\elements\db\ProductQuery;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
 
+/**
+ * Class StripeStatusConditionRule
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ */
 class StripeStatusConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
