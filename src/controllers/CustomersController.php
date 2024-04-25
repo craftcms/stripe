@@ -58,14 +58,12 @@ class CustomersController extends Controller
                 'criteria' => ['userId' => $user->id],
             ],
         ]);
-        $customers = Plugin::getInstance()->getCustomers()->getCustomersByEmail($user->email);
 
         $response->contentTemplate('stripe/customers/_customer', [
-            'customers' => $customers,
+            'customers' => $user->getStripeCustomers()->all(),
             'subscriptions' => $subscriptions,
             'invoices' => $invoicesService->getTableData($invoices),
             'paymentMethods' => $paymentMethodsService->getTableData($paymentMethods),
-            //'tableDataEndpoint' => UrlHelper::actionUrl('stripe/invoices/table-data', ['userId' => $user->id]),
         ]);
 
         return $response;
