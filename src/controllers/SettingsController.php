@@ -37,83 +37,27 @@ class SettingsController extends Controller
         if ($settings == null) {
             $settings = Plugin::getInstance()->getSettings();
         }
-        $tabs = $this->getTabs();
-        $selectedTab = 'apiConnection';
-
-        return $this->renderTemplate('stripe/settings/index', compact('settings', 'tabs', 'selectedTab'));
-    }
-
-    /**
-     * Display a form to allow an administrator to update plugin's Product settings.
-     *
-     * @param Settings|null $settings
-     * @return Response
-     */
-    public function actionProducts(?Settings $settings = null): Response
-    {
-        if ($settings == null) {
-            $settings = Plugin::getInstance()->getSettings();
-        }
-        $tabs = $this->getTabs();
-        $selectedTab = 'products';
-
-        return $this->renderTemplate('stripe/settings/products', compact('settings', 'tabs', 'selectedTab'));
-    }
-
-    /**
-     * Display a form to allow an administrator to update plugin's Price settings.
-     *
-     * @param Settings|null $settings
-     * @return Response
-     */
-    public function actionPrices(?Settings $settings = null): Response
-    {
-        if ($settings == null) {
-            $settings = Plugin::getInstance()->getSettings();
-        }
-        $tabs = $this->getTabs();
-        $selectedTab = 'prices';
-
-        return $this->renderTemplate('stripe/settings/prices', compact('settings', 'tabs', 'selectedTab'));
-    }
-
-    /**
-     * Display a form to allow an administrator to update plugin's Subscription settings.
-     *
-     * @param Settings|null $settings
-     * @return Response
-     */
-    public function actionSubscriptions(?Settings $settings = null): Response
-    {
-        if ($settings == null) {
-            $settings = Plugin::getInstance()->getSettings();
-        }
-        $tabs = $this->getTabs();
-        $selectedTab = 'subscriptions';
-
-        return $this->renderTemplate('stripe/settings/subscriptions', compact('settings', 'tabs', 'selectedTab'));
-    }
-
-    private function getTabs()
-    {
-        return [
+        $tabs = [
             'apiConnection' => [
                 'label' => Craft::t('stripe', 'API Connection'),
-                'url' => UrlHelper::cpUrl('stripe/settings'),
+                'url' => '#api',
             ],
             'products' => [
                 'label' => Craft::t('stripe', 'Products'),
-                'url' => UrlHelper::cpUrl('stripe/settings/products'),
+                'url' => '#products',
             ],
             'prices' => [
                 'label' => Craft::t('stripe', 'Prices'),
-                'url' => UrlHelper::cpUrl('stripe/settings/prices'),
+                'url' => '#prices',
             ],
             'subscriptions' => [
                 'label' => Craft::t('stripe', 'Subscriptions'),
-                'url' => UrlHelper::cpUrl('stripe/settings/subscriptions'),
+                'url' => '#subscriptions',
             ],
         ];
+        $selectedTab = 'apiConnection';
+
+        return $this->renderTemplate('stripe/settings/index', compact('settings', 'tabs', 'selectedTab'));
     }
 
     /**
@@ -146,29 +90,31 @@ class SettingsController extends Controller
             $settingsSuccess = Craft::$app->getPlugins()->savePluginSettings($plugin, $settings);
         }
 
-        if (Craft::$app->getRequest()->getBodyParam('fieldLayout')) {
-            $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
-            //$fieldLayout->type = Product::class;
+        $projectConfig = Craft::$app->getProjectConfig();
 
-            $projectConfig = Craft::$app->getProjectConfig();
-            $uid = StringHelper::UUID();
-            $fieldLayoutConfig = $fieldLayout->getConfig();
+        // products field layout
+        $productsLayout = Craft::$app->getFields()->assembleLayoutFromPost('products-layout');
+        $uid = StringHelper::UUID();
+        $fieldLayoutConfig = $productsLayout->getConfig();
+        $projectConfig->set(Plugin::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Stripe product field layout');
 
-            if ($fieldLayout->type === Product::class) {
-                $projectConfig->set(Plugin::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Stripe product field layout');
-                $pluginSettings->setProductFieldLayout($fieldLayout);
-            }
+        $pluginSettings->setProductFieldLayout($productsLayout);
 
-            if ($fieldLayout->type === Price::class) {
-                $projectConfig->set(Plugin::PC_PATH_PRICE_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Stripe price field layout');
-                $pluginSettings->setPriceFieldLayout($fieldLayout);
-            }
+        // prices field layout
+        $pricesLayout = Craft::$app->getFields()->assembleLayoutFromPost('prices-layout');
+        $uid = StringHelper::UUID();
+        $fieldLayoutConfig = $pricesLayout->getConfig();
+        $projectConfig->set(Plugin::PC_PATH_PRICE_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Stripe price field layout');
 
-            if ($fieldLayout->type === Subscription::class) {
-                $projectConfig->set(Plugin::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Stripe subscription field layout');
-                $pluginSettings->setSubscriptionFieldLayout($fieldLayout);
-            }
-        }
+        $pluginSettings->setPriceFieldLayout($pricesLayout);
+
+        // subscriptions field layout
+        $subscriptionsLayout = Craft::$app->getFields()->assembleLayoutFromPost('subscriptions-layout');
+        $uid = StringHelper::UUID();
+        $fieldLayoutConfig = $subscriptionsLayout->getConfig();
+        $projectConfig->set(Plugin::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the Stripe price field layout');
+
+        $pluginSettings->setSubscriptionFieldLayout($subscriptionsLayout);
 
         if (!$settingsSuccess) {
             return $this->asModelFailure(

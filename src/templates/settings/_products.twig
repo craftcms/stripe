@@ -1,0 +1,47 @@
+{% import '_includes/forms.twig' as forms %}
+
+{{ forms.editableTableField({
+    label: "Routing Settings"|t('stripe'),
+    instructions: "Configure the product’s front-end routing settings."|t('stripe'),
+    id: 'routing',
+    name: 'settings',
+    cols: {
+        productUriFormat: {
+            type: 'singleline',
+            heading: "Product URI Format"|t('stripe'),
+            info: "What product URIs should look like."|t('stripe'),
+            placeholder: "Leave blank if products don’t have URLs"|t('stripe'),
+            code: true
+        },
+        productTemplate: not headlessMode ? {
+            type: 'template',
+            heading: "Template"|t('app'),
+            info: "Which template should be loaded when a product’s URL is requested."|t('stripe'),
+            code: true
+        },
+    }|filter,
+    rows: {
+        'routing': {
+            productUriFormat: {
+                value: settings.productUriFormat ?? null,
+                hasErrors: settings.hasErrors('productUriFormat') ?? false
+            },
+            productTemplate: not headlessMode ? {
+                value: settings.productTemplate ?? null,
+                hasErrors: settings.hasErrors('productTemplate') ?? false,
+            }
+        }
+    },
+    allowAdd: false,
+    allowDelete: false,
+    allowReorder: false,
+    errors: []|unique
+}) }}
+
+
+{% namespace "products-layout" %}
+    {{ forms.fieldLayoutDesignerField({
+        fieldLayout: settings.getProductFieldLayout(),
+        type: 'craft\\stripe\\elements\\Product'
+    }) }}
+{% endnamespace %}
