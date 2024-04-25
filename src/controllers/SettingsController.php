@@ -9,11 +9,8 @@ namespace craft\stripe\controllers;
 
 use Craft;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use craft\queue\jobs\ResaveElements;
-use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
-use craft\stripe\elements\Subscription;
 use craft\stripe\models\Settings;
 use craft\stripe\Plugin;
 use craft\web\Controller;
