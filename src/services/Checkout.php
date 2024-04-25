@@ -13,7 +13,6 @@ use craft\stripe\elements\Price;
 use craft\stripe\events\CheckoutSessionEvent;
 use craft\stripe\models\Customer;
 use craft\stripe\Plugin;
-use Stripe\Checkout\Session;
 use Stripe\Checkout\Session as StripeCheckoutSession;
 use Stripe\Price as StripePrice;
 use yii\base\Component;
@@ -134,30 +133,29 @@ class Checkout extends Component
     ): ?string {
         $stripe = Plugin::getInstance()->getApi()->getClient();
 
-        $checkoutSession = new Session();
-
+        $data = [
+            'line_items' => $lineItems,
+            'success_url' => $successUrl,
+            'cancel_url' => $cancelUrl,
+            'mode' => $this->getCheckoutMode($lineItems),
+        ];
         if ($customer instanceof Customer) {
-            $checkoutSession->customer = $customer->stripeId;
+            $data['customer'] = $customer->stripeId;
         } else {
-            $checkoutSession->customer_email = $customer;
+            $data['customer_email'] = $customer;
         }
-
-        $checkoutSession->line_items = $lineItems;
-        $checkoutSession->success_url = $successUrl;
-        $checkoutSession->cancel_url = $cancelUrl;
-        $checkoutSession->mode = $this->getCheckoutMode($lineItems);
 
         // Trigger a 'beforeStartCheckoutSession' event
         $event = new CheckoutSessionEvent([
-            'session' => $checkoutSession,
+            'sessionData' => $data,
         ]);
         $this->trigger(self::EVENT_BEFORE_START_CHECKOUT_SESSION, $event);
 
         // ensure the mode is still correct
-        $checkoutSession = $event->session;
-        $checkoutSession->mode = $this->getCheckoutMode($event->session->line_items);
+        $checkoutSession = $event->sessionData;
+        $checkoutSession['mode'] = $this->getCheckoutMode($event->sessionData['line_items']);
 
-        $session = $stripe->checkout->sessions->create($checkoutSession->toArray());
+        $session = $stripe->checkout->sessions->create($checkoutSession);
 
         return $session->url;
     }

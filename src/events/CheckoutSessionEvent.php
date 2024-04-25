@@ -18,7 +18,7 @@ use yii\base\Event;
 class CheckoutSessionEvent extends Event
 {
     /**
-     * @var Session The Stripe checkout session object
+     * @var array The array representation of the Stripe checkout session
      */
-    public Session $session;
+    public array $sessionData;
 }
