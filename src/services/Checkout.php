@@ -14,6 +14,7 @@ use craft\stripe\elements\Price;
 use craft\stripe\events\CheckoutSessionEvent;
 use craft\stripe\models\Customer;
 use craft\stripe\Plugin;
+use Stripe\Checkout\Session;
 use Stripe\Checkout\Session as StripeCheckoutSession;
 use Stripe\Price as StripePrice;
 use yii\base\Component;
@@ -37,7 +38,7 @@ class Checkout extends Component
      * Returns checkout URL based on the provided email.
      *
      * @param array $lineItems
-     * @param string|User|null $user
+     * @param string|User|null $user User Element or email address
      * @param string|null $successUrl
      * @param string|null $cancelUrl
      * @return string
@@ -99,15 +100,15 @@ class Checkout extends Component
      * @param array $lineItems
      * @return string
      */
-    private function getCheckoutMode(array $lineItems): string
+    private function getCheckoutMode(array|object $lineItems): string
     {
         // figure out checkout mode based on whether there are any recurring prices in the $lineItems
         $mode = StripeCheckoutSession::MODE_PAYMENT;
-        $prices = $lineItems;
-        array_walk($prices, function(&$price) {
-            $price['price'] = Price::find()->stripeId($price['price'])->one();
-        });
-        if (!empty(collect($prices)->firstWhere('price.data.type', '=', StripePrice::TYPE_RECURRING))) {
+        $priceTypes = array_map(function($item) {
+            $price = Price::find()->stripeId($item['price'])->one();
+            return $price->getData()['type'];
+        }, $lineItems);
+        if (in_array(StripePrice::TYPE_RECURRING, $priceTypes)) {
             $mode = StripeCheckoutSession::MODE_SUBSCRIPTION;
         }
 
@@ -134,33 +135,30 @@ class Checkout extends Component
     ): ?string {
         $stripe = Plugin::getInstance()->getApi()->getClient();
 
+        $checkoutSession = new Session();
+
+        if ($customer instanceof Customer) {
+            $checkoutSession->customer = $customer->stripeId;
+        } else {
+            $checkoutSession->customer_email = $customer;
+        }
+
+        $checkoutSession->line_items = $lineItems;
+        $checkoutSession->success_url = $successUrl;
+        $checkoutSession->cancel_url = $cancelUrl;
+        $checkoutSession->mode = $this->getCheckoutMode($lineItems);
+
         // Trigger a 'beforeStartCheckoutSession' event
         $event = new CheckoutSessionEvent([
-            'customer' => $customer,
-            'lineItems' => $lineItems,
-            'successUrl' => $successUrl,
-            'cancelUrl' => $cancelUrl,
+            'session' => $checkoutSession,
         ]);
         $this->trigger(self::EVENT_BEFORE_START_CHECKOUT_SESSION, $event);
 
-        $data = [
-            'line_items' => $event->lineItems,
-            'mode' => $this->getCheckoutMode($lineItems),
-            'success_url' => $event->successUrl ?? UrlHelper::baseSiteUrl(),
-            'cancel_url' => $event->cancelUrl ?? UrlHelper::baseSiteUrl(),
-        ];
+        // ensure the mode is still correct
+        $checkoutSession = $event->session;
+        $checkoutSession->mode = $this->getCheckoutMode($event->session->line_items);
 
-        if (is_string($event->customer)) {
-            $data['customer_email'] = $event->customer;
-        } elseif ($event->customer instanceof Customer) {
-            $data['customer'] = $event->customer->stripeId;
-        }
-
-        if (!empty($event->params)) {
-            $data += $event->params;
-        }
-
-        $session = $stripe->checkout->sessions->create($data);
+        $session = $stripe->checkout->sessions->create($checkoutSession->toArray());
 
         return $session->url;
     }

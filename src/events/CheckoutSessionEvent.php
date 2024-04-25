@@ -7,7 +7,7 @@
 
 namespace craft\stripe\events;
 
-use craft\stripe\models\Customer;
+use Stripe\Checkout\Session;
 use yii\base\Event;
 
 /**
@@ -18,27 +18,7 @@ use yii\base\Event;
 class CheckoutSessionEvent extends Event
 {
     /**
-     * @var string|Customer The Customer model or email address of the customer
+     * @var Session The Stripe checkout session object
      */
-    public Customer|string $customer;
-
-    /**
-     * @var array array of prices and quantities for the checkout
-     */
-    public array $lineItems;
-
-    /**
-     * @var string|null Absolute URL to redirect the user to after checkout
-     */
-    public ?string $successUrl = null;
-
-    /**
-     * @var string|null Absolute URL to redirect the user to if they choose to cancel the checkout; e.g. click the back button
-     */
-    public ?string $cancelUrl = null;
-
-    /**
-     * @var array|null Additional params to use to instantiate the checkout session with
-     */
-    public ?array $params = null;
+    public Session $session;
 }
