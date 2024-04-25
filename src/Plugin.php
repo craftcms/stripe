@@ -358,7 +358,6 @@ class Plugin extends BasePlugin
 
                     return $carry;
                 });
-
             };
         });
     }

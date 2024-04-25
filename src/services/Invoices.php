@@ -127,7 +127,8 @@ class Invoices extends Component
             $invoices = array_merge($invoices, $this->getInvoicesByCustomerId($customerId));
         }
 
-        array_multisort(array_map(fn($invoice) => $invoice['data']['created'], $invoices), SORT_DESC, $invoices);
+        $invoices = array_map(fn($invoice) => $invoice['data']['created'], $invoices);
+        array_multisort($invoices, SORT_DESC, $invoices);
 
         return array_filter($invoices);
     }

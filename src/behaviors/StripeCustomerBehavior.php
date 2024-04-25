@@ -21,7 +21,6 @@ use yii\base\InvalidConfigException;
  * Stripe Customer behavior.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0
  * @property Collection<Customer> $stripeCustomers
  * @property User $owner
  */
@@ -55,7 +54,7 @@ class StripeCustomerBehavior extends Behavior
     }
 
     /**
-     * @return Collection<Customer
+     * @return Collection<Customer>
      * @throws InvalidConfigException
      */
     public function getStripeCustomers(): Collection

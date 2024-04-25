@@ -7,6 +7,7 @@
 
 namespace craft\stripe\elements\conditions\prices;
 
+use craft\base\conditions\BaseNumberConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;

@@ -127,7 +127,8 @@ class PaymentMethods extends Component
             $paymentMethods = array_merge($paymentMethods, $this->getPaymentMethodsByCustomerId($customerId));
         }
 
-        array_multisort(array_map(fn($paymentMethod) => $paymentMethod['data']['created'], $paymentMethods), SORT_DESC, $paymentMethods);
+        $paymentMethods = array_map(fn($paymentMethod) => $paymentMethod['data']['created'], $paymentMethods);
+        array_multisort($paymentMethods, SORT_DESC, $paymentMethods);
 
         return array_filter($paymentMethods);
     }
