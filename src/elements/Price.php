@@ -21,7 +21,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\stripe\db\Table;
-use craft\stripe\elements\conditions\products\PriceCondition;
+use craft\stripe\elements\conditions\prices\PriceCondition;
 use craft\stripe\elements\db\PriceQuery;
 use craft\stripe\helpers\Price as PriceHelper;
 use craft\stripe\Plugin;
