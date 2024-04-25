@@ -24,6 +24,7 @@ class PriceCondition extends ElementCondition
     {
         return array_merge(parent::selectableConditionRules(), [
             PriceTypeConditionRule::class,
+            CurrencyConditionRule::class,
         ]);
     }
 }

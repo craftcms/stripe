@@ -360,6 +360,7 @@ class Price extends Element implements NestedElementInterface
     protected static function defineTableAttributes(): array
     {
         return [
+            'primaryCurrency' => Craft::t('stripe', 'Primary Currency'),
             'stripeId' => Craft::t('stripe', 'Stripe ID'),
             'stripeEdit' => Craft::t('stripe', 'Stripe Edit'),
             'priceType' => Craft::t('stripe', 'Price Type'),
