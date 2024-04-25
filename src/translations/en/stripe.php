@@ -37,7 +37,6 @@ return [
     'Current period' => 'Current period',
     'Customer chooses' => 'Customer chooses',
     'Customer Email' => 'Customer Email',
-    'Customer input price' => 'Customer input price',
     'Discounts' => 'Discounts',
     'Draft' => 'Draft',
     'Due' => 'Due',
@@ -81,6 +80,7 @@ return [
     'Secret Key' => 'Secret Key',
     'Settings saved.' => 'Settings saved.',
     'Settings' => 'Settings',
+    'Starts at' => 'Starts at',
     'Status' => 'Status',
     'Stripe Customer Accounts linked to this user' => 'Stripe Customer Accounts linked to this user',
     'Stripe Edit' => 'Stripe Edit',
@@ -124,4 +124,5 @@ return [
     'What product URIs should look like.' => 'What product URIs should look like.',
     'Which template should be loaded when a product’s URL is requested.' => 'Which template should be loaded when a product’s URL is requested.',
     'Yes' => 'Yes',
+    'per unit' => 'per unit',
 ];

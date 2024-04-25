@@ -24,20 +24,65 @@ use yii\base\InvalidConfigException;
 class Price
 {
     /**
+     * @var array|string[] list of currencies that have zero decimals
+     */
+    public static array $zeroDecimalCurrencies = [
+        'bif',
+        'clp',
+        'djf',
+        'gnf',
+        'jpy',
+        'kmf',
+        'krw',
+        'mga',
+        'pyg',
+        'rwf',
+        'ugx',
+        'vnd',
+        'vuv',
+        'xaf',
+        'xof',
+        'xpf',
+    ];
+
+    public static array $threeDecimalCurrencies = [
+        'bdh',
+        'jod',
+        'kwd',
+        'omr',
+        'tnd',
+    ];
+
+    /**
      * Returns price amount as number & currency.
      *
      * examples:
      * £10.50
      * $13.35
+     * ¥1,000
+     * £6.00 (when the price is: £6.00 per group of 10)
+     * £10.00 (when the price is: Starts at £10.00 per unit + £0.00)
+     * Customer chooses
      *
-     * @param int|null $unitAmount
-     * @param string $currency
-     * @return string
+     * @param mixed $stripePrice
+     * @return string|null
      * @throws InvalidConfigException
      */
-    public static function asPriceAmount(?int $unitAmount, string $currency): string
+    public static function asUnitAmount(mixed $stripePrice): ?string
     {
-        return Craft::$app->getFormatter()->asCurrency($unitAmount / 100, $currency);
+        $unitAmount = $stripePrice['unit_amount'];
+
+        if ($unitAmount === null) {
+            if (isset($stripePrice['tiers'])) {
+                $unitAmount = $stripePrice['tiers'][0]['unit_amount'];
+            }
+        }
+
+        if (!in_array(strtolower($stripePrice['currency']), self::$zeroDecimalCurrencies)) {
+            $unitAmount = $unitAmount / 100;
+        }
+
+        return $unitAmount ? Craft::$app->getFormatter()->asCurrency($unitAmount, $stripePrice['currency']) : null;
     }
 
     /**
@@ -45,11 +90,12 @@ class Price
      * It can be loosely thought of as price per unit + interval.
      *
      * examples:
-     * £10.00
-     * £10.00/month
-     * £30 every 3 month
-     * £5.00 per group of 10 every 3 month
-     * Customer input price
+     * £10.50
+     * £10.50/month
+     * £10.50 every 3 month
+     * £6.00 per group of 10
+     * Starts at £10.00 per unit + £0.00/month
+     * Customer chooses
      *
      * @param mixed $stripePrice
      * @return string
@@ -57,20 +103,17 @@ class Price
      */
     public static function asUnitPrice(mixed $stripePrice): string
     {
-        $unitPrice = self::asPriceAmount($stripePrice['unit_amount'], $stripePrice['currency']);
-
         $interval = self::getInterval($stripePrice);
         $pricePerUnit = self::asPricePerUnit($stripePrice);
 
-        if (isset($stripePrice['custom_unit_amount'])) {
-            $unitPrice = Craft::t('stripe', 'Customer input price');
-        }
         if ($stripePrice['recurring'] !== null) {
             if ($stripePrice['recurring']['interval_count'] == 1) {
                 $unitPrice = "$pricePerUnit/{$stripePrice['recurring']['interval']}";
             } else {
                 $unitPrice = $pricePerUnit . ' ' . lcfirst($interval);
             }
+        } else {
+            $unitPrice = $pricePerUnit;
         }
 
         return $unitPrice;
@@ -80,8 +123,11 @@ class Price
      * Returns the price per unit
      *
      * examples:
-     * £10.00
-     * £5.00 per group of 10
+     * £10.50
+     * £10.50/month
+     * £10.50 every 3 month
+     * £6.00 per group of 10
+     * Starts at £10.00 per unit + £0.00
      * Customer chooses
      *
      * @param mixed $stripePrice
@@ -90,19 +136,37 @@ class Price
      */
     public static function asPricePerUnit(mixed $stripePrice): string
     {
-        $unitPrice = self::asPriceAmount($stripePrice['unit_amount'], $stripePrice['currency']);
+        $unitAmount = self::asUnitAmount($stripePrice);
+
+        if ($unitAmount === null && $stripePrice['custom_unit_amount'] !== null) {
+            return Craft::t('stripe', 'Customer chooses');
+        }
+
+        if (isset($stripePrice['tiers'])) {
+            $flatAmount = $stripePrice['tiers'][0]['flat_amount'];
+            if (!in_array(strtolower($stripePrice['currency']), self::$zeroDecimalCurrencies)) {
+                $flatAmount = $flatAmount / 100;
+            }
+            $flatAmount = Craft::$app->getFormatter()->asCurrency($flatAmount, $stripePrice['currency']);
+
+            return Craft::t('stripe', 'Starts at') .
+                " $unitAmount " .
+                Craft::t('stripe', 'per unit') .
+                " + $flatAmount";
+        }
 
         if ($stripePrice['transform_quantity'] === null) {
-            $pricePerUnit = $unitPrice;
+            $pricePerUnit = $unitAmount;
         } else {
             $pricePerUnit = Craft::t('stripe', '{unitPrice} per group of {divideBy}', [
-                'unitPrice' => $unitPrice,
+                'unitPrice' => $unitAmount,
                 'divideBy' => $stripePrice['transform_quantity']['divide_by'],
             ]);
         }
 
-        if ($stripePrice['custom_unit_amount']) {
-            $pricePerUnit = Craft::t('stripe', 'Customer chooses');
+        // if pricePerUnit is still null, change it to zero
+        if ($pricePerUnit === null) {
+            $pricePerUnit = Craft::$app->getFormatter()->asCurrency(0, $stripePrice['currency']);
         }
 
         return $pricePerUnit;
@@ -208,19 +272,19 @@ class Price
                     case 'presetAmount':
                         if ($stripePrice['custom_unit_amount']) {
                             $meta[Craft::t('stripe', 'Preset Amount')] =
-                                self::asPriceAmount($stripePrice['custom_unit_amount']['preset'], $stripePrice['currency']);
+                                self::asUnitAmount($stripePrice);
                         }
                         break;
                     case 'minAmount':
                         if ($stripePrice['custom_unit_amount']) {
                             $meta[Craft::t('stripe', 'Min Amount')] =
-                                self::asPriceAmount($stripePrice['custom_unit_amount']['minimum'], $stripePrice['currency']);
+                                self::asUnitAmount($stripePrice);
                         }
                         break;
                     case 'maxAmount':
                         if ($stripePrice['custom_unit_amount']) {
                             $meta[Craft::t('stripe', 'Max Amount')] =
-                                self::asPriceAmount($stripePrice['custom_unit_amount']['maximum'], $stripePrice['currency']);
+                                self::asUnitAmount($stripePrice);
                         }
                         break;
                     case 'pricePerUnit':
