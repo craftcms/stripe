@@ -54,7 +54,39 @@ class Price
     ];
 
     /**
-     * Returns price amount as number & currency.
+     * Returns unit amount as a number
+     *
+     * examples:
+     * 10.50
+     * 13.35
+     * 1,000
+     * 6.00 (when the price is: £6.00 per group of 10)
+     * 10.00 (when the price is: Starts at £10.00 per unit + £0.00)
+     * 0.00 (when the price is: Customer chooses)
+     *
+     * @param mixed $stripePrice
+     * @return float|null
+     * @throws InvalidConfigException
+     */
+    public static function asUnitAmountNumber(mixed $stripePrice): ?float
+    {
+        $unitAmount = $stripePrice['unit_amount'];
+
+        if ($unitAmount === null) {
+            if (isset($stripePrice['tiers'])) {
+                $unitAmount = $stripePrice['tiers'][0]['unit_amount'];
+            }
+        }
+
+        if (!in_array(strtolower($stripePrice['currency']), self::$zeroDecimalCurrencies)) {
+            $unitAmount = $unitAmount / 100;
+        }
+
+        return $unitAmount;
+    }
+
+    /**
+     * Returns unit amount as number & currency.
      *
      * examples:
      * £10.50
@@ -70,17 +102,7 @@ class Price
      */
     public static function asUnitAmount(mixed $stripePrice): ?string
     {
-        $unitAmount = $stripePrice['unit_amount'];
-
-        if ($unitAmount === null) {
-            if (isset($stripePrice['tiers'])) {
-                $unitAmount = $stripePrice['tiers'][0]['unit_amount'];
-            }
-        }
-
-        if (!in_array(strtolower($stripePrice['currency']), self::$zeroDecimalCurrencies)) {
-            $unitAmount = $unitAmount / 100;
-        }
+        $unitAmount = self::asUnitAmountNumber($stripePrice);
 
         return $unitAmount ? Craft::$app->getFormatter()->asCurrency($unitAmount, $stripePrice['currency']) : null;
     }

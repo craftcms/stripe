@@ -103,6 +103,7 @@ class Prices extends Component
             'title' => PriceHelper::asUnitPrice($price),
             'stripeStatus' => $price->active ? PriceElement::STRIPE_STATUS_ACTIVE : PriceElement::STRIPE_STATUS_ARCHIVED,
             'data' => Json::decode($price->toJSON()),
+            'unitAmount' => PriceHelper::asUnitAmountNumber($price),
         ];
 
         if (!empty($price->currency_options)) {

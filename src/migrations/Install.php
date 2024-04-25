@@ -83,6 +83,7 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->string(),
             'currencies' => $this->text()->defaultValue(null),
+            'unitAmount' => $this->float()->defaultValue(null),
         ]);
 
 

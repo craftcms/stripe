@@ -56,6 +56,11 @@ class PriceQuery extends ElementQuery
     public mixed $currency = null;
 
     /**
+     * @var mixed|null Unit amount
+     */
+    public mixed $unitAmount = null;
+
+    /**
      * @var mixed|null Stripe id of the product the price is associated with
      */
     public mixed $stripeProductId = null;
@@ -206,6 +211,31 @@ class PriceQuery extends ElementQuery
     public function currency(mixed $value): self
     {
         $this->currency = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the unit amount of the price.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch prices where the unit amount is > 10 #}
+     * {% set {elements-var} = {twig-method}
+     *   .unitAmount('> 10')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch prices where the unit amount is > 10
+     * ${elements-var} = {element-class}::find()
+     *     ->unitAmount('> 10')
+     *     ->all();
+     * ```
+     */
+    public function unitAmount(mixed $value): self
+    {
+        $this->unitAmount = $value;
         return $this;
     }
 
@@ -507,6 +537,7 @@ class PriceQuery extends ElementQuery
             'stripe_pricedata.type',
             'stripe_pricedata.primaryCurrency',
             'stripe_pricedata.currencies',
+            'stripe_pricedata.unitAmount',
             'stripe_pricedata.productId as stripeProductId',
             'stripe_pricedata.data',
         ]);
@@ -576,6 +607,10 @@ class PriceQuery extends ElementQuery
         if (isset($this->currency)) {
             $currency = \craft\stripe\helpers\Db::prepareForLikeSearch($this, 'currency');
             $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.currencies', $currency));
+        }
+
+        if (isset($this->unitAmount)) {
+            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.unitAmount', $this->unitAmount));
         }
 
         if (isset($this->stripeProductId)) {

@@ -90,6 +90,11 @@ class Price extends Element implements NestedElementInterface
     public ?string $stripeProductId = null;
 
     /**
+     * @var float|null
+     */
+    public ?float $unitAmount = null;
+
+    /**
      * @var array|null
      */
     private ?array $_data = null;
