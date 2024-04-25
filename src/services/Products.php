@@ -196,7 +196,7 @@ class Products extends Component
         }
 
         // get product ids from the list of items
-        $productIds = array_map(fn($item) => $item['price']['product'], $subscription->data['items']['data']);
+        $productIds = array_map(fn($item) => $item['price']['product'], $subscription->getData()['items']['data']);
 
         $products = [];
         // get each product element by the stripeId

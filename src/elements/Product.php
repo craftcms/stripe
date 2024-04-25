@@ -12,7 +12,6 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\elements\conditions\ElementConditionInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
@@ -212,7 +211,7 @@ class Product extends Element
     /**
      * @inheritdoc
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): ProductQuery
     {
         return Craft::createObject(ProductQuery::class, [static::class]);
     }

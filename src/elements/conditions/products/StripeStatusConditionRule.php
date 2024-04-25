@@ -8,6 +8,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\StringHelper;
 use craft\stripe\elements\db\ProductQuery;
+use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
 
 class StripeStatusConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
@@ -44,6 +45,7 @@ class StripeStatusConditionRule extends BaseMultiSelectConditionRule implements 
      */
     public function matchElement(ElementInterface $element): bool
     {
+        /** @var Product|Price $element */
         return $this->matchValue($element->stripeStatus);
     }
 

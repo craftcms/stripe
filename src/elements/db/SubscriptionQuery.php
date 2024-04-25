@@ -9,6 +9,7 @@ namespace craft\stripe\elements\db;
 
 use Craft;
 use craft\base\Element;
+use craft\db\Connection;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table as CraftTable;
@@ -26,6 +27,9 @@ use yii\db\QueryBuilder;
  * Subscription query
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @method Subscription[]|array all($db = null)
+ * @method Subscription|array|null one($db = null)
+ * @method Subscription|array|null nth(int $n, Connection $db = null)
  */
 class SubscriptionQuery extends ElementQuery
 {
@@ -1026,7 +1030,7 @@ class SubscriptionQuery extends ElementQuery
      *
      * @param bool $onTrial
      * @param QueryBuilder $qb
-     * @return mixed
+     * @return array
      */
     private function getTrialCondition(bool $onTrial, QueryBuilder $qb): array
     {

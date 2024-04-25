@@ -137,7 +137,7 @@ class Subscription
             })
             ->join(' ');
 
-        $meta[Craft::t('stripe', 'Created at')] = $formatter->asDatetime($subscription->data['created'], Formatter::FORMAT_WIDTH_SHORT);
+        $meta[Craft::t('stripe', 'Created at')] = $formatter->asDatetime($stripeSubscription['created'], Formatter::FORMAT_WIDTH_SHORT);
 
         $metadataHtml = Cp::metadataHtml($meta);
 
@@ -148,7 +148,7 @@ class Subscription
             ],
         ]);
 
-        $dateCreated = DateTimeHelper::toDateTime($subscription->data['created']);
+        $dateCreated = DateTimeHelper::toDateTime($stripeSubscription['created']);
         $now = new \DateTime();
         $diff = $now->diff($dateCreated);
         $duration = DateTimeHelper::humanDuration($diff, false);

@@ -8,11 +8,13 @@
 namespace craft\stripe\elements\db;
 
 use craft\base\ElementInterface;
+use craft\db\Connection;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
 use craft\stripe\enums\PriceType;
 use yii\base\InvalidArgumentException;
@@ -22,6 +24,9 @@ use yii\base\InvalidConfigException;
  * Price query
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @method Price[]|array all($db = null)
+ * @method Price|array|null one($db = null)
+ * @method Price|array|null nth(int $n, Connection $db = null)
  */
 class PriceQuery extends ElementQuery
 {
@@ -80,12 +85,6 @@ class PriceQuery extends ElementQuery
      * @used-by allowOwnerRevisions()
      */
     public ?bool $allowOwnerRevisions = null;
-
-    /**
-     * @var ElementInterface|null The owner element specified by [[owner()]].
-     * @used-by owner()
-     */
-    private ?ElementInterface $_owner = null;
 
     /**
      * @inheritdoc
@@ -385,7 +384,6 @@ class PriceQuery extends ElementQuery
     public function owner(ElementInterface $owner): static
     {
         $this->ownerId = [$owner->id];
-        $this->_owner = $owner;
         return $this;
     }
 
@@ -422,7 +420,6 @@ class PriceQuery extends ElementQuery
     public function ownerId(array|int|null $value): static
     {
         $this->ownerId = $value;
-        $this->_owner = null;
         return $this;
     }
 
@@ -557,9 +554,6 @@ class PriceQuery extends ElementQuery
 
             $this->defaultOrderBy = ['elements_owners.sortOrder' => SORT_ASC];
         } elseif (isset($this->primaryOwnerId) || isset($this->ownerId)) {
-            if (!$this->primaryOwnerId && !$this->ownerId) {
-                throw new QueryAbortedException();
-            }
             $this->subQuery->andWhere(['stripe_prices.primaryOwnerId' => $this->primaryOwnerId ?? $this->ownerId]);
         }
 

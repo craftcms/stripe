@@ -9,6 +9,7 @@ namespace craft\stripe\elements\db;
 
 use Craft;
 use craft\base\Element;
+use craft\db\Connection;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
@@ -21,6 +22,9 @@ use yii\db\Expression;
  * Product query
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @method Product[]|array all($db = null)
+ * @method Product|array|null one($db = null)
+ * @method Product|array|null nth(int $n, Connection $db = null)
  */
 class ProductQuery extends ElementQuery
 {

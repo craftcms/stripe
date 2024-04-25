@@ -9,7 +9,6 @@ namespace craft\stripe\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -209,7 +208,7 @@ class Subscription extends Element
     /**
      * @inheritdoc
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): SubscriptionQuery
     {
         return Craft::createObject(SubscriptionQuery::class, [static::class]);
     }

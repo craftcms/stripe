@@ -13,7 +13,6 @@ use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\db\Query;
 use craft\db\Table as CraftTable;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\helpers\Db;
 use craft\helpers\Html;
@@ -33,6 +32,8 @@ use yii\base\InvalidConfigException;
  *
  * @property-read Product|null $product the product this price belongs to
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @method Product|null getOwner()
+ * @method Product|null getPrimaryOwner()
  */
 class Price extends Element implements NestedElementInterface
 {
@@ -221,7 +222,7 @@ class Price extends Element implements NestedElementInterface
     /**
      * @inheritdoc
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): PriceQuery
     {
         return Craft::createObject(PriceQuery::class, [static::class]);
     }

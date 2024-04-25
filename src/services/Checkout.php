@@ -162,6 +162,6 @@ class Checkout extends Component
 
         $session = $stripe->checkout->sessions->create($data);
 
-        return $session?->url;
+        return $session->url;
     }
 }
