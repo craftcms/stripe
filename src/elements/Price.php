@@ -13,6 +13,7 @@ use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\db\Query;
 use craft\db\Table as CraftTable;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\User;
 use craft\helpers\Db;
 use craft\helpers\Html;
@@ -20,6 +21,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\stripe\db\Table;
+use craft\stripe\elements\conditions\prices\PriceCondition;
 use craft\stripe\elements\db\PriceQuery;
 use craft\stripe\helpers\Price as PriceHelper;
 use craft\stripe\Plugin;
@@ -225,6 +227,14 @@ class Price extends Element implements NestedElementInterface
     public static function find(): PriceQuery
     {
         return Craft::createObject(PriceQuery::class, [static::class]);
+    }
+
+    /**
+     * @inerhitdoc
+     */
+    public static function createCondition(): PriceCondition
+    {
+        return Craft::createObject(PriceCondition::class, [static::class]);
     }
 
     /**
