@@ -77,7 +77,7 @@ class SettingsController extends Controller
             // Remove from editable table namespace
             $settings['productUriFormat'] = $routingSettings['routing']['productUriFormat'];
             // Could be blank if in headless mode
-            if (isset($settings['routing']['productTemplate'])) {
+            if (isset($routingSettings['routing']['productTemplate'])) {
                 $settings['productTemplate'] = $routingSettings['routing']['productTemplate'];
             }
         }
