@@ -7,11 +7,8 @@
 
 namespace craft\stripe\elements\conditions\products;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\StringHelper;
 use craft\stripe\elements\conditions\prices\PriceTypeConditionRule;
 use craft\stripe\elements\db\ProductQuery;
 use craft\stripe\elements\Price;

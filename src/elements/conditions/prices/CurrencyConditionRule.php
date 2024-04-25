@@ -7,15 +7,12 @@
 
 namespace craft\stripe\elements\conditions\prices;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\StringHelper;
 use craft\stripe\elements\db\PriceQuery;
 use craft\stripe\elements\Price;
-use craft\stripe\enums\PriceType;
 
 /**
  * Class CurrencyConditionRule

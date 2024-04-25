@@ -13,7 +13,6 @@ use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\db\Query;
 use craft\db\Table as CraftTable;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\User;
 use craft\helpers\Db;
 use craft\helpers\Html;
