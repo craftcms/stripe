@@ -151,18 +151,14 @@ class Install extends Migration
         $qb = $db->getQueryBuilder();
 
         // price data
-        // priceType
+        // type
         $this->execute("ALTER TABLE " . Table::PRICEDATA . " ADD COLUMN " .
-            $db->quoteColumnName('priceType') . " VARCHAR(255) GENERATED ALWAYS AS (" .
+            $db->quoteColumnName('type') . " VARCHAR(255) GENERATED ALWAYS AS (" .
             $qb->jsonExtract('data', ['type']) . ") STORED;");
         // productId
         $this->execute("ALTER TABLE " . Table::PRICEDATA . " ADD COLUMN " .
             $db->quoteColumnName('productId') . " VARCHAR(255) GENERATED ALWAYS AS (" .
             $qb->jsonExtract('data', ['product']) . ") STORED;");
-//        // unitAmount
-//        $this->execute("ALTER TABLE " . Table::PRICEDATA . " ADD COLUMN " .
-//            $db->quoteColumnName('unitAmount') . " VARCHAR(255) GENERATED ALWAYS AS (" .
-//            $qb->jsonExtract('data', ['unit_amount_decimal']) . ") STORED;");
         // primary currency
         $this->execute("ALTER TABLE " . Table::PRICEDATA . " ADD COLUMN " .
             $db->quoteColumnName('primaryCurrency') . " VARCHAR(255) GENERATED ALWAYS AS (" .

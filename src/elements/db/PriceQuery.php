@@ -43,7 +43,7 @@ class PriceQuery extends ElementQuery
     /**
      * @var mixed|null Type of the price one-time or recurring
      */
-    public mixed $priceType = null;
+    public mixed $type = null;
 
     /**
      * @var mixed|null Price's main currency
@@ -137,23 +137,23 @@ class PriceQuery extends ElementQuery
      * ```twig
      * {# Fetch recurring prices #}
      * {% set {elements-var} = {twig-method}
-     *   .priceType('recurring')
+     *   .type('recurring')
      *   .all() %}
      * ```
      *
      * ```php
      * // Fetch recurring prices
      * ${elements-var} = {element-class}::find()
-     *     ->priceType(PriceType::Recurring)
+     *     ->type(PriceType::Recurring)
      *     ->all();
      * ```
      */
-    public function priceType(mixed $value): self
+    public function type(mixed $value): self
     {
         if ($value instanceof PriceType) {
-            $this->priceType = $value->value;
+            $this->type = $value->value;
         } else {
-            $this->priceType = $value;
+            $this->type = $value;
         }
 
         return $this;
@@ -504,7 +504,7 @@ class PriceQuery extends ElementQuery
             'stripe_prices.stripeId',
             'stripe_prices.primaryOwnerId',
             'stripe_pricedata.stripeStatus',
-            'stripe_pricedata.priceType',
+            'stripe_pricedata.type',
             'stripe_pricedata.primaryCurrency',
             'stripe_pricedata.currencies',
             'stripe_pricedata.productId as stripeProductId',
@@ -565,8 +565,8 @@ class PriceQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.stripeStatus', $this->stripeStatus));
         }
 
-        if (isset($this->priceType)) {
-            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.priceType', $this->priceType));
+        if (isset($this->type)) {
+            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.type', $this->type));
         }
 
         if (isset($this->primaryCurrency)) {

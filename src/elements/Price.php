@@ -72,7 +72,7 @@ class Price extends Element implements NestedElementInterface
     /**
      * @var string|null
      */
-    public ?string $priceType = null;
+    public ?string $type = null;
 
     /**
      * @var string|null
@@ -344,17 +344,13 @@ class Price extends Element implements NestedElementInterface
         unset($sortOptions['pricePerUnit']);
         unset($sortOptions['interval']);
         unset($sortOptions['currency']);
+        unset($sortOptions['type']);
 
         $sortOptions['title'] = self::displayName();
 
         $sortOptions['stripeId'] = [
             'label' => Craft::t('stripe', 'Stripe ID'),
-            'orderBy' => 'stripe_pricedata.stripeId',
-            'defaultDir' => SORT_DESC,
-        ];
-        $sortOptions['priceType'] = [
-            'label' => Craft::t('stripe', 'Price Type'),
-            'orderBy' => 'stripe_pricedata.priceType',
+            'orderBy' => 'stripeId',
             'defaultDir' => SORT_DESC,
         ];
 
@@ -367,7 +363,7 @@ class Price extends Element implements NestedElementInterface
             'primaryCurrency' => Craft::t('stripe', 'Primary Currency'),
             'stripeId' => Craft::t('stripe', 'Stripe ID'),
             'stripeEdit' => Craft::t('stripe', 'Stripe Edit'),
-            'priceType' => Craft::t('stripe', 'Price Type'),
+            'type' => Craft::t('stripe', 'Type'),
             'unitPrice' => Craft::t('stripe', 'Unit Price'),
             'pricePerUnit' => Craft::t('stripe', 'Price per Unit'),
             'interval' => Craft::t('stripe', 'Interval'),
@@ -387,7 +383,7 @@ class Price extends Element implements NestedElementInterface
         return [
             'stripeId',
             'stripeStatus',
-            'priceType',
+            'type',
             'unitPrice',
         ];
     }
@@ -531,7 +527,7 @@ class Price extends Element implements NestedElementInterface
         return match ($attribute) {
             'stripeEdit' => Html::a('', $this->getStripeEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]),
             'stripeStatus' => $this->getStripeStatusHtml(),
-            'priceType' => $this->priceType ?? '',
+            'type' => $this->type ?? '',
             'pricePerUnit' => $this->pricePerUnit(),
             'unitPrice' => $this->unitPrice(),
             'currency' => strtoupper($this->primaryCurrency),
