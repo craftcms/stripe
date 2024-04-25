@@ -45,6 +45,7 @@ return [
     'Every {intervalCount} {interval}' => 'Every {intervalCount} {interval}',
     'Frequency' => 'Frequency',
     'General' => 'General',
+    'Has Stripe Customer' => 'Has Stripe Customer',
     'ID' => 'ID',
     'Interval' => 'Interval',
     'Invoice No' => 'Invoice No',

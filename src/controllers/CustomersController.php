@@ -8,13 +8,16 @@
 namespace craft\stripe\controllers;
 
 use craft\controllers\EditUserTrait;
+use craft\elements\User;
 use craft\helpers\Cp;
-use craft\helpers\UrlHelper;
-use craft\stripe\db\Table;
+use craft\stripe\behaviors\StripeCustomerBehavior;
 use craft\stripe\elements\Subscription;
 use craft\stripe\Plugin;
 use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
+use yii\base\InvalidConfigException;
+use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 /**
@@ -29,7 +32,11 @@ class CustomersController extends Controller
     /**
      * Displays the Stripe Customer info for given user.
      *
+     * @param int|null $userId
      * @return Response
+     * @throws InvalidConfigException
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
      */
     public function actionIndex(?int $userId = null): Response
     {
@@ -37,13 +44,14 @@ class CustomersController extends Controller
         $invoicesService = Plugin::getInstance()->getInvoices();
         $paymentMethodsService = Plugin::getInstance()->getPaymentMethods();
 
+        /** @var User|StripeCustomerBehavior $user */
         $user = $this->editedUser($userId);
 
         /** @var Response|CpScreenResponseBehavior $response */
         $response = $this->asEditUserScreen($user, 'stripe');
 
         $invoices = $invoicesService->getInvoicesByUser($user);
-        $paymentMethods = $paymentMethodsService->getPaymentMethodsByUser($user);
+        $paymentMethods = $user->getStripePaymentMethods()->all();
         $subscriptions = Cp::elementIndexHtml(Subscription::class, [
             'context' => 'embedded-index',
             'jsSettings' => [

@@ -13,16 +13,22 @@ use craft\base\Plugin as BasePlugin;
 use craft\console\Controller;
 use craft\console\controllers\ResaveController;
 use craft\controllers\UsersController;
+use craft\elements\conditions\users\UserCondition;
+use craft\elements\User as UserElement;
+use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineConsoleActionsEvent;
 use craft\events\DefineEditUserScreensEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\events\RegisterConditionRulesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\services\Elements;
 use craft\services\Fields;
 use craft\services\Utilities;
+use craft\stripe\behaviors\StripeCustomerBehavior;
+use craft\stripe\elements\conditions\users\HasStripeCustomerConditionRule;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
 use craft\stripe\elements\Subscription;
@@ -132,6 +138,8 @@ class Plugin extends BasePlugin
             $this->registerVariables();
             $this->registerTwigExtension();
             $this->registerResaveCommands();
+            $this->registerBehaviors();
+            $this->registerConditionRules();
 
             if (!$request->getIsConsoleRequest()) {
                 if ($request->getIsCpRequest()) {
@@ -456,6 +464,36 @@ class Plugin extends BasePlugin
         Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function(RegisterUrlRulesEvent $event) {
             $event->rules['stripe/webhooks/handle'] = 'stripe/webhooks/handle';
         });
+    }
+
+    /**
+     * @return void
+     */
+    private function registerBehaviors(): void
+    {
+        Event::on(
+            UserElement::class,
+            UserElement::EVENT_DEFINE_BEHAVIORS,
+            function(DefineBehaviorsEvent $event) {
+                $event->behaviors['stripe:customer'] = StripeCustomerBehavior::class;
+            }
+        );
+
+    }
+
+    /**
+     * @return void
+     */
+    private function registerConditionRules(): void
+    {
+        Event::on(
+            UserCondition::class,
+            UserCondition::EVENT_REGISTER_CONDITION_RULES,
+            function(RegisterConditionRulesEvent $event) {
+                $event->conditionRules[] = HasStripeCustomerConditionRule::class;
+            }
+        );
+
     }
 
     /**
