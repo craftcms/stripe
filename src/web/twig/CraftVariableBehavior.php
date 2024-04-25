@@ -89,7 +89,8 @@ class CraftVariableBehavior extends Behavior
         ?string $customer = null,
         ?string $successUrl = null,
         ?string $cancelUrl = null,
+        ?array $params = null,
     ): string {
-        return Plugin::getInstance()->getCheckout()->getCheckoutUrl($lineItems, $customer, $successUrl, $cancelUrl);
+        return Plugin::getInstance()->getCheckout()->getCheckoutUrl($lineItems, $customer, $successUrl, $cancelUrl, $params);
     }
 }

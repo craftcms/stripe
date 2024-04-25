@@ -46,6 +46,7 @@ class Checkout extends Component
         string|User|null $user = null,
         ?string $successUrl = null,
         ?string $cancelUrl = null,
+        ?array $params = null,
     ): string {
         $customer = null;
 
@@ -68,7 +69,7 @@ class Checkout extends Component
             }
         }
 
-        return $this->startCheckoutSession(array_values($lineItems), $customer, $successUrl, $cancelUrl);
+        return $this->startCheckoutSession(array_values($lineItems), $customer, $successUrl, $cancelUrl, $params);
     }
 
     /**
@@ -130,6 +131,7 @@ class Checkout extends Component
         Customer|string|null $customer = null,
         ?string $successUrl = null,
         ?string $cancelUrl = null,
+        ?array $params = null,
     ): ?string {
         $stripe = Plugin::getInstance()->getApi()->getClient();
 
@@ -139,10 +141,15 @@ class Checkout extends Component
             'cancel_url' => $cancelUrl,
             'mode' => $this->getCheckoutMode($lineItems),
         ];
+
         if ($customer instanceof Customer) {
             $data['customer'] = $customer->stripeId;
         } else {
             $data['customer_email'] = $customer;
+        }
+
+        if ($params !== null) {
+            $data += $params;
         }
 
         // Trigger a 'beforeStartCheckoutSession' event
