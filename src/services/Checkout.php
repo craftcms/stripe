@@ -9,7 +9,6 @@ namespace craft\stripe\services;
 
 use Craft;
 use craft\elements\User;
-use craft\helpers\UrlHelper;
 use craft\stripe\elements\Price;
 use craft\stripe\events\CheckoutSessionEvent;
 use craft\stripe\models\Customer;

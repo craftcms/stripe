@@ -478,7 +478,6 @@ class Plugin extends BasePlugin
                 $event->behaviors['stripe:customer'] = StripeCustomerBehavior::class;
             }
         );
-
     }
 
     /**
@@ -493,7 +492,6 @@ class Plugin extends BasePlugin
                 $event->conditionRules[] = HasStripeCustomerConditionRule::class;
             }
         );
-
     }
 
     /**
