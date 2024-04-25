@@ -16,6 +16,7 @@ use craft\models\FieldLayout;
 use craft\stripe\elements\Price as PriceElement;
 use craft\stripe\elements\Product as ProductElement;
 use craft\stripe\events\StripePriceSyncEvent;
+use craft\stripe\helpers\Price as PriceHelper;
 use craft\stripe\Plugin;
 use craft\stripe\records\PriceData as PriceDataRecord;
 use Stripe\Price as StripePrice;
@@ -99,7 +100,7 @@ class Prices extends Component
         $attributes = [
             //'productId' => $price->product,
             'stripeId' => $price->id,
-            'title' => $price->nickname ?? $price->id,
+            'title' => PriceHelper::asUnitPrice($price),
             'stripeStatus' => $price->active ? PriceElement::STRIPE_STATUS_ACTIVE : PriceElement::STRIPE_STATUS_ARCHIVED,
             'data' => Json::decode($price->toJSON()),
         ];

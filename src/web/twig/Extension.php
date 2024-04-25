@@ -29,7 +29,7 @@ class Extension extends AbstractExtension
     public function getFilters(): array
     {
         return [
-            new TwigFilter('priceAmount', [Price::class, 'asPriceAmount']),
+            new TwigFilter('unitAmount', [Price::class, 'asUnitAmount']),
             new TwigFilter('unitPrice', [Price::class, 'asUnitPrice']),
             new TwigFilter('pricePerUnit', [Price::class, 'asPricePerUnit']),
             new TwigFilter('interval', [Price::class, 'getInterval']),

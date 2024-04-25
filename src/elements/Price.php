@@ -252,13 +252,17 @@ class Price extends Element implements NestedElementInterface
      * examples:
      * £10.50
      * $13.35
+     * ¥1,000
+     * £6.00 (when the price is: £6.00 per group of 10)
+     * £10.00 (when the price is: Starts at £10.00 per unit + £0.00)
+     * Customer chooses
      *
      * @return string
      * @throws InvalidConfigException
      */
-    public function priceAmount(): string
+    public function unitAmount(): string
     {
-        return PriceHelper::asPriceAmount($this->_data['unit_amount'], $this->_data['currency']);
+        return PriceHelper::asUnitAmount($this->_data);
     }
 
     /**
