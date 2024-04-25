@@ -24,6 +24,7 @@ class ProductCondition extends ElementCondition
     {
         return array_merge(parent::selectableConditionRules(), [
             StripeStatusConditionRule::class,
+            ProductPriceTypeConditionRule::class,
         ]);
     }
 }
