@@ -7,11 +7,8 @@
 
 namespace craft\stripe\elements\conditions\products;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\StringHelper;
 use craft\stripe\elements\conditions\prices\PriceTypeConditionRule;
 use craft\stripe\elements\db\ProductQuery;
 use craft\stripe\elements\Price;
@@ -40,7 +37,7 @@ class ProductPriceTypeConditionRule extends PriceTypeConditionRule
     {
         $priceQuery = Price::find();
         $priceQuery->select(['stripe_prices.primaryOwnerId as id']);
-        $priceQuery->priceType($this->paramValue());
+        $priceQuery->type($this->paramValue());
 
         /** @var ProductQuery $query */
         $query->andWhere(['elements.id' => $priceQuery]);
@@ -54,7 +51,7 @@ class ProductPriceTypeConditionRule extends PriceTypeConditionRule
         /** @var Product $element */
         foreach ($element->getPrices() as $price) {
             /** @var Price $price */
-            if ($this->matchValue($price->priceType)) {
+            if ($this->matchValue($price->type)) {
                 // Skip out early if we have a match
                 return true;
             }

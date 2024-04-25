@@ -43,7 +43,7 @@ class PriceQuery extends ElementQuery
     /**
      * @var mixed|null Type of the price one-time or recurring
      */
-    public mixed $priceType = null;
+    public mixed $type = null;
 
     /**
      * @var mixed|null Price's main currency
@@ -54,6 +54,11 @@ class PriceQuery extends ElementQuery
      * @var mixed|null Price's currency
      */
     public mixed $currency = null;
+
+    /**
+     * @var mixed|null Unit amount
+     */
+    public mixed $unitAmount = null;
 
     /**
      * @var mixed|null Stripe id of the product the price is associated with
@@ -137,23 +142,23 @@ class PriceQuery extends ElementQuery
      * ```twig
      * {# Fetch recurring prices #}
      * {% set {elements-var} = {twig-method}
-     *   .priceType('recurring')
+     *   .type('recurring')
      *   .all() %}
      * ```
      *
      * ```php
      * // Fetch recurring prices
      * ${elements-var} = {element-class}::find()
-     *     ->priceType(PriceType::Recurring)
+     *     ->type(PriceType::Recurring)
      *     ->all();
      * ```
      */
-    public function priceType(mixed $value): self
+    public function type(mixed $value): self
     {
         if ($value instanceof PriceType) {
-            $this->priceType = $value->value;
+            $this->type = $value->value;
         } else {
-            $this->priceType = $value;
+            $this->type = $value;
         }
 
         return $this;
@@ -206,6 +211,31 @@ class PriceQuery extends ElementQuery
     public function currency(mixed $value): self
     {
         $this->currency = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the unit amount of the price.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch prices where the unit amount is > 10 #}
+     * {% set {elements-var} = {twig-method}
+     *   .unitAmount('> 10')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch prices where the unit amount is > 10
+     * ${elements-var} = {element-class}::find()
+     *     ->unitAmount('> 10')
+     *     ->all();
+     * ```
+     */
+    public function unitAmount(mixed $value): self
+    {
+        $this->unitAmount = $value;
         return $this;
     }
 
@@ -504,9 +534,10 @@ class PriceQuery extends ElementQuery
             'stripe_prices.stripeId',
             'stripe_prices.primaryOwnerId',
             'stripe_pricedata.stripeStatus',
-            'stripe_pricedata.priceType',
+            'stripe_pricedata.type',
             'stripe_pricedata.primaryCurrency',
             'stripe_pricedata.currencies',
+            'stripe_pricedata.unitAmount',
             'stripe_pricedata.productId as stripeProductId',
             'stripe_pricedata.data',
         ]);
@@ -565,8 +596,8 @@ class PriceQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.stripeStatus', $this->stripeStatus));
         }
 
-        if (isset($this->priceType)) {
-            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.priceType', $this->priceType));
+        if (isset($this->type)) {
+            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.type', $this->type));
         }
 
         if (isset($this->primaryCurrency)) {
@@ -576,6 +607,10 @@ class PriceQuery extends ElementQuery
         if (isset($this->currency)) {
             $currency = \craft\stripe\helpers\Db::prepareForLikeSearch($this, 'currency');
             $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.currencies', $currency));
+        }
+
+        if (isset($this->unitAmount)) {
+            $this->subQuery->andWhere(Db::parseParam('stripe_pricedata.unitAmount', $this->unitAmount));
         }
 
         if (isset($this->stripeProductId)) {

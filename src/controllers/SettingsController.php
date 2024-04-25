@@ -65,21 +65,21 @@ class SettingsController extends Controller
     public function actionSaveSettings(): ?Response
     {
         $settings = Craft::$app->getRequest()->getParam('settings');
+        $routingSettings = Craft::$app->getRequest()->getParam('routingSettings');
         $plugin = Plugin::getInstance();
 
         /** @var Settings $pluginSettings */
         $pluginSettings = $plugin->getSettings();
 
-        if (isset($settings['routing'])) {
+        if (isset($routingSettings['routing'])) {
             $originalUriFormat = $pluginSettings->productUriFormat;
 
             // Remove from editable table namespace
-            $settings['productUriFormat'] = $settings['routing']['productUriFormat'];
+            $settings['productUriFormat'] = $routingSettings['routing']['productUriFormat'];
             // Could be blank if in headless mode
-            if (isset($settings['routing']['productTemplate'])) {
-                $settings['productTemplate'] = $settings['routing']['productTemplate'];
+            if (isset($routingSettings['routing']['productTemplate'])) {
+                $settings['productTemplate'] = $routingSettings['routing']['productTemplate'];
             }
-            unset($settings['routing']);
         }
 
         $settingsSuccess = true;
