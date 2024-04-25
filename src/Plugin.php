@@ -14,14 +14,17 @@ use craft\console\Controller;
 use craft\console\controllers\ResaveController;
 use craft\controllers\UsersController;
 use craft\elements\conditions\users\UserCondition;
+use craft\elements\User;
 use craft\elements\User as UserElement;
 use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineConsoleActionsEvent;
 use craft\events\DefineEditUserScreensEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
+use craft\events\DefineMetadataEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterConditionRulesEvent;
 use craft\events\RegisterUrlRulesEvent;
+use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\services\Elements;
@@ -338,6 +341,25 @@ class Plugin extends BasePlugin
             $event->screens['stripe'] = [
                 'label' => Craft::t('stripe', 'Stripe'),
             ];
+        });
+
+        Event::on(User::class, User::EVENT_DEFINE_METADATA, function(DefineMetadataEvent $event) {
+            $event->metadata[Craft::t('stripe', 'Stripe Customer(s)')] = function() use ($event) {
+                return $event->sender->getStripeCustomers()->reduce(function($carry, $item) {
+                    $carry = is_string($carry) ?: '';
+                    $carry .=
+                        Html::beginTag('div') .
+                        Html::tag(
+                            'a',
+                            $item->data['name'] . ' (' . $item->email . ')' . Html::tag('span', '', ['data-icon' => 'external']),
+                            ['href' => $item->getStripeEditUrl(), 'target' => '_blank']
+                        ) .
+                        Html::endTag('div');
+
+                    return $carry;
+                });
+
+            };
         });
     }
 

@@ -83,7 +83,7 @@ return [
     'Settings' => 'Settings',
     'Starts at' => 'Starts at',
     'Status' => 'Status',
-    'Stripe Customer Accounts linked to this user' => 'Stripe Customer Accounts linked to this user',
+    'Stripe Customer(s)' => 'Stripe Customer(s)',
     'Stripe Edit' => 'Stripe Edit',
     'Stripe Endpoint Secret (webhooks)' => 'Stripe Endpoint Secret (webhooks)',
     'Stripe ID' => 'Stripe ID',

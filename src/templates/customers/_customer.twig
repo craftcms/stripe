@@ -4,17 +4,6 @@
 {% if customers is empty %}
     <p class="zilch">{{ 'This user isn’t a Stripe customer'|t('stripe') }}</p>
 {% else %}
-    <h3>{{ 'Stripe Customer Accounts linked to this user'|t('stripe') }}</h3>
-    <ul class="user-customers">
-        {% for customer in customers %}
-            <li>
-                <a href="{{ customer.getStripeEditUrl() }}" target="_blank">
-                    {{ customer.data.name }} ({{ customer.email }}) <span data-icon="external"></span>
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-
     <h3>{{ 'Subscriptions'|t('stripe') }}</h3>
     {{ subscriptions|raw }}
 
