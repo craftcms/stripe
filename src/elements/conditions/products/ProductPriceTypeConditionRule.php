@@ -37,7 +37,7 @@ class ProductPriceTypeConditionRule extends PriceTypeConditionRule
     {
         $priceQuery = Price::find();
         $priceQuery->select(['stripe_prices.primaryOwnerId as id']);
-        $priceQuery->priceType($this->paramValue());
+        $priceQuery->type($this->paramValue());
 
         /** @var ProductQuery $query */
         $query->andWhere(['elements.id' => $priceQuery]);
@@ -51,7 +51,7 @@ class ProductPriceTypeConditionRule extends PriceTypeConditionRule
         /** @var Product $element */
         foreach ($element->getPrices() as $price) {
             /** @var Price $price */
-            if ($this->matchValue($price->priceType)) {
+            if ($this->matchValue($price->type)) {
                 // Skip out early if we have a match
                 return true;
             }

@@ -61,7 +61,7 @@ class PriceTypeConditionRule extends BaseMultiSelectConditionRule implements Ele
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Price $element */
-        return $this->matchValue($element->priceType);
+        return $this->matchValue($element->type);
     }
 
     /**
@@ -70,6 +70,6 @@ class PriceTypeConditionRule extends BaseMultiSelectConditionRule implements Ele
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var PriceQuery $query */
-        $query->priceType($this->paramValue());
+        $query->type($this->paramValue());
     }
 }
