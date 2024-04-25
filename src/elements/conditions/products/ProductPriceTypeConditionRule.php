@@ -25,7 +25,7 @@ use craft\stripe\elements\Product;
 class ProductPriceTypeConditionRule extends PriceTypeConditionRule
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getLabel(): string
     {

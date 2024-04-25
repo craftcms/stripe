@@ -24,7 +24,7 @@ use craft\stripe\enums\PriceType;
 class PriceTypeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getLabel(): string
     {

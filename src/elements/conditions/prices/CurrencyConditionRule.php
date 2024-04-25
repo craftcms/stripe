@@ -25,7 +25,7 @@ use craft\stripe\enums\PriceType;
 class CurrencyConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getLabel(): string
     {

@@ -24,7 +24,7 @@ use craft\stripe\elements\Product;
 class StripeStatusConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getLabel(): string
     {
