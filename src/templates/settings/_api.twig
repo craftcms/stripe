@@ -1,0 +1,34 @@
+{% import '_includes/forms.twig' as forms %}
+
+{{ forms.autosuggestField({
+    first: true,
+    label: 'Secret Key'|t('stripe'),
+    id: 'secretKey',
+    name: 'settings[secretKey]',
+    value: settings.secretKey,
+    errors: settings.getErrors('secretKey'),
+    suggestEnvVars: true,
+    autofocus: true,
+}) }}
+
+{{ forms.autosuggestField({
+    first: true,
+    label: 'Public Key'|t('stripe'),
+    id: 'publicKey',
+    name: 'settings[publicKey]',
+    value: settings.publicKey,
+    errors: settings.getErrors('publicKey'),
+    suggestEnvVars: true,
+    autofocus: true,
+}) }}
+
+{{ forms.autosuggestField({
+    first: true,
+    label: 'Endpoint Secret'|t('stripe'),
+    id: 'endpointSecret',
+    name: 'settings[endpointSecret]',
+    value: settings.endpointSecret,
+    errors: settings.getErrors('endpointSecret'),
+    suggestEnvVars: true,
+    autofocus: true,
+}) }}

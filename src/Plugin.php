@@ -13,7 +13,6 @@ use craft\events\DefineEditUserScreensEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
-use craft\fieldlayoutelements\TitleField;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\services\Elements;
@@ -353,13 +352,8 @@ class Plugin extends BasePlugin
 
             switch ($fieldLayout->type) {
                 case Product::class:
-//                    $event->fields[] = TitleField::class;
                     $event->fields[] = PricesField::class;
                     break;
-//                case Price::class:
-//                case Subscription::class:
-//                    $event->fields[] = TitleField::class;
-//                    break;
             }
         });
     }
@@ -432,9 +426,6 @@ class Plugin extends BasePlugin
             $event->rules['stripe'] = ['template' => 'stripe/_index'];
 
             $event->rules['stripe/settings'] = 'stripe/settings';
-            $event->rules['stripe/settings/products'] = 'stripe/settings/products';
-            $event->rules['stripe/settings/prices'] = 'stripe/settings/prices';
-            $event->rules['stripe/settings/subscriptions'] = 'stripe/settings/subscriptions';
 
             $event->rules['stripe/products'] = 'stripe/products/index';
             $event->rules['stripe/products/<elementId:\\d+>'] = 'elements/edit';
