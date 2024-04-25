@@ -48,9 +48,8 @@ class ProductPriceTypeConditionRule extends PriceTypeConditionRule
      */
     public function matchElement(ElementInterface $element): bool
     {
-        /** @var Product $element */
+        /** @var Price $price */
         foreach ($element->getPrices() as $price) {
-            /** @var Price $price */
             if ($this->matchValue($price->type)) {
                 // Skip out early if we have a match
                 return true;
