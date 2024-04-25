@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\stripe\elements\db;
 
@@ -19,6 +24,8 @@ use yii\db\QueryBuilder;
 
 /**
  * Subscription query
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class SubscriptionQuery extends ElementQuery
 {

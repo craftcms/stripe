@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\stripe\elements\db;
 
@@ -15,6 +20,8 @@ use yii\base\InvalidConfigException;
 
 /**
  * Price query
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class PriceQuery extends ElementQuery
 {
