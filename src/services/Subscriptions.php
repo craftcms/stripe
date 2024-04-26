@@ -100,6 +100,7 @@ class Subscriptions extends Component
             'title' => $subscription->description ?? $subscription->id,
             'stripeStatus' => $subscription->status,
             'data' => Json::decode($subscription->toJSON()),
+            'prices' => array_map(fn($item) => $item['price']['id'], $subscription->items->data),
         ];
 
         // Set attributes on the element to emulate it having been loaded with JOINed data:
