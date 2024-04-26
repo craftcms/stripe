@@ -326,6 +326,7 @@ class Product extends Element
             'stripeId',
             'stripeStatus',
             'stripeEdit',
+            'link',
         ];
     }
 
