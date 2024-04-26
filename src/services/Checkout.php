@@ -9,6 +9,7 @@ namespace craft\stripe\services;
 
 use Craft;
 use craft\elements\User;
+use craft\helpers\UrlHelper;
 use craft\stripe\elements\Price;
 use craft\stripe\events\CheckoutSessionEvent;
 use craft\stripe\models\Customer;
@@ -69,7 +70,13 @@ class Checkout extends Component
             }
         }
 
-        return $this->startCheckoutSession(array_values($lineItems), $customer, $successUrl, $cancelUrl, $params);
+        return $this->startCheckoutSession(
+            array_values($lineItems),
+            $customer,
+            UrlHelper::siteUrl($successUrl),
+            UrlHelper::siteUrl($cancelUrl),
+            $params,
+        );
     }
 
     /**
