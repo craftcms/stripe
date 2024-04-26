@@ -106,6 +106,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->string(),
+            'prices' => $this->text()->defaultValue(null),
         ]);
 
         $this->archiveTableIfExists(Table::PAYMENTMETHODDATA);
@@ -194,10 +195,6 @@ class Install extends Migration
         $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " .
             $db->quoteColumnName('trialEnd') . " VARCHAR(255) GENERATED ALWAYS AS (" .
             $qb->jsonExtract('data', ['trial_end']) . ") STORED;");
-        // prices
-        $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " .
-            $db->quoteColumnName('prices') . " VARCHAR(255) GENERATED ALWAYS AS (" .
-            $qb->jsonExtract('data', ['items', 'data[*]', 'price', 'id']) . ") STORED;");
 
         // invoice data
         // created

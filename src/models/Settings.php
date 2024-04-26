@@ -52,6 +52,11 @@ class Settings extends Model
     public string $productTemplate = '';
 
     /**
+     * @var bool Whether updating credentialed user's email address should update Stripe customer(s)
+     */
+    public bool $syncChangedUserEmailsToStripe = true;
+
+    /**
      * @var mixed
      */
     private mixed $_productFieldLayout;

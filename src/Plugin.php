@@ -27,6 +27,7 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use craft\records\User as UserRecord;
 use craft\services\Elements;
 use craft\services\Fields;
 use craft\services\Utilities;
@@ -54,6 +55,7 @@ use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
+use yii\base\ModelEvent;
 
 /**
  * Stripe plugin
@@ -143,6 +145,7 @@ class Plugin extends BasePlugin
             $this->registerResaveCommands();
             $this->registerBehaviors();
             $this->registerConditionRules();
+            $this->handleUserElementChanges();
 
             if (!$request->getIsConsoleRequest()) {
                 if ($request->getIsCpRequest()) {
@@ -168,12 +171,6 @@ class Plugin extends BasePlugin
             $projectConfigService->onAdd(self::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$subscriptionService, 'handleChangedFieldLayout'])
                 ->onUpdate(self::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$subscriptionService, 'handleChangedFieldLayout'])
                 ->onRemove(self::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$subscriptionService, 'handleDeletedFieldLayout']);
-
-//            // Globally register stripe webhooks registry event handlers
-//            Registry::addHandler(Topics::PRODUCTS_CREATE, new ProductHandler());
-//            Registry::addHandler(Topics::PRODUCTS_DELETE, new ProductHandler());
-//            Registry::addHandler(Topics::PRODUCTS_UPDATE, new ProductHandler());
-//            Registry::addHandler(Topics::INVENTORY_LEVELS_UPDATE, new ProductHandler());
 
             // get stripe environment from the secret key
             $this->stripeMode = $this->getStripeMode();
@@ -513,6 +510,32 @@ class Plugin extends BasePlugin
                 $event->conditionRules[] = HasStripeCustomerConditionRule::class;
             }
         );
+    }
+
+    /**
+     * Maybe sync changed user email from Craft to Stripe.
+     *
+     * @return void
+     */
+    private function handleUserElementChanges(): void
+    {
+        Event::on(UserRecord::class, UserRecord::EVENT_BEFORE_UPDATE, function(ModelEvent $event) {
+            $userRecord = $event->sender;
+            $user = Craft::$app->getUsers()->getUserById($userRecord->id);
+            if ($user->isCredentialed) {
+                $oldEmail = $userRecord->getOldAttribute('email');
+                $newEmail = $userRecord->getAttribute('email');
+                if ($oldEmail != $newEmail) {
+                    $customers = $user->getStripeCustomers();
+                    if (!empty($customers)) {
+                        $client = $this->getApi()->getClient();
+                        foreach ($customers as $customer) {
+                            $client->customers->update($customer->stripeId, ['email' => $newEmail]);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     /**
