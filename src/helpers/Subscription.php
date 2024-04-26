@@ -127,34 +127,37 @@ class Subscription
             }
         }
 
-        $meta[Craft::t('stripe', 'Metadata')] = collect($stripeSubscription['metadata'])
-            ->map(function($value, $key) {
-                // todo: style me!
-                return Html::beginTag('div', ['class' => 'fullwidth']) .
-                    Html::tag('em', $key . ': ') .
-                    $value .
-                    Html::endTag('div');
-            })
-            ->join(' ');
+        $footer = '';
+        if (!empty($stripeSubscription)) {
+            $meta[Craft::t('stripe', 'Metadata')] = collect($stripeSubscription['metadata'])
+                ->map(function($value, $key) {
+                    // todo: style me!
+                    return Html::beginTag('div', ['class' => 'fullwidth']) .
+                        Html::tag('em', $key . ': ') .
+                        $value .
+                        Html::endTag('div');
+                })
+                ->join(' ');
 
-        $meta[Craft::t('stripe', 'Created at')] = $formatter->asDatetime($stripeSubscription['created'], Formatter::FORMAT_WIDTH_SHORT);
+            $meta[Craft::t('stripe', 'Created at')] = $formatter->asDatetime($stripeSubscription['created'], Formatter::FORMAT_WIDTH_SHORT);
+
+            $spinner = Html::tag('div', '', [
+                'class' => 'spinner',
+                'hx' => [
+                    'indicator',
+                ],
+            ]);
+
+            $dateCreated = DateTimeHelper::toDateTime($stripeSubscription['created']);
+            $now = new \DateTime();
+            $diff = $now->diff($dateCreated);
+            $duration = DateTimeHelper::humanDuration($diff, false);
+            $footer = Html::tag('div', 'Created ' . $duration . ' ago.' . $spinner, [
+                'class' => 'pec-footer',
+            ]);
+        }
 
         $metadataHtml = Cp::metadataHtml($meta);
-
-        $spinner = Html::tag('div', '', [
-            'class' => 'spinner',
-            'hx' => [
-                'indicator',
-            ],
-        ]);
-
-        $dateCreated = DateTimeHelper::toDateTime($stripeSubscription['created']);
-        $now = new \DateTime();
-        $diff = $now->diff($dateCreated);
-        $duration = DateTimeHelper::humanDuration($diff, false);
-        $footer = Html::tag('div', 'Created ' . $duration . ' ago.' . $spinner, [
-            'class' => 'pec-footer',
-        ]);
 
         return Html::tag('div', $cardHeader . $hr . $metadataHtml . $footer, [
             'class' => 'meta proxy-element-card',
