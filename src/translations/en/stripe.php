@@ -34,6 +34,7 @@ return [
     'Created at' => 'Created at',
     'Created' => 'Created',
     'Currency' => 'Currency',
+    'Currency options' => 'Currency options',
     'Current period' => 'Current period',
     'Customer chooses' => 'Customer chooses',
     'Customer Email' => 'Customer Email',

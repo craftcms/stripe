@@ -334,7 +334,40 @@ class Price
                 ->join(' ');
         }
 
-        $meta[Craft::t('stripe', 'Created at')] = $formatter->asDatetime($stripePrice['created'], Formatter::FORMAT_WIDTH_SHORT);
+        $meta[Craft::t('stripe', 'Created at')] = $formatter->asDatetime(
+            $stripePrice['created'],
+            Formatter::FORMAT_WIDTH_SHORT
+        );
+
+        // currencies
+        if (count($stripePrice['currency_options']) > 1) {
+            $table = '<table>';
+            $table .= '<thead><tr>';
+            $table .= '<td>' . Craft::t('stripe', 'Currency') . '</td>';
+            $table .= '<td>' . Craft::t('stripe', 'Unit price') . '</td>';
+            $table .= '</tr></thead>';
+            $table .= '<tbody>';
+            foreach ($stripePrice['currency_options'] as $currency => $options) {
+                $table .= '<tr>';
+                $table .= '<td>' . strtoupper($currency) . '</td>';
+
+                if ($options['unit_amount_decimal'] !== null) {
+                    $unitAmount = $options['unit_amount_decimal'];
+                    if (!in_array(strtolower($currency), self::$zeroDecimalCurrencies)) {
+                        $unitAmount = $unitAmount / 100;
+                    }
+                } else {
+                    $unitAmount = '';
+                }
+
+                $table .= '<td>' . $unitAmount . '</td>';
+                $table .= '</tr>';
+            }
+            $table .= '</tbody>';
+            $table .= '</table>';
+            $meta[Craft::t('stripe', 'Currency options')] = $table;
+        }
+
 
         $metadataHtml = Cp::metadataHtml($meta);
 
