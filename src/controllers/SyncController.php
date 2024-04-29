@@ -22,6 +22,11 @@ class SyncController extends Controller
     public function actionAll(): YiiResponse
     {
         Plugin::getInstance()->getProducts()->syncAllProducts();
+        Plugin::getInstance()->getPrices()->syncAllPrices();
+        Plugin::getInstance()->getSubscriptions()->syncAllSubscriptions();
+        Plugin::getInstance()->getCustomers()->syncAllCustomers();
+        Plugin::getInstance()->getPaymentMethods()->syncAllPaymentMethods();
+        Plugin::getInstance()->getInvoices()->syncAllInvoices();
 
         return $this->asSuccess(Craft::t('stripe', 'Stripe Products, Prices, Subscriptions, Customers, Invoices and Payment Methods successfully synced'));
     }
