@@ -323,15 +323,17 @@ class Price
                 }
             }
 
-            $meta[Craft::t('stripe', 'Metadata')] = collect($stripePrice['metadata'])
+            $meta[Craft::t('stripe', 'Metadata')] =
+                Html::beginTag('div', ['class' => 'pec-metadata']) .
+                collect($stripePrice['metadata'])
                 ->map(function($value, $key) {
-                    // todo: style me!
                     return Html::beginTag('div', ['class' => 'fullwidth']) .
                         Html::tag('em', $key . ': ') .
                         $value .
                         Html::endTag('div');
                 })
-                ->join(' ');
+                ->join(' ') .
+                Html::endTag('div');
         }
 
         $meta[Craft::t('stripe', 'Created at')] = $formatter->asDatetime(

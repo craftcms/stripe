@@ -232,7 +232,6 @@ class Install extends Migration
         $this->createIndex(null, Table::SUBSCRIPTIONDATA, ['stripeId'], true);
         $this->createIndex(null, Table::SUBSCRIPTIONDATA, ['customerId']);
         $this->createIndex(null, Table::SUBSCRIPTIONDATA, ['latestInvoiceId'], true);
-        // todo: add for price id?
 
         $this->createIndex(null, Table::CUSTOMERDATA, ['stripeId'], true);
         $this->createIndex(null, Table::CUSTOMERDATA, ['email']);

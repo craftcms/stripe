@@ -94,15 +94,17 @@ class Product
                                     ->join(', ');
                                 break;
                             case 'metadata':
-                                $meta[Craft::t('stripe', $label)] = collect($value)
+                                $meta[Craft::t('stripe', $label)] =
+                                    Html::beginTag('div', ['class' => 'pec-metadata']) .
+                                    collect($value)
                                     ->map(function($val, $i) {
-                                        // todo: style me!
                                         return Html::beginTag('div', ['class' => 'fullwidth']) .
                                             Html::tag('em', $i . ': ') .
                                             $val .
                                             Html::endTag('div');
                                     })
-                                    ->join(' ');
+                                    ->join(' ') .
+                                    Html::endTag('div');
                                 break;
                             case 'default_price':
                                 $defaultPrice = $product->getDefaultPrice();
@@ -148,7 +150,7 @@ class Product
                     'id' => $product->id,
                 ]),
                 'swap' => 'outerHTML',
-                'trigger' => 'every 15s',
+                'trigger' => 'every 15m',
             ],
         ]);
     }

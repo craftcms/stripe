@@ -129,15 +129,17 @@ class Subscription
 
         $footer = '';
         if (count($stripeSubscription) > 0) {
-            $meta[Craft::t('stripe', 'Metadata')] = collect($stripeSubscription['metadata'])
+            $meta[Craft::t('stripe', 'Metadata')] =
+                Html::beginTag('div', ['class' => 'pec-metadata']) .
+                collect($stripeSubscription['metadata'])
                 ->map(function($value, $key) {
-                    // todo: style me!
                     return Html::beginTag('div', ['class' => 'fullwidth']) .
                         Html::tag('em', $key . ': ') .
                         $value .
                         Html::endTag('div');
                 })
-                ->join(' ');
+                ->join(' ') .
+                Html::endTag('div');
 
             $meta[Craft::t('stripe', 'Created at')] = $formatter->asDatetime($stripeSubscription['created'], Formatter::FORMAT_WIDTH_SHORT);
 

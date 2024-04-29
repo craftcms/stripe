@@ -957,7 +957,7 @@ class SubscriptionQuery extends ElementQuery
             // todo: should we check for isSuspended too?
             $this->subQuery->leftJoin(
                 ['stripe_invoicedata' => '{{%stripe_invoicedata}}'],
-                "[[stripe_subscriptions.stripeId]] = [[stripe_invoicedata.subscriptionId",
+                "[[stripe_subscriptions.stripeId]] = [[stripe_invoicedata.subscriptionId]]",
             );
 
             $this->subQuery->andWhere(Db::parseTimestampParam(
