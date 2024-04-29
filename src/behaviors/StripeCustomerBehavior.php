@@ -60,10 +60,12 @@ class StripeCustomerBehavior extends Behavior
     public function getStripeCustomers(): Collection
     {
         if ($this->_customers === null) {
-            $stripeCustomers = Plugin::getInstance()->getCustomers()->getCustomersByEmail($this->owner->email);
+            if (!$this->owner->hasErrors('email')) {
+                $stripeCustomers = Plugin::getInstance()->getCustomers()->getCustomersByEmail($this->owner->email);
 
-            if (!empty($stripeCustomers)) {
-                $this->_customers = collect($stripeCustomers);
+                if (!empty($stripeCustomers)) {
+                    $this->_customers = collect($stripeCustomers);
+                }
             }
         }
 
