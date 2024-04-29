@@ -183,9 +183,9 @@ class Customers extends Component
      */
     private function _populateCustomer(array $result): Customer
     {
-        $invoice = new Customer();
-        $invoice->setAttributes($result, false);
+        $customer = new Customer();
+        $customer->setAttributes($result, false);
 
-        return $invoice;
+        return $customer;
     }
 }

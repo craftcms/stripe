@@ -40,6 +40,7 @@ use craft\stripe\fieldlayoutelements\PricesField;
 use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\models\Settings;
 use craft\stripe\services\Api;
+use craft\stripe\services\BillingPortal;
 use craft\stripe\services\Checkout;
 use craft\stripe\services\Customers;
 use craft\stripe\services\Invoices;
@@ -115,6 +116,7 @@ class Plugin extends BasePlugin
         return [
             'components' => [
                 'api' => ['class' => Api::class],
+                'billingPortal' => ['class' => BillingPortal::class],
                 'checkout' => ['class' => Checkout::class],
                 'customers' => ['class' => Customers::class],
                 'invoices' => ['class' => Invoices::class],
@@ -154,7 +156,7 @@ class Plugin extends BasePlugin
                     $this->registerSiteRoutes();
                 }
             }
-//
+
             $projectConfigService = Craft::$app->getProjectConfig();
             $productsService = $this->getProducts();
             $pricesService = $this->getPrices();
@@ -214,6 +216,17 @@ class Plugin extends BasePlugin
     public function getApi(): Api
     {
         return $this->get('api');
+    }
+
+    /**
+     * Returns the billing portal service
+     *
+     * @return BillingPortal The billing portal service
+     * @throws InvalidConfigException
+     */
+    public function getBillingPortal(): Api
+    {
+        return $this->get('billingPortal');
     }
 
     /**
