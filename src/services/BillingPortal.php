@@ -42,7 +42,7 @@ class BillingPortal extends Component
     ): string {
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        if($currentUser === null) {
+        if ($currentUser === null) {
             return '';
         }
 
