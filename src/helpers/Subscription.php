@@ -128,7 +128,7 @@ class Subscription
         }
 
         $footer = '';
-        if (!empty($stripeSubscription)) {
+        if (count($stripeSubscription) > 0) {
             $meta[Craft::t('stripe', 'Metadata')] = collect($stripeSubscription['metadata'])
                 ->map(function($value, $key) {
                     // todo: style me!
