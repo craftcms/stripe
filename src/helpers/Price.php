@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\stripe\elements\Price as PriceElement;
@@ -343,16 +344,16 @@ class Price
 
         // currencies
         if (count($stripePrice['currency_options']) > 1) {
-            $table = '<table>';
-            $table .= '<thead><tr>';
-            $table .= '<td>' . Craft::t('stripe', 'Currency') . '</td>';
-            $table .= '<td>' . Craft::t('stripe', 'Unit price') . '</td>';
-            $table .= '</tr></thead>';
-            $table .= '<tbody>';
-            foreach ($stripePrice['currency_options'] as $currency => $options) {
-                $table .= '<tr>';
-                $table .= '<td>' . strtoupper($currency) . '</td>';
+            $table = Html::beginTag('table', ['class' => 'data fullwidth']) .
+                Html::beginTag('thead') .
+                    Html::beginTag('tr') .
+                        Html::tag('th', Craft::t('stripe', 'Currency')) .
+                        Html::tag('th', Craft::t('stripe', 'Unit price')) .
+                    Html::endTag('tr') .
+                Html::endTag('thead') .
+                Html::beginTag('tbody');
 
+            foreach ($stripePrice['currency_options'] as $currency => $options) {
                 if ($options['unit_amount_decimal'] !== null) {
                     $unitAmount = $options['unit_amount_decimal'];
                     if (!in_array(strtolower($currency), self::$zeroDecimalCurrencies)) {
@@ -362,11 +363,15 @@ class Price
                     $unitAmount = '';
                 }
 
-                $table .= '<td>' . $unitAmount . '</td>';
-                $table .= '</tr>';
+                $table .= Html::beginTag('tr') .
+                    Html::tag('td', StringHelper::toUpperCase($currency)) .
+                    Html::tag('td', $unitAmount) .
+                Html::endTag('tr');
             }
-            $table .= '</tbody>';
-            $table .= '</table>';
+
+            $table .= Html::endTag('tbody') .
+                Html::endTag('table');
+
             $meta[Craft::t('stripe', 'Currency options')] = $table;
         }
 
