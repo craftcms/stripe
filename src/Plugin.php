@@ -519,10 +519,12 @@ class Plugin extends BasePlugin
      */
     private function handleUserElementChanges(): void
     {
+        // if email address got changed - update stripe
         Event::on(UserRecord::class, UserRecord::EVENT_BEFORE_UPDATE, function(ModelEvent $event) {
             $userRecord = $event->sender;
             $user = Craft::$app->getUsers()->getUserById($userRecord->id);
-            if ($user->isCredentialed) {
+            $settings = $this->getSettings();
+            if ($user->isCredentialed && $settings['syncChangedUserEmailsToStripe']) {
                 $oldEmail = $userRecord->getOldAttribute('email');
                 $newEmail = $userRecord->getAttribute('email');
                 if ($oldEmail != $newEmail) {
