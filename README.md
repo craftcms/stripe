@@ -7,7 +7,7 @@ Connect your Craft content to [Stripe](https://stripe.com)’s powerful billing 
 This plugin requires Craft CMS 5.1.0 or later, and a Stripe account with access to developer features.
 
 > [!TIP]
-> Transitioning from Craft Commerce 4.x? Check out the dedicated [migration](#migrating-from-commerce) section.
+> Transitioning from Craft Commerce? Check out the dedicated [migration](#migrating-from-commerce) section.
 
 ## Installation
 
@@ -93,7 +93,7 @@ Field layouts for each element type are managed in the plugin’s **Settings** s
 
 ### Product URLs
 
-In addition to a field layout, product elements support **URI Format** and **Template** settings, which work just like they do on other element types: when a product’s URL is requested, Craft loads the element and passes it to the specified template under a `stripeproduct` variable.
+In addition to a field layout, product elements support **URI Format** and **Template** settings, which work just like they do on other element types: when a product’s URL is requested, Craft loads the element and passes it to the specified template under a `product` variable.
 
 > [!NOTE]
 > Prices and subscriptions do _not_ have their own URLs. You can use query parameters or [custom routes](https://craftcms.com/docs/5.x/system/routing.html) to load those elements in response to specific URI patterns.
@@ -158,16 +158,16 @@ To get a list of products, use the `craft.shopifyProducts` [element query](https
 
 ### The Product Template
 
-On an individual product’s page, Craft provides the current product under a `stripeproduct` variable:
+On an individual product’s page, Craft provides the current product under a `product` variable:
 
 ```twig
-<h1>{{ stripeproduct.title }}</h1>
+<h1>{{ product.title }}</h1>
 ```
 
 Any [custom fields](#content--fields) you’ve configured for products will be available as properties, just as they are for other element types:
 
 ```twig
-{{ stripeproduct.customDescriptionField|md }}
+{{ product.customDescriptionField|md }}
 ```
 
 ### Prices
@@ -203,7 +203,7 @@ Clicking a checkout link takes the customer to Stripe’s hosted checkout page, 
 To output a checkout link, use the `craft.stripeCheckoutUrl()` function:
 
 ```twig
-{% set price = stripeproduct.prices.one() %}
+{% set price = product.prices.one() %}
 
 {{ tag('a', {
   href: craft.stripe.checkout.getCheckoutUrl(
@@ -221,6 +221,52 @@ To output a checkout link, use the `craft.stripeCheckoutUrl()` function:
   text: 'Checkout',
 }) }}
 ```
+
+### Checkout Form
+
+The alternative to making a checkout link with twig, is to use a form to start a 
+checkout session and redirect the customer to the Stripe-hosted checkout page:
+
+```twig
+{% set price = product.prices.one() %}
+
+<form action="" method="post">
+  {{ csrfInput() }}
+  {{ actionInput('stripe/checkout') }}
+  {{ hiddenInput('successUrl', 'shop/thank-you?session={CHECKOUT_SESSION_ID}'|hash) }}
+  {{ hiddenInput('cancelUrl', 'shop'|hash) }}
+
+  <input type="text" name="lineItems[0][price]" value="{{ price.stripeId }}">
+  <input type="text" name="lineItems[0][quantity]" value="1">
+
+  <input type="submit" value="submit">
+</form>
+```
+
+### Billing Portal
+
+Create a link to a Stripe [billing portal](https://docs.stripe.com/customer-management) that allows customers to manage their subscriptions and payment methods. 
+
+You can generate the URL for the billing portal using the `currentUser.getStripeBillingPortalSessionUrl()` method:
+
+```twig
+  {{ tag('a', {
+    text: "Billing Portal",
+    href: currentUser.getStripeBillingPortalSessionUrl('shop'),
+  }) }}
+```
+The method takes an `returnUrl` parameter that specifies the URL to redirect the customer to after they have finished managing their subscriptions and payment methods.
+
+In addition to this method, there is also the `currentUser.getStripeBillingPortalSessionPaymentMethodUpdateUrl()` method that generates a URL for the customer to update their default payment method.
+
+```twig
+  {{ tag('a', {
+    text: "Update Payment Method",
+    href: currentUser.getStripeBillingPortalSessionPaymentMethodUpdateUrl('shop'),
+  }) }}
+```
+
+This uses the Stripe [flow type](https://docs.stripe.com/customer-management/portal-deep-links#flow-types) to deep link directly to the payment method update screen.
 
 ### Element API
 
