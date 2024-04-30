@@ -136,10 +136,10 @@ Once you have populated your Craft project with data from Stripe (via [synchroni
 
 Individual products automatically get URLs based on their [URI format](#product-urls), but it is up to you how they are gathered and displayed.
 
-To get a list of products, use the `craft.shopifyProducts` [element query](https://craftcms.com/docs/5.x/development/element-queries.html) factory:
+To get a list of products, use the `craft.stripeProducts` [element query](https://craftcms.com/docs/5.x/development/element-queries.html) factory:
 
 ```twig
-{% set products = craft.shopifyProducts.all() %}
+{% set products = craft.stripeProducts.all() %}
 
 <ul>
     {% for product in products %}
