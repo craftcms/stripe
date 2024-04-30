@@ -534,12 +534,13 @@ class PriceQuery extends ElementQuery
             'stripe_prices.stripeId',
             'stripe_prices.primaryOwnerId',
             'stripe_pricedata.stripeStatus',
-            'stripe_pricedata.type',
-            'stripe_pricedata.primaryCurrency',
+            'stripe_pricedata.data',
             'stripe_pricedata.currencies',
             'stripe_pricedata.unitAmount',
+            'stripe_pricedata.type',
             'stripe_pricedata.productId as stripeProductId',
-            'stripe_pricedata.data',
+            'stripe_pricedata.primaryCurrency',
+
         ]);
 
         if (!empty($this->ownerId) || !empty($this->primaryOwnerId)) {
