@@ -34,7 +34,7 @@ class Settings extends Model
     /**
      * @var string
      */
-    public string $endpointSecret = '';
+    public string $webhookSigningSecret = '';
 
     /**
      * @var string
@@ -89,7 +89,7 @@ class Settings extends Model
         return [
             'secretKey' => Craft::t('stripe', 'Stripe Secret Key'),
             'publicKey' => Craft::t('stripe', 'Stripe Public Key'),
-            'endpointSecret' => Craft::t('stripe', 'Stripe Endpoint Secret (webhooks)'),
+            'webhookSigningSecret' => Craft::t('stripe', 'Stripe Webhook Signing Secret'),
             'productUriFormat' => Craft::t('stripe', 'Product URI format'),
             'productTemplate' => Craft::t('stripe', 'Product Template'),
         ];
