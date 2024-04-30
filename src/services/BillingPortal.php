@@ -49,7 +49,7 @@ class BillingPortal extends Component
         ?string $returnUrl = null,
         array $params = [],
     ): ?string {
-        /** @var User|StripeCustomerBehavior $currentUser */
+        /** @var User|StripeCustomerBehavior|null $currentUser */
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         if ($currentUser === null) {

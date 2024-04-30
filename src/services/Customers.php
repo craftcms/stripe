@@ -8,7 +8,6 @@
 namespace craft\stripe\services;
 
 use craft\db\Query;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\stripe\db\Table;

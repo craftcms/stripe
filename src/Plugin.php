@@ -567,9 +567,7 @@ class Plugin extends BasePlugin
                 // if we found Stripe customers with that email address - kick off the queue job to sync data
                 if (!$stripeCustomers->isEmpty()) {
                     // sync data via the queue
-                    Queue::push(new SyncData([
-                        'customers' => $stripeCustomers->data,
-                    ]));
+                    Queue::push(new SyncData());
                 }
             }
         });
