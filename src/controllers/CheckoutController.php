@@ -23,6 +23,11 @@ use yii\web\Response;
 class CheckoutController extends Controller
 {
     /**
+     * @inerhitdoc
+     */
+    public $defaultAction = 'checkout';
+
+    /**
      * @return Response
      * @throws \Throwable
      * @throws InvalidConfigException
@@ -37,20 +42,19 @@ class CheckoutController extends Controller
 
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        // process purchasables
-        $purchasables = $request->getRequiredBodyParam('purchasables');
-        $lineItems = collect($purchasables)->filter(fn($item) => $item['quantity'] > 0)->all();
+        // process line items
+        $postLineItems = $request->getRequiredBodyParam('lineItems');
+        $lineItems = collect($postLineItems)->filter(fn($item) => $item['quantity'] > 0)->all();
 
         if (empty($lineItems)) {
             return $this->asFailure(Craft::t('stripe', 'Please specify the quantity'));
         }
 
-        $successUrl = $request->getValidatedBodyParam('successUrl', null);
-        $cancelUrl = $request->getValidatedBodyParam('cancelUrl', null);
-        $params = $request->getValidatedBodyParam('params', null);
+        $successUrl = $request->getValidatedBodyParam('successUrl');
+        $cancelUrl = $request->getValidatedBodyParam('cancelUrl');
 
         // start checkout session
-        $url = Plugin::getInstance()->getCheckout()->getCheckoutUrl($lineItems, $currentUser, $successUrl, $cancelUrl, $params);
+        $url = Plugin::getInstance()->getCheckout()->getCheckoutUrl($lineItems, $currentUser, $successUrl, $cancelUrl);
 
         return $this->redirect($url);
     }
