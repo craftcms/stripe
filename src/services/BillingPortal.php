@@ -86,10 +86,11 @@ class BillingPortal extends Component
         $returnUrl = $returnUrl ? UrlHelper::siteUrl($returnUrl) : UrlHelper::siteUrl();
 
         if (is_string($customer)) {
-            $stripeCustomer = Plugin::getInstance()->getCustomers()->getCustomerByStripeId($customer);
+            $customerId = $customer;
+            $customer = Plugin::getInstance()->getCustomers()->getCustomerByStripeId($customerId);
 
-            if ($stripeCustomer === null) {
-                Craft::error('No stripe customer found for the provided ID: ' . $customer);
+            if ($customer === null) {
+                Craft::error('No stripe customer found for the provided ID: ' . $customerId);
                 return null;
             }
         }
