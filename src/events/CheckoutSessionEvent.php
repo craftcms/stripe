@@ -20,5 +20,5 @@ class CheckoutSessionEvent extends Event
     /**
      * @var array The array representation of the Stripe checkout session
      */
-    public array $sessionData;
+    public array $params;
 }

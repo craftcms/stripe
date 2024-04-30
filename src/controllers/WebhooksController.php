@@ -108,7 +108,7 @@ class WebhooksController extends Controller
     }
 
     /**
-     * Creates webhook endpoint in Stripe Dashboard and saves the corresponding Endpoint Secret in the plugin's settings.
+     * Creates webhook endpoint in Stripe Dashboard and saves the corresponding Webhook Signing Secret in the plugin's settings.
      *
      * @return YiiResponse
      * @throws InvalidConfigException
@@ -218,7 +218,7 @@ class WebhooksController extends Controller
             $configService->setDotEnvVar('STRIPE_WH_KEY', $response->secret ?? '');
         } catch (\Throwable $e) {
             $success = false;
-            Craft::error('Couldn\'t save you Stripe Endpoint Secret in the .env file. ' . $e->getMessage());
+            Craft::error('Couldn\'t save you Stripe Webhook Signing Secret in the .env file. ' . $e->getMessage());
         }
         $success ? $settings->webhookSigningSecret = '$STRIPE_WH_KEY' : $response->secret;
 
@@ -234,7 +234,7 @@ class WebhooksController extends Controller
         if (!Craft::$app->getPlugins()->savePluginSettings($plugin, $settings->toArray())) {
             Craft::$app->getSession()->setNotice(Craft::t(
                 'stripe',
-                'Webhook registered successfully, but we had trouble saving the Endpoint Secret. 
+                'Webhook registered successfully, but we had trouble saving the Webhook Signing Secret. 
             Please go to your Stripe Dashboard, get the webhook signing secret and add it to your plugin’s settings.')
             );
         } else {

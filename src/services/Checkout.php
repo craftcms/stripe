@@ -73,8 +73,8 @@ class Checkout extends Component
         return $this->startCheckoutSession(
             array_values($lineItems),
             $customer,
-            UrlHelper::siteUrl($successUrl),
-            UrlHelper::siteUrl($cancelUrl),
+            $this->getUrl('success', $successUrl),
+            $this->getUrl('cancel', $cancelUrl),
             $params,
         );
     }
@@ -161,16 +161,49 @@ class Checkout extends Component
 
         // Trigger a 'beforeStartCheckoutSession' event
         $event = new CheckoutSessionEvent([
-            'sessionData' => $data,
+            'params' => $data,
         ]);
         $this->trigger(self::EVENT_BEFORE_START_CHECKOUT_SESSION, $event);
 
         // ensure the mode is still correct
-        $checkoutSession = $event->sessionData;
-        $checkoutSession['mode'] = $this->getCheckoutMode($event->sessionData['line_items']);
+        $checkoutSession = $event->params;
+        $checkoutSession['mode'] = $this->getCheckoutMode($event->params['line_items']);
 
         $session = $stripe->checkout->sessions->create($checkoutSession);
 
         return $session->url;
+    }
+
+    /**
+     * Figure out the URL to use in the checkout session params.
+     *
+     * If $url is passed - ensure it's absolute and return.
+     * If no $url is passed - use the default for the type (success or cancel).
+     * If we still don't have the URL, use the one the request originated from (e.g. the product page).
+     *
+     * @param string $type
+     * @param string|null $url
+     * @return string
+     * @throws \yii\base\Exception
+     */
+    private function getUrl(string $type, ?string $url = null): string
+    {
+        // if we have one, ensure it's a valid site URL
+        if ($url !== null) {
+            return UrlHelper::siteUrl($url);
+        }
+
+        // if we're still here and we have a default - use it
+        $settings = Plugin::getInstance()->getSettings();
+        if ($type === 'success' && !empty($settings['defaultSuccessUrl'])) {
+            return UrlHelper::siteUrl($settings['defaultSuccessUrl']);
+        }
+
+        if ($type === 'cancel' && !empty($settings['defaultCancelUrl'])) {
+            return UrlHelper::siteUrl($settings['defaultCancelUrl']);
+        }
+
+        // if we still don't have the url, assume they want to go back to the same page
+        return Craft::$app->getRequest()->getAbsoluteUrl();
     }
 }
