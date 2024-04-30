@@ -29,7 +29,7 @@ class Settings extends Model
     /**
      * @var string
      */
-    public string $publicKey = '';
+    public string $publishableKey = '';
 
     /**
      * @var string
@@ -77,7 +77,7 @@ class Settings extends Model
     public function rules(): array
     {
         return [
-            [['secretKey', 'publicKey'], 'required'],
+            [['secretKey', 'publishableKey'], 'required'],
         ];
     }
 
@@ -88,7 +88,7 @@ class Settings extends Model
     {
         return [
             'secretKey' => Craft::t('stripe', 'Stripe Secret Key'),
-            'publicKey' => Craft::t('stripe', 'Stripe Public Key'),
+            'publishableKey' => Craft::t('stripe', 'Stripe Publishable Key'),
             'webhookSigningSecret' => Craft::t('stripe', 'Stripe Webhook Signing Secret'),
             'productUriFormat' => Craft::t('stripe', 'Product URI format'),
             'productTemplate' => Craft::t('stripe', 'Product Template'),

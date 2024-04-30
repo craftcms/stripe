@@ -13,11 +13,11 @@
 
 {{ forms.autosuggestField({
     first: true,
-    label: 'Public Key'|t('stripe'),
-    id: 'publicKey',
-    name: 'settings[publicKey]',
-    value: settings.publicKey,
-    errors: settings.getErrors('publicKey'),
+    label: 'Publishable Key'|t('stripe'),
+    id: 'publishableKey',
+    name: 'settings[publishableKey]',
+    value: settings.publishableKey,
+    errors: settings.getErrors('publishableKey'),
     suggestEnvVars: true,
     autofocus: true,
 }) }}
