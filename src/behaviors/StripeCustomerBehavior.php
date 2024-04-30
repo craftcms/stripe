@@ -78,7 +78,7 @@ class StripeCustomerBehavior extends Behavior
     public function getStripeSubscriptions(): Collection
     {
         if ($this->_subscriptions === null) {
-            $stripeSubscriptions = Subscription::find()->userId($this->owner->id)->collect();
+            $stripeSubscriptions = Subscription::find()->userEmail($this->owner->email)->collect();
 
             if ($stripeSubscriptions->isNotEmpty()) {
                 $this->_subscriptions = $stripeSubscriptions;
