@@ -161,13 +161,13 @@ class Checkout extends Component
 
         // Trigger a 'beforeStartCheckoutSession' event
         $event = new CheckoutSessionEvent([
-            'sessionData' => $data,
+            'params' => $data,
         ]);
         $this->trigger(self::EVENT_BEFORE_START_CHECKOUT_SESSION, $event);
 
         // ensure the mode is still correct
-        $checkoutSession = $event->sessionData;
-        $checkoutSession['mode'] = $this->getCheckoutMode($event->sessionData['line_items']);
+        $checkoutSession = $event->params;
+        $checkoutSession['mode'] = $this->getCheckoutMode($event->params['line_items']);
 
         $session = $stripe->checkout->sessions->create($checkoutSession);
 
