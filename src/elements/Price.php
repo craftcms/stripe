@@ -602,4 +602,24 @@ class Price extends Element implements NestedElementInterface
 
         return $this->_product;
     }
+
+    /**
+     * Shortcut to get the checkout URL for the price element.
+     *
+     * @return string
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     */
+    public function getCheckoutUrl(): string
+    {
+        return Plugin::getInstance()->getCheckout()->getCheckoutUrl(
+            [
+                [
+                    'price' => $this->stripeId,
+                    'quantity' => 1,
+                ]
+            ],
+            Craft::$app->getUser()->getIdentity(),
+        );
+    }
 }

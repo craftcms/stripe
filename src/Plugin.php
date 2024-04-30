@@ -25,6 +25,7 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterConditionRulesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\Html;
+use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\records\User as UserRecord;
@@ -38,6 +39,7 @@ use craft\stripe\elements\Product;
 use craft\stripe\elements\Subscription;
 use craft\stripe\fieldlayoutelements\PricesField;
 use craft\stripe\fields\Products as ProductsField;
+use craft\stripe\jobs\SyncData;
 use craft\stripe\models\Settings;
 use craft\stripe\services\Api;
 use craft\stripe\services\BillingPortal;
@@ -534,10 +536,12 @@ class Plugin extends BasePlugin
      */
     private function handleUserElementChanges(): void
     {
+        // if email address got changed - update stripe
         Event::on(UserRecord::class, UserRecord::EVENT_BEFORE_UPDATE, function(ModelEvent $event) {
             $userRecord = $event->sender;
             $user = Craft::$app->getUsers()->getUserById($userRecord->id);
-            if ($user->isCredentialed) {
+            $settings = $this->getSettings();
+            if ($user->isCredentialed && $settings['syncChangedUserEmailsToStripe']) {
                 $oldEmail = $userRecord->getOldAttribute('email');
                 $newEmail = $userRecord->getAttribute('email');
                 if ($oldEmail != $newEmail) {
@@ -548,6 +552,24 @@ class Plugin extends BasePlugin
                             $client->customers->update($customer->stripeId, ['email' => $newEmail]);
                         }
                     }
+                }
+            }
+        });
+
+        // if user is saved, and they have an email address and exist in stripe, but we don't have their stripe customer data
+        // kick off queue job to sync customer-related data
+        Event::on(User::class, User::EVENT_AFTER_SAVE, function(ModelEvent $event) {
+            $user = $event->sender;
+            if (!empty($user->email) && $user->getStripeCustomers()->isEmpty()) {
+                // search for customer in Stripe by their email address
+                $stripe = $this->getApi()->getClient();
+                $stripeCustomers = $stripe->customers->search(['query' => "email:'{$user->email}'"]);
+                // if we found Stripe customers with that email address - kick off the queue job to sync data
+                if (!$stripeCustomers->isEmpty()) {
+                    // sync data via the queue
+                    Queue::push(new SyncData([
+                        'customers' => $stripeCustomers->data,
+                    ]));
                 }
             }
         });

@@ -108,6 +108,7 @@ return [
     'Subscriptions' => 'Subscriptions',
     'Sync All Data from Stripe' => 'Sync All Data from Stripe',
     'Sync all data' => 'Sync all data',
+    'Sync customer-related Stripe data.' => 'Sync customer-related Stripe data.',
     'Template' => 'Template',
     'This user isn’t a Stripe customer' => 'This user isn’t a Stripe customer',
     'Topic' => 'Topic',

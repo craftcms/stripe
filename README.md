@@ -184,7 +184,7 @@ The Stripe plugin handles this relationship using [nested elements](https://craf
 <ul>
   {% for price in product.prices %}
     <li>
-      {{ price|unitAmount }}
+      {{ price.data|unitAmount }}
       {{ tag('a', {
         text: "Buy now",
         href: price.getCheckoutUrl(),
