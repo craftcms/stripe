@@ -355,19 +355,21 @@ class Plugin extends BasePlugin
 
         Event::on(User::class, User::EVENT_DEFINE_METADATA, function(DefineMetadataEvent $event) {
             $event->metadata[Craft::t('stripe', 'Stripe Customer(s)')] = function() use ($event) {
-                return $event->sender->getStripeCustomers()->reduce(function($carry, $item) {
-                    $carry = is_string($carry) ? $carry : '';
-                    $carry .=
-                        Html::beginTag('div') .
-                        Html::tag(
-                            'a',
-                            $item->data['name'] . ' (' . $item->email . ')' . Html::tag('span', '', ['data-icon' => 'external']),
-                            ['href' => $item->getStripeEditUrl(), 'target' => '_blank']
-                        ) .
-                        Html::endTag('div');
+                return Html::beginTag('div') .
+                    $event->sender->getStripeCustomers()->reduce(function($carry, $item) {
+                        $carry = is_string($carry) ? $carry : '';
+                        $carry .=
+                            Html::beginTag('div') .
+                                Html::tag(
+                                    'a',
+                                    $item->data['name'] . ' (' . $item->stripeId . ')' . Html::tag('span', '', ['data-icon' => 'external']),
+                                    ['href' => $item->getStripeEditUrl(), 'target' => '_blank']
+                                ) .
+                            Html::endTag('div');
 
-                    return $carry;
-                });
+                        return $carry;
+                    }) .
+                    Html::endTag('div');
             };
         });
     }
