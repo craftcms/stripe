@@ -132,7 +132,7 @@ class StripeCustomerBehavior extends Behavior
      * @throws InvalidConfigException
      * @throws SiteNotFoundException
      */
-    public function getStripeBillingPortalSessionUrl(?string $returnUrl = null, ?string $configurationId = null, array $params = [], ): ?string
+    public function getStripeBillingPortalSessionUrl(?string $returnUrl = null, ?string $configurationId = null, array $params = []): ?string
     {
         $customer = $this->getStripeCustomer();
 
