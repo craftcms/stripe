@@ -1,30 +1,392 @@
-# Stripe
+# Stripe for Craft CMS
 
-Stripe Integration for Craft CMS
+Connect your Craft content to [Stripe](https://stripe.com)’s powerful billing tools, and build a streamlined storefront.
 
 ## Requirements
 
-This plugin requires Craft CMS 5.x or later, and PHP 8.2.x or later.
+This plugin requires Craft CMS 5.1.0 or later, and a Stripe account with access to developer features.
+
+> [!TIP]
+> Transitioning from Commerce 4.x? Check out the dedicated [migration](#migrating-from-commerce) section.
 
 ## Installation
 
-You can install this plugin from the Plugin Store or with Composer.
+You can install this plugin via the in-app [Plugin Store](#plugin-store) or with [the command line](#composer).
 
-#### From the Plugin Store
+### Plugin Store
 
-Go to the Plugin Store in your project’s Control Panel and search for “Stripe”. Then press “Install”.
+Visit the **Plugin Store** screen of your installation’s control panel, then search for **Stripe**.
 
-#### With Composer
+Click the **Install** button, then check out the [configuration](#configuration) instructions!
 
-Open your terminal and run the following commands:
+### Composer
+
+These instructions assume you are using DDEV, but you can run similar commands in other environments. Open up a terminal and run…
 
 ```bash
-# go to the project directory
-cd /path/to/my-project.test
+# Navigate to the project directory:
+cd /path/to/my-project
 
-# tell Composer to load the plugin
-composer require craftcms/stripe
+# Require the plugin with Composer:
+ddev composer require craftcms/stripe
 
-# tell Craft to install the plugin
-./craft plugin/install stripe
+# Install the plugin with Craft:
+ddev craft plugin/install stripe
+```
+
+## Configuration
+
+The Stripe plugin builds its configuration from three sources:
+
+- [Project config](https://craftcms.com/docs/5.x/system/project-config.html) — Managed via the **Stripe** &rarr; **Settings** screen in Craft’s control panel.
+- **A plugin config file** — Add a `config/stripe.php` file to your project and return a map of options keyed with properties from the `craft\stripe\models\Settings` class.
+- **Environment variables** — Some options can be set directly as environment variables.
+
+### API Keys
+
+Stripe uses a pair of “publishable” and “secret” keys to communicate with their API. In your Stripe account, switch into **Test mode**, then visit the **Developer** section and grab your development keys.
+
+> [!NOTE]
+> Read more about [Stripe API Keys](https://docs.stripe.com/keys).
+
+Add these keys to your project’s `.env` file:
+
+```bash
+STRIPE_PUBLISHABLE_KEY="pk_test_************************"
+STRIPE_SECRET_KEY="sk_test_************************"
+```
+
+Then, in the control panel, visit **Stripe** &rarr; **Settings**, and enter the variable names you chose, in the respective fields. Craft will provide suggestions based on what it discovers in the environment.
+
+### Webhooks
+
+[Webhooks](https://docs.stripe.com/webhooks) are essential for the plugin to work correctly—they allow changes to product data and off-platform customer activity to be rapidly synchronized into your site.
+
+> [!TIP]
+> Be sure and perform an initial [synchronization](#synchronization) to import existing Stripe data.
+
+To test webhooks in your local development environment, we recommend using the [Stripe CLI](https://docs.stripe.com/stripe-cli) to create a tunnel and forward events. Follow the installation instructions for your platform, then run:
+
+```bash
+stripe listen --forward-to https://my-craft-project.ddev.site/stripe/webhooks/handle
+```
+
+> [!NOTE]
+> The hostname you provide here should agree with how you access the project, locally—Stripe does not need to be able to resolve it on the public internet for testing webhooks to be delivered!
+
+The CLI will let you know when it’s ready, and output a webhook signing secret starting with `whsec_`. Add this value to your `.env` file, and return to the **Stripe** &rarr; **Settings** in the control panel
+
+### Synchronization
+
+Webhooks keep product and customer data synchronized between Stripe and Craft, but they will only report _changes_.
+
+You have two options for doing an initial import of Stripe data:
+
+- Small product catalogs can usually get away with using the control panel utility: visit **Utilities** &rarr; **Stripe Sync All** and click **Sync all data**.
+- Large catalogs should perform synchronizations via the command line: Run `ddev craft stripe/sync/all` if you’re just getting started, or use one of the finer-grained [CLI tools](#cli) to import specific types of records.
+
+### Content + Fields
+
+Stripe [products](https://docs.stripe.com/products-prices/overview), [prices](https://docs.stripe.com/products-prices/how-products-and-prices-work#what-is-a-price), and [subscriptions](https://docs.stripe.com/subscriptions) are all stored as _elements_ in Craft. This means that they have access to the full suite of content modeling tools you would expect!
+
+Field layouts for each element type are managed in the plugin’s **Settings** screen.
+
+### Product URLs
+
+In addition to a field layout, product elements support **URI Format** and **Template** settings, which work just like they do on other element types: when a product’s URL is requested, Craft loads the element and passes it to the specified template under a `stripeproduct` variable.
+
+> [!NOTE]
+> Prices and subscriptions do _not_ have their own URLs. You can use query parameters or [custom routes](https://craftcms.com/docs/5.x/system/routing.html) to load those elements in response to specific URI patterns.
+
+## Migrating from [Commerce](https://craftcms.com/commerce)
+
+Users of our full-featured ecommerce system, _Commerce_ can migrate existing subscriptions to the standalone Stripe plugin without losing any customer data.
+
+Once you have fully upgraded to Craft 5.1 and Commerce 5.0, follow the normal [installation](#installation) and [configuration](#configuration) instructions, above. Then, run this pair of console commands:
+
+```bash
+# Pre-populate plugin tables with existing Stripe data:
+ddev craft stripe/commerce/migrate
+
+# Perform a synchronization to bring in additional records:
+ddev craft stripe/sync/all
+```
+
+### API Changes
+
+You will interact with subscriptions differently than in Commerce, as they have shifted to more closely resemble Stripe’s billing architecture than the legacy single-item “plans”:
+
+- Plans are not configured in Craft. Instead, products (or more accurately, _prices_) can be set up in Stripe as _recurring_. You will see this reflected as a combination of price and interval (i.e. $5.00/day) in **Prices** tables on an individual product element, in the control panel.
+- Some gateway-agnostic element query methods were not translated into the Stripe plugin:
+    - `dateExpired()`: Not tracked as a native property. You can access the timestamp when a subscription ended with `subscription.data.ended_at`.
+    - `isExpired()`: Similar to the above, non-expired subscriptions will have a `null` `subscription.data.ended_at` value.
+    - `trialDays()`: Use `subscription.data.trial_start` and `trial_end`, or access the subscription’s underlying `items` array for info about each recurring item’s price and configuration.
+    - `status()`: Statuses may not behave in a way that is consistent with Commerce’s definition.
+
+---
+
+## Storefront
+
+Once you have populated your Craft project with data from Stripe (via [synchronization](#synchronization) and/or [webhooks](#webhooks)), you can begin scaffolding your content and storefront.
+
+> [!TIP]
+> The [reference section](#reference) has information about each type of object you’re apt to encounter in the system.
+
+### Listing Products
+
+Individual products automatically get URLs based on their [URI format](#product-urls), but it is up to you how they are gathered and displayed.
+
+To get a list of products, use the `craft.shopifyProducts` [element query](https://craftcms.com/docs/5.x/development/element-queries.html) factory:
+
+```twig
+{% set products = craft.shopifyProducts.all() %}
+
+<ul>
+    {% for product in products %}
+        {% set image = product.featureImage.eagerly().one() %}
+
+        <li>
+            <figure>
+                {{ image.getImg() }}
+            </figure>
+
+            <strong>{{ product.getLink() }}</strong>
+        </li>
+    {% endfor %}
+</ul>
+```
+
+### The Product Template
+
+On an individual product’s page, Craft provides the current product under a `stripeproduct` variable:
+
+```twig
+<h1>{{ stripeproduct.title }}</h1>
+```
+
+Any [custom fields](#content--fields) you’ve configured for products will be available as properties, just as they are for other element types:
+
+```twig
+{{ stripeproduct.customDescriptionField|md }}
+```
+
+### Prices
+
+Like Commerce, Stripe uses “products” as a means of logically grouping goods and services—the things your customers actually buy are called “prices.”
+
+The Stripe plugin handles this relationship using [nested elements](https://craftcms.com/docs/5.x/system/elements.html). Each product element will own one or more price elements, and expose them via a `prices` property or `getPrices()` method:
+
+<!-- TODO: Update Checkout URL generation method! -->
+
+```twig
+<h1>{{ product.title }}</h1>
+
+<ul>
+  {% for price in product.prices %}
+    <li>
+      {{ price|unitAmount }}
+      {{ tag('a', {
+        text: "Buy now",
+        href: price.getCheckoutUrl(),
+      }) }}
+    </li>
+  {% endfor %}
+</ul>
+```
+
+### Checkout Links
+
+When a customer is ready to buy a product or start a subscription, you’ll provide a _checkout link_. Checkout links are special, secure, parameterized URLs that exist as part of a [checkout session](https://docs.stripe.com/payments/checkout) for a pre-configured list of items. Stripe has no “cart,” per se; instead, products are purchased piecemeal.
+
+Clicking a checkout link takes the customer to Stripe’s hosted checkout page, where they can complete a payment using whatever methods are available and enabled in your account.
+
+To output a checkout link, use the `craft.stripeCheckoutUrl()` function:
+
+```twig
+{% set price = stripeproduct.prices.one() %}
+
+{{ tag('a', {
+  href: craft.stripe.checkout.getCheckoutUrl(
+    [
+      {
+        price: price.stripeId,
+        quantity: 1,
+      },
+    ],
+    null,
+    'shop/thank-you?session={CHECKOUT_SESSION_ID}',
+    product.url,
+    {}
+  ),
+  text: 'Checkout',
+}) }}
+```
+
+### Element API
+
+Our [Element API](https://plugins.craftcms.com/element-api) plugin works great with Stripe! All three plugin-provided element types (products, prices, and subscriptions) can be used in your `element-api.php` config file:
+
+```php
+return [
+    'endpoints' => [
+        'api/products' => function() {
+            return [
+                'elementType' => craft\stripe\elements\Product::class,
+                // ...
+            ];
+        },
+    ],
+];
+```
+
+## Other Features
+
+### Product Field
+
+Create a **Stripe Products** field and add it to a field layout to [relate](https://craftcms.com/docs/5.x/system/relations.html) product elements to other content throughout the system.
+
+### Direct API Access
+
+The plugin exposes its Stripe API client for advanced usage. In Twig, you would access it via `craft.stripe.api.client`:
+
+```twig
+{% set client = craft.stripe.api.client %}
+{% set checkout = client
+  .getService('checkout')
+  .getService('sessions')
+  .retrieve('cs_test_****************************************') %}
+```
+
+In PHP, you can make the equivalent call like this:
+
+```php
+$client = craft\stripe\Plugin::getInstance()->getApi()->getClient();
+
+$checkout = $client
+    ->checkout
+    ->sessions
+    ->retrieve('cs_test_****************************************');
+```
+
+> [!WARNING]
+> We cannot provide support for customizations that involve direct use of Stripe APIs. If you find yourself needing access to specific APIs during the course of your project, consider [starting a discussion](https://github.com/craftcms/stripe/discussions)!
+
+## Tips, Troubleshooting, FAQ
+
+### Where do I change a product’s title?
+
+Product and price titles are kept in sync with Stripe to make them easily identifiable in both spaces.
+
+If you would like to customize product names in Craft, create a [plain text field](https://craftcms.com/docs/5.x/reference/field-types/plain-text.html) and add it to the product [field layout](#content--fields). Stripe will only ever display the canonical title at checkout or on invoices, so it is important you have a way for customers to identify which products are which—and not re-use product definitions for other goods.
+
+### I can’t create a webhook.
+
+If Craft can't write to a `.env` file in the project root, you may need to manually create a webhook in the Stripe dashboard, then expose it to the environment:
+
+```bash
+STRIPE_WH_ID="we_************************"
+STRIPE_WH_KEY="whsec_**************************************************************"
+```
+
+> [!WARNING]
+> In this case, the environment variable names are strict!
+
+
+---
+
+## Reference
+
+### Twig Filters
+
+The plugin provides four new [Twig filters](https://craftcms.com/docs/5.x/reference/twig/filters.html):
+
+- `unitAmount` — Pass in a price element
+- `unitPrice`
+- `pricePerUnit`
+- `interval`
+
+### CLI
+
+To view all available console commands, run `ddev craft help`. The Stripe plugin adds two main groups of commands:
+
+#### Commerce Migration
+
+Migrates [preexisting Commerce subscriptions](#migrating-from-commerce) to records compatible with the Stripe plugin.
+
+```bash
+ddev craft stripe/commerce/migrate
+```
+
+#### Atomic Synchronization
+
+You can synchronize _everything_ at once…
+
+```bash
+ddev craft stripe/sync/all
+```
+
+…or just pull in slices of it:
+
+- **Customers**: `ddev craft stripe/sync/customers`
+- **Invoices**: `ddev craft stripe/sync/invoices`
+- **Payment Methods**: `ddev craft stripe/sync/payment-methods`
+- **Products _and_ Prices**: `ddev craft stripe/sync/products-and-prices`
+- **Subscriptions**: `ddev craft stripe/sync/subscriptions`
+
+---
+
+## Extending
+
+### Synchronization Events
+
+The Stripe plugin emits events just before updating each product, price, or subscription element during a [synchronization](#synchronization). A synchronization may occur via the CLI, control panel utility, or in response to a webhook.
+
+Class + Event | Event Model | `$source`
+--- | --- | ---
+`craft\stripe\services\Products::EVENT_BEFORE_SYNCHRONIZE_PRODUCT` | `craft\stripe\events\StripeProductSyncEvent` | [Product](https://docs.stripe.com/api/products/object)
+`craft\stripe\services\Prices::EVENT_BEFORE_SYNCHRONIZE_PRICE` | `craft\stripe\events\StripePriceSyncEvent` | [Price](https://docs.stripe.com/api/prices/object)
+`craft\stripe\services\Subscriptions::EVENT_BEFORE_SYNCHRONIZE_SUBSCRIPTION` | `craft\stripe\events\StripeSubscriptionSyncEvent` | [Subscription](https://docs.stripe.com/api/subscriptions/object)
+
+```php
+craft\base\Event::on(
+    craft\stripe\services\Products::class,
+    craft\stripe\services\Products::EVENT_BEFORE_SYNCHRONIZE_PRODUCT,
+    function(craft\stripe\events\StripeProductSyncEvent $event) {
+        // Set a custom field value when a product looks “shippable”:
+        if ($event->source->package_dimensions !== null) {
+            $event->element->setFieldValue('requiresShipping', true);
+        }
+    },
+);
+```
+
+You can set `$event->isValid` to prevent updates from being persisted during the synchronization.
+
+### Checkout Events
+
+Customize the parameters sent to Stripe when generating a Checkout session by listening to the `craft\stripe\services\Checkout::EVENT_BEFORE_START_CHECKOUT_SESSION` event. The `craft\stripe\events\CheckoutSessionEvent` will have a `sessionData` property containing the request data that is about to be sent with the Stripe API client. You may modify or extend this data to suit your application—whatever the value of the property is after all handlers have been invoked is passed verbatim to the API client:
+
+```php
+craft\base\Event::on(
+    craft\stripe\services\Checkout::class,
+    craft\stripe\services\Checkout::EVENT_BEFORE_START_CHECKOUT_SESSION,
+    function(craft\stripe\events\CheckoutSessionEvent $event) {
+        // Add metadata if the customer is a logged-in “member”:
+        $currentUser = Craft::$app->getUser()->getIdentity();
+
+        // Nothing to do:
+        if (!$currentUser) {
+            return;
+        }
+
+        if ($currentUser->isInGroup('members')) {
+            // Memoize + assign values:
+            $data = $event->sourceData;
+            $data['metadata']['is_member'] = true;
+
+            // Set back onto the event:
+            $event->sourceData = $data;
+        }
+    },
+);
 ```
