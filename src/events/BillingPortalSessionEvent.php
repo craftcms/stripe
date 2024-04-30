@@ -18,22 +18,7 @@ use yii\base\Event;
 class BillingPortalSessionEvent extends Event
 {
     /**
-     * @var Customer The Customer model of the customer
-     */
-    public Customer $customer;
-
-    /**
-     * @var ?string The configuration ID for the billing portal session
-     */
-    public ?string $configurationId = null;
-
-    /**
-     * @var string|null Absolute URL to redirect the user to after checkout
-     */
-    public ?string $returnUrl = null;
-
-    /**
-     * @var array|null Additional params to use to instantiate the checkout session with
+     * @var array|null Modify the params to use to instantiate the billing portal session with
      */
     public ?array $params = null;
 }

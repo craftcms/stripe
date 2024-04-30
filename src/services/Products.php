@@ -132,7 +132,7 @@ class Products extends Component
         $productDataRecord = ProductDataRecord::find()->where(['stripeId' => $product->id])->one() ?: new ProductDataRecord();
         $productDataRecord->setAttributes($attributes, false);
         $productDataRecord->save();
-        
+
         return true;
     }
 

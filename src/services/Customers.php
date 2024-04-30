@@ -109,6 +109,19 @@ class Customers extends Component
     }
 
     /**
+     * Returns first Stripe customer by email address
+     *
+     * @param string|null $email
+     * @return ?Customer
+     */
+    public function getFirstCustomerByEmail(?string $email = null): ?Customer
+    {
+        $customers = $this->getCustomersByEmail($email);
+
+        return reset($customers) ?: null;
+    }
+
+    /**
      * Returns a Customer by their Stripe id
      *
      * @param string $stripeId

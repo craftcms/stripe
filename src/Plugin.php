@@ -224,7 +224,7 @@ class Plugin extends BasePlugin
      * @return BillingPortal The billing portal service
      * @throws InvalidConfigException
      */
-    public function getBillingPortal(): Api
+    public function getBillingPortal(): BillingPortal
     {
         return $this->get('billingPortal');
     }

@@ -111,4 +111,23 @@ class StripeCustomerBehavior extends Behavior
 
         return $this->_paymentMethods ?? new Collection();
     }
+
+    /**
+     * @param string|null $configurationId
+     * @param string|null $returnUrl
+     * @param array $params
+     * @return string
+     * @throws InvalidConfigException
+     * @throws \craft\errors\SiteNotFoundException
+     */
+    public function getBillingPortalSessionUrl(?string $configurationId = null, ?string $returnUrl = null, array $params = []): string
+    {
+        $currentUser = Plugin::getInstance()->getCustomers()->getFirstCustomerByEmail($this->owner->email);
+
+        if ($currentUser === null) {
+            return '';
+        }
+
+        return Plugin::getInstance()->getBillingPortal()->getCustomerBillingPortalSession($currentUser, $configurationId, $returnUrl, $params);
+    }
 }

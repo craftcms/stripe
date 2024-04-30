@@ -27,18 +27,18 @@ class BillingPortal extends Component
      */
     public const EVENT_BEFORE_START_BILLING_PORTAL_SESSION = 'beforeStartBillingPortalSession';
 
-
     /**
      * Returns billing portal URL for the current user.
      *
      * @param string|null $configurationId The ID of an existing configuration to use for this session
-     * @param string|null $returnUrl
+     * @param string|null $returnUrl This is the URL the customer will be redirected to after they are done managing their billing portal session.
+     * @param array $params These are the parameters that will be passed to the Stripe API when creating the session.
      * @return string
      */
     public function getSessionUrl(
         ?string $configurationId = null,
         ?string $returnUrl = null,
-
+        array $params = [],
     ): string {
         $currentUser = Craft::$app->getUser()->getIdentity();
 
@@ -52,7 +52,7 @@ class BillingPortal extends Component
             return '';
         }
 
-        return $this->startBillingPortalSession($customer, $configurationId, $returnUrl);
+        return $this->startBillingPortalSession($customer, $configurationId, $returnUrl, $params);
     }
 
     /**
@@ -65,7 +65,7 @@ class BillingPortal extends Component
     {
         $customer = null;
 
-        // get the first customer for this user
+        // get the first customer for this email
         $customers = Plugin::getInstance()->getCustomers()->getCustomersByEmail($email);
         if (!empty($customers)) {
             $customer = reset($customers);
@@ -77,13 +77,13 @@ class BillingPortal extends Component
     /**
      * Starts a billing session and returns the URL to use the stripe-hosted billing portal.
      *
-     * @param Customer|string|null $customer
+     * @param Customer|string $customer
      * @param string|null $returnUrl
      * @return string|null
      * @throws \craft\errors\SiteNotFoundException
      * @throws \yii\base\InvalidConfigException
      */
-    private function startBillingPortalSession(
+    public function getCustomerBillingPortalSession(
         Customer|string $customer,
         ?string $configurationId = null,
         ?string $returnUrl = null,
@@ -92,38 +92,30 @@ class BillingPortal extends Component
         $stripe = Plugin::getInstance()->getApi()->getClient();
 
         if (is_string($customer)) {
-            $customer = Plugin::getInstance()->getCustomers()->getCustomerByStripeId($customer);
+            $stripeCustomer = Plugin::getInstance()->getCustomers()->getCustomerByStripeId($customer);
 
-            if ($customer === null) {
-                throw new \Exception('No customer found for the provided ID.');
+            if ($stripeCustomer === null) {
+                Craft::error('No stripe customer found for the provided ID: ' . $customer);
+                return '';
             }
         }
 
         $params['customer'] = $customer->stripeId;
 
         if ($configurationId !== null) {
-            $params['configurationId'] = $configurationId;
+            $params['configuration'] = $configurationId;
         }
 
         $params['return_url'] = $returnUrl ?? UrlHelper::baseSiteUrl();
 
         // Trigger a 'beforeStartCheckoutSession' event
         $event = new BillingPortalSessionEvent([
-            'configurationId' => $configurationId,
-            'customer' => $params['customer'],
-            'returnUrl' => $params['return_url'],
             'params' => $params,
         ]);
         $this->trigger(self::EVENT_BEFORE_START_BILLING_PORTAL_SESSION, $event);
 
-        // In case they were changed in the event
-        $params['customer'] = $event->customer;
-        $params['return_url'] = $event->returnUrl;
-        $params['configuration'] = $event->configurationId;
-        $params = ArrayHelper::merge($params, $event->params);
-
         try {
-            $session = $stripe->billingPortal->sessions->create($params);
+            $session = $stripe->billingPortal->sessions->create($event->params);
         } catch (\Exception $e) {
             Craft::error('Unable to start Stripe billing portal session: ' . $e->getMessage());
         }
