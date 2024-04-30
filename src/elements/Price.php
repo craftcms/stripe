@@ -69,6 +69,16 @@ class Price extends Element implements NestedElementInterface
     public string $stripeStatus = 'active';
 
     /**
+     * @var array|null
+     */
+    public ?array $currencies = null;
+
+    /**
+     * @var float|null
+     */
+    public ?float $unitAmount = null;
+
+    /**
      * @var string|null
      */
     public ?string $type = null;
@@ -76,22 +86,12 @@ class Price extends Element implements NestedElementInterface
     /**
      * @var string|null
      */
-    public ?string $primaryCurrency = null;
-
-    /**
-     * @var array|null
-     */
-    public ?array $currencies = null;
+    public ?string $stripeProductId = null;
 
     /**
      * @var string|null
      */
-    public ?string $stripeProductId = null;
-
-    /**
-     * @var float|null
-     */
-    public ?float $unitAmount = null;
+    public ?string $primaryCurrency = null;
 
     /**
      * @var array|null

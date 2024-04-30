@@ -8,6 +8,7 @@
 namespace craft\stripe\elements;
 
 use Craft;
+use DateTime;
 use craft\base\Element;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
@@ -62,6 +63,46 @@ class Subscription extends Element
      */
     public ?string $stripeId = null;
 
+    /**
+     * @var array|null
+     */
+    public ?array $prices = null;
+
+    /**
+     * @var DateTime|null
+     */
+    public ?DateTime $canceledAt = null;
+
+    /**
+     * @var DateTime|null
+     */
+    public ?DateTime $currentPeriodEnd = null;
+
+    /**
+     * @var string|null
+     */
+    public ?string $customerId = null;
+
+    /**
+     * @var string|null
+     */
+    public ?string $latestInvoiceId = null;
+
+    /**
+     * @var DateTime|null
+     */
+    public ?\DateTime $startDate = null;
+
+    /**
+     * @var DateTime|null
+     */
+    public ?\DateTime $trialStart = null;
+
+    /**
+     * @var DateTime|null
+     */
+    public ?\DateTime $trialEnd = null;
+    
     /**
      * @var array|null
      */
