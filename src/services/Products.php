@@ -133,8 +133,6 @@ class Products extends Component
         $productDataRecord->setAttributes($attributes, false);
         $productDataRecord->save();
 
-
-
         return true;
     }
 

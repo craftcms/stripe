@@ -10,6 +10,9 @@ namespace craft\stripe\controllers;
 use Craft;
 use craft\stripe\Plugin;
 use craft\web\Controller;
+use yii\base\InvalidConfigException;
+use yii\web\BadRequestHttpException;
+use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response;
 
 /**
@@ -19,8 +22,13 @@ use yii\web\Response;
  */
 class CheckoutController extends Controller
 {
+
     /**
-     *
+     * @return Response
+     * @throws \Throwable
+     * @throws InvalidConfigException
+     * @throws BadRequestHttpException
+     * @throws MethodNotAllowedHttpException
      */
     public function actionCheckout(): Response
     {
@@ -38,9 +46,9 @@ class CheckoutController extends Controller
             return $this->asFailure(Craft::t('stripe', 'Please specify the quantity'));
         }
 
-        $successUrl = $request->getBodyParam('successUrl', null);
-        $cancelUrl = $request->getBodyParam('cancelUrl', null);
-        $params = $request->getBodyParam('params', null);
+        $successUrl = $request->getValidatedBodyParam('successUrl', null);
+        $cancelUrl = $request->getValidatedBodyParam('cancelUrl', null);
+        $params = $request->getValidatedBodyParam('params', null);
 
         // start checkout session
         $url = Plugin::getInstance()->getCheckout()->getCheckoutUrl($lineItems, $currentUser, $successUrl, $cancelUrl, $params);

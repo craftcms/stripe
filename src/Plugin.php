@@ -42,6 +42,7 @@ use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\jobs\SyncData;
 use craft\stripe\models\Settings;
 use craft\stripe\services\Api;
+use craft\stripe\services\BillingPortal;
 use craft\stripe\services\Checkout;
 use craft\stripe\services\Customers;
 use craft\stripe\services\Invoices;
@@ -117,6 +118,7 @@ class Plugin extends BasePlugin
         return [
             'components' => [
                 'api' => ['class' => Api::class],
+                'billingPortal' => ['class' => BillingPortal::class],
                 'checkout' => ['class' => Checkout::class],
                 'customers' => ['class' => Customers::class],
                 'invoices' => ['class' => Invoices::class],
@@ -156,7 +158,7 @@ class Plugin extends BasePlugin
                     $this->registerSiteRoutes();
                 }
             }
-//
+
             $projectConfigService = Craft::$app->getProjectConfig();
             $productsService = $this->getProducts();
             $pricesService = $this->getPrices();
@@ -216,6 +218,17 @@ class Plugin extends BasePlugin
     public function getApi(): Api
     {
         return $this->get('api');
+    }
+
+    /**
+     * Returns the billing portal service
+     *
+     * @return BillingPortal The billing portal service
+     * @throws InvalidConfigException
+     */
+    public function getBillingPortal(): BillingPortal
+    {
+        return $this->get('billingPortal');
     }
 
     /**
@@ -344,19 +357,21 @@ class Plugin extends BasePlugin
 
         Event::on(User::class, User::EVENT_DEFINE_METADATA, function(DefineMetadataEvent $event) {
             $event->metadata[Craft::t('stripe', 'Stripe Customer(s)')] = function() use ($event) {
-                return $event->sender->getStripeCustomers()->reduce(function($carry, $item) {
-                    $carry = is_string($carry) ?: '';
-                    $carry .=
-                        Html::beginTag('div') .
-                        Html::tag(
-                            'a',
-                            $item->data['name'] . ' (' . $item->email . ')' . Html::tag('span', '', ['data-icon' => 'external']),
-                            ['href' => $item->getStripeEditUrl(), 'target' => '_blank']
-                        ) .
-                        Html::endTag('div');
+                return Html::beginTag('div') .
+                    $event->sender->getStripeCustomers()->reduce(function($carry, $item) {
+                        $carry = is_string($carry) ? $carry : '';
+                        $carry .=
+                            Html::beginTag('div') .
+                                Html::tag(
+                                    'a',
+                                    $item->data['name'] . ' (' . $item->stripeId . ')' . Html::tag('span', '', ['data-icon' => 'external']),
+                                    ['href' => $item->getStripeEditUrl(), 'target' => '_blank']
+                                ) .
+                            Html::endTag('div');
 
-                    return $carry;
-                });
+                        return $carry;
+                    }) .
+                    Html::endTag('div');
             };
         });
     }
