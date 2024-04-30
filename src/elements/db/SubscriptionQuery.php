@@ -838,7 +838,7 @@ class SubscriptionQuery extends ElementQuery
         }
 
         if (isset($this->userId)) {
-            // TODO: there must be a better way that accounts for when user(s) is/are not found?
+            // get email address for all userIds passed here
             $userEmails = (new Query())
                 ->select('email')
                 ->from([CraftTable::USERS])
