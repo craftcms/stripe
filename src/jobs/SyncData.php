@@ -12,30 +12,23 @@ use craft\stripe\Plugin;
 class SyncData extends BaseJob
 {
     /**
-     * @var array|null Stripe Customers
-     */
-    public ?array $customers = null;
-
-    /**
      * @inheritdoc
      */
     public function execute($queue): void
     {
-        if (!empty($this->customers)) {
-            $plugin = Plugin::getInstance();
+        $plugin = Plugin::getInstance();
 
-            $plugin->getCustomers()->syncAllCustomers();
-            $this->setProgress($queue, 0.25);
+        $plugin->getCustomers()->syncAllCustomers();
+        $this->setProgress($queue, 0.25);
 
-            $plugin->getSubscriptions()->syncAllSubscriptions();
-            $this->setProgress($queue, 0.5);
+        $plugin->getSubscriptions()->syncAllSubscriptions();
+        $this->setProgress($queue, 0.5);
 
-            $plugin->getInvoices()->syncAllInvoices();
-            $this->setProgress($queue, 0.75);
+        $plugin->getInvoices()->syncAllInvoices();
+        $this->setProgress($queue, 0.75);
 
-            $plugin->getPaymentMethods()->syncAllPaymentMethods();
-            $this->setProgress($queue, 1);
-        }
+        $plugin->getPaymentMethods()->syncAllPaymentMethods();
+        $this->setProgress($queue, 1);
     }
 
     /**
