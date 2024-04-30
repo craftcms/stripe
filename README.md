@@ -176,8 +176,6 @@ Like Craft Commerce, Stripe uses “products” as a means of logically grouping
 
 The Stripe plugin handles this relationship using [nested elements](https://craftcms.com/docs/5.x/system/elements.html). Each product element will own one or more price elements, and expose them via a `prices` property or `getPrices()` method:
 
-<!-- TODO: Update Checkout URL generation method! -->
-
 ```twig
 <h1>{{ product.title }}</h1>
 
