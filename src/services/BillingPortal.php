@@ -52,7 +52,7 @@ class BillingPortal extends Component
             return '';
         }
 
-        return $this->startBillingPortalSession($customer, $configurationId, $returnUrl, $params);
+        return $this->getCustomerBillingPortalSessionUrl($customer, $configurationId, $returnUrl, $params);
     }
 
     /**
@@ -83,13 +83,14 @@ class BillingPortal extends Component
      * @throws \craft\errors\SiteNotFoundException
      * @throws \yii\base\InvalidConfigException
      */
-    public function getCustomerBillingPortalSession(
+    public function getCustomerBillingPortalSessionUrl(
         Customer|string $customer,
         ?string $configurationId = null,
         ?string $returnUrl = null,
         array $params = [],
     ): ?string {
         $stripe = Plugin::getInstance()->getApi()->getClient();
+        $returnUrl = $returnUrl ? UrlHelper::siteUrl($returnUrl) : null;
 
         if (is_string($customer)) {
             $stripeCustomer = Plugin::getInstance()->getCustomers()->getCustomerByStripeId($customer);
@@ -114,12 +115,14 @@ class BillingPortal extends Component
         ]);
         $this->trigger(self::EVENT_BEFORE_START_BILLING_PORTAL_SESSION, $event);
 
+        $session = null;
+
         try {
             $session = $stripe->billingPortal->sessions->create($event->params);
         } catch (\Exception $e) {
             Craft::error('Unable to start Stripe billing portal session: ' . $e->getMessage());
         }
 
-        return $session?->url;
+        return $session ? $session->url : '';
     }
 }

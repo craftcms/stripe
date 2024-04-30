@@ -112,7 +112,6 @@ class Api extends Component
     public function fetchSubscriptionById(string $id): StripeSubscription
     {
         return $this->fetchOne($id, 'subscriptions', [
-            'status' => 'all',
             'expand' => Subscription::$expandParams,
         ]);
     }

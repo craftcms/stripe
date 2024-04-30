@@ -128,6 +128,6 @@ class StripeCustomerBehavior extends Behavior
             return '';
         }
 
-        return Plugin::getInstance()->getBillingPortal()->getCustomerBillingPortalSession($currentUser, $configurationId, $returnUrl, $params);
+        return Plugin::getInstance()->getBillingPortal()->getCustomerBillingPortalSessionUrl($currentUser, $configurationId, $returnUrl, $params);
     }
 }

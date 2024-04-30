@@ -10,6 +10,7 @@ namespace craft\stripe\elements;
 use Craft;
 use craft\base\Element;
 use craft\elements\User;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -519,5 +520,61 @@ class Subscription extends Element
     public function setCustomer(Customer $customer): void
     {
         $this->_customer = $customer;
+    }
+
+    /**
+     * Returns the URL to update the subscription in the billing portal.
+     *
+     * @return string
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function getBillingPortalSessionUpdateUrl(
+        ?string $returnUrl = null,
+        array $params = [],
+    ): string
+    {
+        $returnUrl = $returnUrl ? UrlHelper::siteUrl($returnUrl) : UrlHelper::baseSiteUrl();
+        if($this->status !== self::STATUS_LIVE) {
+            return '';
+        }
+
+        $params = ArrayHelper::merge([
+            'flow_data' => [
+                'type' => 'subscription_update',
+                'subscription_update' => [
+                    'subscription' => $this->stripeId
+                ],
+            ]
+        ], $params);
+
+        return Plugin::getInstance()->getBillingPortal()->getSessionUrl(null, $returnUrl, $params);
+    }
+
+    /**
+     * Returns the URL to cancel the subscription in the billing portal.
+     *
+     * @return string
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function getBillingPortalSessionCancelUrl(
+        ?string $returnUrl = null,
+        array $params = [],
+    ): string
+    {
+        $returnUrl = $returnUrl ? UrlHelper::siteUrl($returnUrl) : UrlHelper::baseSiteUrl();
+        if($this->status !== self::STATUS_LIVE) {
+            return '';
+        }
+
+        $params = ArrayHelper::merge([
+            'flow_data' => [
+                'type' => 'subscription_cancel',
+                'subscription_cancel' => [
+                    'subscription' => $this->stripeId
+                ],
+            ]
+        ], $params);
+
+        return Plugin::getInstance()->getBillingPortal()->getSessionUrl(null, $returnUrl, $params);
     }
 }
