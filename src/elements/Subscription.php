@@ -531,10 +531,9 @@ class Subscription extends Element
     public function getBillingPortalSessionUpdateUrl(
         ?string $returnUrl = null,
         array $params = [],
-    ): string
-    {
+    ): string {
         $returnUrl = $returnUrl ? UrlHelper::siteUrl($returnUrl) : UrlHelper::baseSiteUrl();
-        if($this->status !== self::STATUS_LIVE) {
+        if ($this->status !== self::STATUS_LIVE) {
             return '';
         }
 
@@ -542,9 +541,9 @@ class Subscription extends Element
             'flow_data' => [
                 'type' => 'subscription_update',
                 'subscription_update' => [
-                    'subscription' => $this->stripeId
+                    'subscription' => $this->stripeId,
                 ],
-            ]
+            ],
         ], $params);
 
         return Plugin::getInstance()->getBillingPortal()->getSessionUrl(null, $returnUrl, $params);
@@ -559,10 +558,9 @@ class Subscription extends Element
     public function getBillingPortalSessionCancelUrl(
         ?string $returnUrl = null,
         array $params = [],
-    ): string
-    {
+    ): string {
         $returnUrl = $returnUrl ? UrlHelper::siteUrl($returnUrl) : UrlHelper::baseSiteUrl();
-        if($this->status !== self::STATUS_LIVE) {
+        if ($this->status !== self::STATUS_LIVE) {
             return '';
         }
 
@@ -570,9 +568,9 @@ class Subscription extends Element
             'flow_data' => [
                 'type' => 'subscription_cancel',
                 'subscription_cancel' => [
-                    'subscription' => $this->stripeId
+                    'subscription' => $this->stripeId,
                 ],
-            ]
+            ],
         ], $params);
 
         return Plugin::getInstance()->getBillingPortal()->getSessionUrl(null, $returnUrl, $params);

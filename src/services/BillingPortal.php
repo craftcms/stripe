@@ -4,7 +4,6 @@ namespace craft\stripe\services;
 
 use Craft;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use craft\stripe\events\BillingPortalSessionEvent;
 use craft\stripe\events\CheckoutSessionEvent;

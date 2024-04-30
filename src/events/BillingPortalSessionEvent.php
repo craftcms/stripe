@@ -7,7 +7,6 @@
 
 namespace craft\stripe\events;
 
-use craft\stripe\models\Customer;
 use yii\base\Event;
 
 /**

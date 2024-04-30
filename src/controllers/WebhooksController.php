@@ -39,7 +39,7 @@ class WebhooksController extends Controller
     public function actionHandle(): YiiResponse
     {
         $apiService = Plugin::getInstance()->getApi();
-        $webhookService = Plugin::getInstance( )->getWebhooks();
+        $webhookService = Plugin::getInstance()->getWebhooks();
         //$client = $apiService->getClient();
         $endpointSecret = $apiService->getEndpointSecret();
 
