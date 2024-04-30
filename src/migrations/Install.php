@@ -124,6 +124,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'stripeId' => $this->string()->notNull(),
             'email' => $this->string()->notNull(),
+            'stripeCreated' => $this->dateTime()->notNull(),
             'data' => $this->json(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),

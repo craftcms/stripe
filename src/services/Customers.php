@@ -8,6 +8,8 @@
 namespace craft\stripe\services;
 
 use craft\db\Query;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\stripe\db\Table;
 use craft\stripe\models\Customer;
@@ -75,6 +77,7 @@ class Customers extends Component
         $attributes = [
             'stripeId' => $customer->id,
             'email' => $customer->email,
+            'stripeCreated' => Db::prepareDateForDb($customer->created),
             'data' => Json::decode($customer->toJSON()),
         ];
 
@@ -164,8 +167,10 @@ class Customers extends Component
             ->select([
                 'sscd.stripeId',
                 'sscd.email',
+                'sscd.stripeCreated',
                 'sscd.data',
             ])
+            ->orderBy(['sscd.stripeCreated' => SORT_DESC])
             ->from(['sscd' => Table::CUSTOMERDATA]);
     }
 

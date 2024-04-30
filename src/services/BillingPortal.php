@@ -45,32 +45,13 @@ class BillingPortal extends Component
             return '';
         }
 
-        $customer = $this->getCustomerByEmail($currentUser->email);
+        $customer = Plugin::getInstance()->getCustomers()->getFirstCustomerByEmail($currentUser->email);
 
         if ($customer === null) {
             return '';
         }
 
         return $this->getCustomerBillingPortalSessionUrl($customer, $configurationId, $returnUrl, $params);
-    }
-
-    /**
-     * Returns the first customer associated with given email address or null.
-     *
-     * @param string $email
-     * @return Customer|null
-     */
-    private function getCustomerByEmail(string $email): ?Customer
-    {
-        $customer = null;
-
-        // get the first customer for this email
-        $customers = Plugin::getInstance()->getCustomers()->getCustomersByEmail($email);
-        if (!empty($customers)) {
-            $customer = reset($customers);
-        }
-
-        return $customer;
     }
 
     /**

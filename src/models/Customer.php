@@ -9,6 +9,7 @@ namespace craft\stripe\models;
 
 use craft\stripe\base\Model;
 use craft\stripe\Plugin;
+use DateTime;
 
 /**
  * Stripe customer model
@@ -21,6 +22,11 @@ class Customer extends Model
      * @var string|null The customer's email from Stripe
      */
     public ?string $email = null;
+
+    /**
+     * @var ?DateTime The customer creation date in Stripe
+     */
+    public ?DateTime $stripeCreated = null;
 
     /**
      * @var array|string[] Array of params that should be expanded when fetching Customer from the Stripe API
@@ -36,16 +42,4 @@ class Customer extends Model
     {
         return Plugin::getInstance()->stripeBaseUrl . "/customers/{$this->stripeId}";
     }
-
-//    /**
-//     * @inheritdoc
-//     */
-//    protected function defineRules(): array
-//    {
-//        $rules = parent::defineRules();
-//        $rules[] = [['reference'], UniqueValidator::class, 'targetClass' => CustomerRecord::class];
-//        $rules[] = [['gatewayId', 'userId', 'reference', 'data'], 'required'];
-//
-//        return $rules;
-//    }
 }

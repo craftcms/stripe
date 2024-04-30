@@ -356,7 +356,7 @@ class Plugin extends BasePlugin
         Event::on(User::class, User::EVENT_DEFINE_METADATA, function(DefineMetadataEvent $event) {
             $event->metadata[Craft::t('stripe', 'Stripe Customer(s)')] = function() use ($event) {
                 return $event->sender->getStripeCustomers()->reduce(function($carry, $item) {
-                    $carry = is_string($carry) ?: '';
+                    $carry = is_string($carry) ? $carry : '';
                     $carry .=
                         Html::beginTag('div') .
                         Html::tag(
