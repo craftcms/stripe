@@ -7,7 +7,7 @@ Connect your Craft content to [Stripe](https://stripe.com)’s powerful billing 
 This plugin requires Craft CMS 5.1.0 or later, and a Stripe account with access to developer features.
 
 > [!TIP]
-> Transitioning from Commerce 4.x? Check out the dedicated [migration](#migrating-from-commerce) section.
+> Transitioning from Craft Commerce 4.x? Check out the dedicated [migration](#migrating-from-commerce) section.
 
 ## Installation
 
@@ -98,11 +98,11 @@ In addition to a field layout, product elements support **URI Format** and **Tem
 > [!NOTE]
 > Prices and subscriptions do _not_ have their own URLs. You can use query parameters or [custom routes](https://craftcms.com/docs/5.x/system/routing.html) to load those elements in response to specific URI patterns.
 
-## Migrating from [Commerce](https://craftcms.com/commerce)
+## Migrating from [Craft Commerce](https://craftcms.com/commerce)
 
-Users of our full-featured ecommerce system, _Commerce_ can migrate existing subscriptions to the standalone Stripe plugin without losing any customer data.
+Users of our full-featured ecommerce system, _Craft Commerce_ can migrate existing subscriptions to the standalone Stripe plugin without losing any customer data.
 
-Once you have fully upgraded to Craft 5.1 and Commerce 5.0, follow the normal [installation](#installation) and [configuration](#configuration) instructions, above. Then, run this pair of console commands:
+Once you have fully upgraded to Craft 5.1 and Craft Commerce 5.0, follow the normal [installation](#installation) and [configuration](#configuration) instructions, above. Then, run this pair of console commands:
 
 ```bash
 # Pre-populate plugin tables with existing Stripe data:
@@ -114,14 +114,14 @@ ddev craft stripe/sync/all
 
 ### API Changes
 
-You will interact with subscriptions differently than in Commerce, as they have shifted to more closely resemble Stripe’s billing architecture than the legacy single-item “plans”:
+You will interact with subscriptions differently than in Craft Commerce, as they have shifted to more closely resemble Stripe’s billing architecture than the legacy single-item “plans”:
 
 - Plans are not configured in Craft. Instead, products (or more accurately, _prices_) can be set up in Stripe as _recurring_. You will see this reflected as a combination of price and interval (i.e. $5.00/day) in **Prices** tables on an individual product element, in the control panel.
 - Some gateway-agnostic element query methods were not translated into the Stripe plugin:
     - `dateExpired()`: Not tracked as a native property. You can access the timestamp when a subscription ended with `subscription.data.ended_at`.
     - `isExpired()`: Similar to the above, non-expired subscriptions will have a `null` `subscription.data.ended_at` value.
     - `trialDays()`: Use `subscription.data.trial_start` and `trial_end`, or access the subscription’s underlying `items` array for info about each recurring item’s price and configuration.
-    - `status()`: Statuses may not behave in a way that is consistent with Commerce’s definition.
+    - `status()`: Statuses may not behave in a way that is consistent with Craft Commerce’s definition.
 
 ---
 
@@ -172,7 +172,7 @@ Any [custom fields](#content--fields) you’ve configured for products will be a
 
 ### Prices
 
-Like Commerce, Stripe uses “products” as a means of logically grouping goods and services—the things your customers actually buy are called “prices.”
+Like Craft Commerce, Stripe uses “products” as a means of logically grouping goods and services—the things your customers actually buy are called “prices.”
 
 The Stripe plugin handles this relationship using [nested elements](https://craftcms.com/docs/5.x/system/elements.html). Each product element will own one or more price elements, and expose them via a `prices` property or `getPrices()` method:
 
@@ -309,9 +309,9 @@ The plugin provides four new [Twig filters](https://craftcms.com/docs/5.x/refere
 
 To view all available console commands, run `ddev craft help`. The Stripe plugin adds two main groups of commands:
 
-#### Commerce Migration
+#### Craft Commerce Migration
 
-Migrates [preexisting Commerce subscriptions](#migrating-from-commerce) to records compatible with the Stripe plugin.
+Migrates [preexisting Craft Commerce subscriptions](#migrating-from-commerce) to records compatible with the Stripe plugin.
 
 ```bash
 ddev craft stripe/commerce/migrate
