@@ -8,7 +8,6 @@
 namespace craft\stripe\elements;
 
 use Craft;
-use DateTime;
 use craft\base\Element;
 use craft\elements\User;
 use craft\errors\SiteNotFoundException;
@@ -27,6 +26,7 @@ use craft\stripe\records\Subscription as SubscriptionRecord;
 use craft\stripe\web\assets\stripecp\StripeCpAsset;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use DateTime;
 
 /**
  * Subscription element type
