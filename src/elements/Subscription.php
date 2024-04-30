@@ -24,9 +24,9 @@ use craft\stripe\models\Customer;
 use craft\stripe\Plugin;
 use craft\stripe\records\Subscription as SubscriptionRecord;
 use craft\stripe\web\assets\stripecp\StripeCpAsset;
+use DateTime;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use DateTime;
 
 /**
  * Subscription element type

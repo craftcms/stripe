@@ -22,7 +22,6 @@ use yii\web\Response;
  */
 class CheckoutController extends Controller
 {
-
     /**
      * @return Response
      * @throws \Throwable
