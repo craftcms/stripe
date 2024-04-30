@@ -11,6 +11,7 @@ use Craft;
 use DateTime;
 use craft\base\Element;
 use craft\elements\User;
+use craft\errors\SiteNotFoundException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -24,6 +25,8 @@ use craft\stripe\models\Customer;
 use craft\stripe\Plugin;
 use craft\stripe\records\Subscription as SubscriptionRecord;
 use craft\stripe\web\assets\stripecp\StripeCpAsset;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
  * Subscription element type
@@ -102,7 +105,7 @@ class Subscription extends Element
      * @var DateTime|null
      */
     public ?\DateTime $trialEnd = null;
-    
+
     /**
      * @var array|null
      */
@@ -566,14 +569,19 @@ class Subscription extends Element
     /**
      * Returns the URL to update the subscription in the billing portal.
      *
-     * @return string
-     * @throws \yii\base\InvalidConfigException
+     * @param string|null $returnUrl
+     * @param array $params
+     * @return string|null
+     * @throws \Throwable
+     * @throws SiteNotFoundException
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function getBillingPortalSessionUpdateUrl(
         ?string $returnUrl = null,
         array $params = [],
-    ): string {
-        $returnUrl = $returnUrl ? UrlHelper::siteUrl($returnUrl) : UrlHelper::baseSiteUrl();
+    ): ?string {
+        $returnUrl = $returnUrl ? UrlHelper::siteUrl($returnUrl) : UrlHelper::siteUrl();
         if ($this->status !== self::STATUS_LIVE) {
             return '';
         }
@@ -587,20 +595,25 @@ class Subscription extends Element
             ],
         ], $params);
 
-        return Plugin::getInstance()->getBillingPortal()->getSessionUrl(null, $returnUrl, $params);
+        return Plugin::getInstance()->getBillingPortal()->getSessionUrl($this->customerId, null, $returnUrl, $params);
     }
 
     /**
      * Returns the URL to cancel the subscription in the billing portal.
      *
-     * @return string
-     * @throws \yii\base\InvalidConfigException
+     * @param string|null $returnUrl
+     * @param array $params
+     * @return string|null
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws SiteNotFoundException
+     * @throws \Throwable
      */
     public function getBillingPortalSessionCancelUrl(
         ?string $returnUrl = null,
         array $params = [],
-    ): string {
-        $returnUrl = $returnUrl ? UrlHelper::siteUrl($returnUrl) : UrlHelper::baseSiteUrl();
+    ): ?string {
+        $returnUrl = $returnUrl ? UrlHelper::siteUrl($returnUrl) : UrlHelper::siteUrl();
         if ($this->status !== self::STATUS_LIVE) {
             return '';
         }
@@ -614,6 +627,6 @@ class Subscription extends Element
             ],
         ], $params);
 
-        return Plugin::getInstance()->getBillingPortal()->getSessionUrl(null, $returnUrl, $params);
+        return Plugin::getInstance()->getBillingPortal()->getSessionUrl($this->customerId, null, $returnUrl, $params);
     }
 }

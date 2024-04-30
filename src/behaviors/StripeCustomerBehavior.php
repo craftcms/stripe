@@ -8,6 +8,9 @@
 namespace craft\stripe\behaviors;
 
 use craft\elements\User;
+use craft\errors\SiteNotFoundException;
+use craft\helpers\ArrayHelper;
+use craft\helpers\UrlHelper;
 use craft\stripe\elements\Subscription;
 use craft\stripe\models\Customer;
 use craft\stripe\models\PaymentMethod;
@@ -51,6 +54,15 @@ class StripeCustomerBehavior extends Behavior
         }
 
         parent::attach($owner);
+    }
+
+    /**
+     * @return Customer|null
+     * @throws InvalidConfigException
+     */
+    public function getStripeCustomer(): ?Customer
+    {
+        return $this->getStripeCustomers()->first();
     }
 
     /**
@@ -116,18 +128,46 @@ class StripeCustomerBehavior extends Behavior
      * @param string|null $configurationId
      * @param string|null $returnUrl
      * @param array $params
-     * @return string
+     * @return string|null
      * @throws InvalidConfigException
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
-    public function getBillingPortalSessionUrl(?string $configurationId = null, ?string $returnUrl = null, array $params = []): string
+    public function getStripeBillingPortalSessionUrl(?string $configurationId = null, ?string $returnUrl = null, array $params = []): ?string
     {
-        $currentUser = Plugin::getInstance()->getCustomers()->getFirstCustomerByEmail($this->owner->email);
+        $customer = $this->getStripeCustomer();
 
-        if ($currentUser === null) {
-            return '';
+        if ($customer === null) {
+            return null;
         }
 
-        return Plugin::getInstance()->getBillingPortal()->getCustomerBillingPortalSessionUrl($currentUser, $configurationId, $returnUrl, $params);
+        return Plugin::getInstance()->getBillingPortal()->getCustomerBillingPortalSessionUrl($customer, $configurationId, $returnUrl, $params);
+    }
+
+    /**
+     * @param string|null $configurationId
+     * @param string|null $returnUrl
+     * @param array $params
+     * @return string|null
+     * @throws InvalidConfigException
+     * @throws SiteNotFoundException
+     * @throws \Throwable
+     * @throws \yii\base\Exception
+     */
+    public function getStripeBillingPortalSessionPaymentMethodUpdateUrl(?string $configurationId = null, ?string $returnUrl = null, array $params = []): ?string
+    {
+        $customer = $this->getStripeCustomer();
+        if (!$customer) {
+            return null;
+        }
+
+        $returnUrl = $returnUrl ? UrlHelper::siteUrl($returnUrl) : UrlHelper::siteUrl();
+
+        $params = ArrayHelper::merge([
+            'flow_data' => [
+                'type' => 'payment_method_update',
+            ],
+        ], $params);
+
+        return Plugin::getInstance()->getBillingPortal()->getCustomerBillingPortalSessionUrl($customer, $configurationId, $returnUrl, $params);
     }
 }
