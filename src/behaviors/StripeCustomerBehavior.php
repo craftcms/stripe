@@ -132,7 +132,7 @@ class StripeCustomerBehavior extends Behavior
      * @throws InvalidConfigException
      * @throws SiteNotFoundException
      */
-    public function getStripeBillingPortalSessionUrl(?string $configurationId = null, ?string $returnUrl = null, array $params = []): ?string
+    public function getStripeBillingPortalSessionUrl(?string $returnUrl = null, ?string $configurationId = null, array $params = [], ): ?string
     {
         $customer = $this->getStripeCustomer();
 
@@ -153,7 +153,7 @@ class StripeCustomerBehavior extends Behavior
      * @throws \Throwable
      * @throws \yii\base\Exception
      */
-    public function getStripeBillingPortalSessionPaymentMethodUpdateUrl(?string $configurationId = null, ?string $returnUrl = null, array $params = []): ?string
+    public function getStripeBillingPortalSessionPaymentMethodUpdateUrl(?string $returnUrl = null, ?string $configurationId = null, array $params = []): ?string
     {
         $customer = $this->getStripeCustomer();
         if (!$customer) {
