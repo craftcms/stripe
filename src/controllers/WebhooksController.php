@@ -41,7 +41,7 @@ class WebhooksController extends Controller
         $apiService = Plugin::getInstance()->getApi();
         $webhookService = Plugin::getInstance()->getWebhooks();
         //$client = $apiService->getClient();
-        $endpointSecret = $apiService->getEndpointSecret();
+        $webhookSigningSecret = $apiService->getWebhookSigningSecret();
 
         // verify
         $payload = @file_get_contents('php://input');
@@ -50,7 +50,7 @@ class WebhooksController extends Controller
 
         try {
             $event = Webhook::constructEvent(
-                $payload, $signatureHeader, $endpointSecret
+                $payload, $signatureHeader, $webhookSigningSecret
             );
         } catch (UnexpectedValueException $e) {
             Craft::error("Stripe webhook handler failed with message:" . $e->getMessage());
@@ -220,7 +220,7 @@ class WebhooksController extends Controller
             $success = false;
             Craft::error('Couldn\'t save you Stripe Endpoint Secret in the .env file. ' . $e->getMessage());
         }
-        $success ? $settings->endpointSecret = '$STRIPE_WH_KEY' : $response->secret;
+        $success ? $settings->webhookSigningSecret = '$STRIPE_WH_KEY' : $response->secret;
 
         $success = true;
         try {

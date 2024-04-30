@@ -281,10 +281,10 @@ class Api extends Component
      * Get parsed endpoint secret
      * @return string|null
      */
-    public function getEndpointSecret(): ?string
+    public function getWebhookSigningSecret(): ?string
     {
         $settings = Plugin::getInstance()->getSettings();
-        return App::parseEnv($settings->endpointSecret);
+        return App::parseEnv($settings->webhookSigningSecret);
     }
 
     /**
