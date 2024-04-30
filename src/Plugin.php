@@ -15,7 +15,6 @@ use craft\console\controllers\ResaveController;
 use craft\controllers\UsersController;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
-use craft\elements\User as UserElement;
 use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineConsoleActionsEvent;
 use craft\events\DefineEditUserScreensEvent;
@@ -507,8 +506,8 @@ class Plugin extends BasePlugin
     private function registerBehaviors(): void
     {
         Event::on(
-            UserElement::class,
-            UserElement::EVENT_DEFINE_BEHAVIORS,
+            User::class,
+            User::EVENT_DEFINE_BEHAVIORS,
             function(DefineBehaviorsEvent $event) {
                 $event->behaviors['stripe:customer'] = StripeCustomerBehavior::class;
             }
@@ -539,6 +538,7 @@ class Plugin extends BasePlugin
         // if email address got changed - update stripe
         Event::on(UserRecord::class, UserRecord::EVENT_BEFORE_UPDATE, function(ModelEvent $event) {
             $userRecord = $event->sender;
+            /** @var User|StripeCustomerBehavior $user */
             $user = Craft::$app->getUsers()->getUserById($userRecord->id);
             $settings = $this->getSettings();
             if ($user->isCredentialed && $settings['syncChangedUserEmailsToStripe']) {
@@ -546,9 +546,9 @@ class Plugin extends BasePlugin
                 $newEmail = $userRecord->getAttribute('email');
                 if ($oldEmail != $newEmail) {
                     $customers = $user->getStripeCustomers();
-                    if (!empty($customers)) {
+                    if ($customers->isNotEmpty()) {
                         $client = $this->getApi()->getClient();
-                        foreach ($customers as $customer) {
+                        foreach ($customers->all() as $customer) {
                             $client->customers->update($customer->stripeId, ['email' => $newEmail]);
                         }
                     }
@@ -559,6 +559,7 @@ class Plugin extends BasePlugin
         // if user is saved, and they have an email address and exist in stripe, but we don't have their stripe customer data
         // kick off queue job to sync customer-related data
         Event::on(User::class, User::EVENT_AFTER_SAVE, function(ModelEvent $event) {
+            /** @var User|StripeCustomerBehavior $user */
             $user = $event->sender;
             if (!empty($user->email) && $user->getStripeCustomers()->isEmpty()) {
                 // search for customer in Stripe by their email address
