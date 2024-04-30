@@ -8,7 +8,6 @@
 namespace craft\stripe\elements;
 
 use Craft;
-use DateTime;
 use craft\base\Element;
 use craft\elements\User;
 use craft\helpers\Cp;
@@ -23,6 +22,7 @@ use craft\stripe\models\Customer;
 use craft\stripe\Plugin;
 use craft\stripe\records\Subscription as SubscriptionRecord;
 use craft\stripe\web\assets\stripecp\StripeCpAsset;
+use DateTime;
 
 /**
  * Subscription element type

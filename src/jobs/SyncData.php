@@ -19,7 +19,7 @@ class SyncData extends BaseJob
     /**
      * @inheritdoc
      */
-    function execute($queue): void
+    public function execute($queue): void
     {
         if (!empty($this->customers)) {
             $plugin = Plugin::getInstance();

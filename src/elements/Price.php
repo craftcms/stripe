@@ -617,7 +617,7 @@ class Price extends Element implements NestedElementInterface
                 [
                     'price' => $this->stripeId,
                     'quantity' => 1,
-                ]
+                ],
             ],
             Craft::$app->getUser()->getIdentity(),
         );
