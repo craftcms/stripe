@@ -38,7 +38,7 @@
   "extra": {
     "handle": "stripe",
     "name": "Stripe",
-    "description": "Synchronize and extend product, price and subscription data from Stripe.",
+    "description": "Sync and extend Stripe products and subscriptions.",
     "developer": "Pixel & Tonic",
     "documentationUrl": "https://github.com/craftcms/stripe"
   },
