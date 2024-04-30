@@ -57,6 +57,16 @@ class Settings extends Model
     public bool $syncChangedUserEmailsToStripe = true;
 
     /**
+     * @var string|null
+     */
+    public ?string $defaultSuccessUrl = null;
+
+    /**
+     * @var string|null
+     */
+    public ?string $defaultCancelUrl = null;
+
+    /**
      * @var mixed
      */
     private mixed $_productFieldLayout;
