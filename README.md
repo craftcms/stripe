@@ -363,7 +363,7 @@ To view all available console commands, run `ddev craft help`. The Stripe plugin
 
 #### Craft Commerce Migration
 
-Migrates [preexisting Craft Commerce subscriptions](#migrating-from-commerce) to records compatible with the Stripe plugin.
+Migrates [preexisting Craft Commerce subscriptions](#migrating-from-craft-commerce) to records compatible with the Stripe plugin.
 
 ```bash
 ddev craft stripe/commerce/migrate
