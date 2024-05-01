@@ -347,10 +347,16 @@ STRIPE_WH_KEY="whsec_***********************************************************
 
 The plugin provides four new [Twig filters](https://craftcms.com/docs/5.x/reference/twig/filters.html):
 
-- `unitPrice` — Takes a [price](#prices) element’s `data` array and outputs a formatted expression of its cost and interval, i.e. `£10.50/month`.
-- `unitAmount` — Similar to the above, but only outputs the currency component, i.e. `$13.00`.
-- `pricePerUnit` — 
+- `unitPrice` — Takes a [price](#prices) element’s Stripe `data` array and outputs a formatted expression of its cost _and_ interval: `£10.50 per unit/month`
+- `pricePerUnit` — Similar to the above, but only outputs the _cost_ component, without the interval: `Starts at $5.00 per unit + $20.00`
+- `unitAmount` — Similar to the above, but only outputs the _unit_ component, i.e. `$13.00 per group of 10`.
 - `interval` — Similar to the above, but only outputs the _interval_ component, i.e. `One-time` or `Every 1 month`.
+
+In most cases, you will want to use the `unitPrice` filter, as it will provide the most complete information about a price. All filters should be passed the price’s `data` property, which is the raw [Price object](https://docs.stripe.com/api/prices/object) from Stripe:
+
+```twig
+{{ price.data|unitPrice }}
+```
 
 ### CLI
 
