@@ -344,10 +344,10 @@ STRIPE_WH_KEY="whsec_***********************************************************
 
 The plugin provides four new [Twig filters](https://craftcms.com/docs/5.x/reference/twig/filters.html):
 
-- `unitAmount` — Pass in a price element
-- `unitPrice`
-- `pricePerUnit`
-- `interval`
+- `unitPrice` — Takes a [price](#prices) element’s `data` array and outputs a formatted expression of its cost and interval, i.e. `£10.50/month`.
+- `unitAmount` — Similar to the above, but only outputs the currency component, i.e. `$13.00`.
+- `pricePerUnit` — 
+- `interval` — Similar to the above, but only outputs the _interval_ component, i.e. `One-time` or `Every 1 month`.
 
 ### CLI
 
