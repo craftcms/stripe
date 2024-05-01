@@ -222,22 +222,26 @@ To output a checkout link, use the `craft.stripeCheckoutUrl()` function:
 
 ### Checkout Form
 
-The alternative to making a checkout link with twig, is to use a form to start a 
-checkout session and redirect the customer to the Stripe-hosted checkout page:
+As an alternative to generating static Checkout links, you can build a [form](https://craftcms.com/docs/5.x/development/forms.html) that sends a list of items and other params to Craft, which will create a checkout session on-the-fly, then redirect the customer to the Stripe-hosted checkout page:
 
 ```twig
-{% set price = product.prices.one() %}
+{% set prices = product.prices.all() %}
 
-<form action="" method="post">
+<form method="post">
   {{ csrfInput() }}
   {{ actionInput('stripe/checkout') }}
   {{ hiddenInput('successUrl', 'shop/thank-you?session={CHECKOUT_SESSION_ID}'|hash) }}
   {{ hiddenInput('cancelUrl', 'shop'|hash) }}
 
-  <input type="text" name="lineItems[0][price]" value="{{ price.stripeId }}">
+  <select name="lineItems[0][price]">
+    {% for price in prices %}
+      <option value="{{ price.stripeId }}">{{ price.data|unitAmount }}</option>
+    {% endfor %}
+  </select>
+
   <input type="text" name="lineItems[0][quantity]" value="1">
 
-  <input type="submit" value="submit">
+  <button>Buy now</button>
 </form>
 ```
 
