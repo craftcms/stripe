@@ -118,10 +118,10 @@ You will interact with subscriptions differently than in Craft Commerce, as they
 
 - Plans are not configured in Craft. Instead, products (or more accurately, _prices_) can be set up in Stripe as _recurring_. You will see this reflected as a combination of price and interval (i.e. $5.00/day) in **Prices** tables on an individual product element, in the control panel.
 - Some gateway-agnostic element query methods were not translated into the Stripe plugin:
-    - `dateExpired()`: Not tracked as a native property. You can access the timestamp when a subscription ended with `subscription.data.ended_at`.
-    - `isExpired()`: Similar to the above, non-expired subscriptions will have a `null` `subscription.data.ended_at` value.
-    - `trialDays()`: Use `subscription.data.trial_start` and `trial_end`, or access the subscription’s underlying `items` array for info about each recurring item’s price and configuration.
-    - `status()`: Statuses may not behave in a way that is consistent with Craft Commerce’s definition.
+  - `dateExpired()`: Not tracked as a native property. You can access the timestamp when a subscription ended with `subscription.data.ended_at`.
+  - `isExpired()`: Similar to the above, non-expired subscriptions will have a `null` `subscription.data.ended_at` value.
+  - `trialDays()`: Use `subscription.data.trial_start` and `trial_end`, or access the subscription’s underlying `items` array for info about each recurring item’s price and configuration.
+  - `status()`: Statuses may not behave in a way that is consistent with Craft Commerce’s definition.
 
 ---
 
@@ -142,17 +142,17 @@ To get a list of products, use the `craft.stripeProducts` [element query](https:
 {% set products = craft.stripeProducts.all() %}
 
 <ul>
-    {% for product in products %}
-        {% set image = product.featureImage.eagerly().one() %}
+  {% for product in products %}
+    {% set image = product.featureImage.eagerly().one() %}
 
-        <li>
-            <figure>
-                {{ image.getImg() }}
-            </figure>
+    <li>
+      <figure>
+        {{ image.getImg() }}
+      </figure>
 
-            <strong>{{ product.getLink() }}</strong>
-        </li>
-    {% endfor %}
+      <strong>{{ product.getLink() }}</strong>
+    </li>
+  {% endfor %}
 </ul>
 ```
 
