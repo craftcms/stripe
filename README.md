@@ -247,25 +247,24 @@ As an alternative to generating static Checkout links, you can build a [form](ht
 
 ### Billing Portal
 
-Create a link to a Stripe [billing portal](https://docs.stripe.com/customer-management) that allows customers to manage their subscriptions and payment methods. 
-
-You can generate the URL for the billing portal using the `currentUser.getStripeBillingPortalSessionUrl()` method:
+Customers can manage their subscriptions and payment methods via Stripe’s hosted [billing portal](https://docs.stripe.com/customer-management). You can generate a URL to a customer’s billing portal using the `currentUser.getStripeBillingPortalSessionUrl()` method:
 
 ```twig
-  {{ tag('a', {
-    text: "Billing Portal",
-    href: currentUser.getStripeBillingPortalSessionUrl('shop'),
-  }) }}
+{{ tag('a', {
+  text: "Billing Portal",
+  href: currentUser.getStripeBillingPortalSessionUrl('shop'),
+}) }}
 ```
-The method takes an `returnUrl` parameter that specifies the URL to redirect the customer to after they have finished managing their subscriptions and payment methods.
 
-In addition to this method, there is also the `currentUser.getStripeBillingPortalSessionPaymentMethodUpdateUrl()` method that generates a URL for the customer to update their default payment method.
+The method takes a `returnUrl` parameter that specifies the URL to redirect the customer to after they have finished managing their subscriptions and payment methods.
+
+In addition to this method, there is also `currentUser.getStripeBillingPortalSessionPaymentMethodUpdateUrl()`, which generates a URL for the customer to update their default payment method.
 
 ```twig
-  {{ tag('a', {
-    text: "Update Payment Method",
-    href: currentUser.getStripeBillingPortalSessionPaymentMethodUpdateUrl('shop'),
-  }) }}
+{{ tag('a', {
+  text: "Update Payment Method",
+  href: currentUser.getStripeBillingPortalSessionPaymentMethodUpdateUrl('shop'),
+}) }}
 ```
 
 This uses the Stripe [flow type](https://docs.stripe.com/customer-management/portal-deep-links#flow-types) to deep link directly to the payment method update screen.
