@@ -338,7 +338,6 @@ STRIPE_WH_KEY="whsec_***********************************************************
 > [!WARNING]
 > In this case, the environment variable names are strict!
 
-
 ---
 
 ## Reference
