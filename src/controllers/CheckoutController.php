@@ -23,7 +23,7 @@ use yii\web\Response;
 class CheckoutController extends Controller
 {
     /**
-     * @inerhitdoc
+     * @inheritdoc
      */
     public $defaultAction = 'checkout';
 
