@@ -18,7 +18,6 @@ use craft\stripe\records\PaymentMethodData as PaymentMethodDataRecord;
 use Stripe\PaymentMethod as StripePaymentMethod;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
-use yii\db\Expression;
 
 /**
  * Payment Methods service
@@ -162,8 +161,8 @@ class PaymentMethods extends Component
     public function getPaymentMethodsByCustomerId(string $customerId): array
     {
         $paymentMethods = $this->createPaymentMethodQuery()
-            ->addSelect(new Expression('sspmd.data->"$.customer" AS customerId'))
-            ->where(new Expression('sspmd.data->"$.customer" = :customerId', ['customerId' => $customerId]))
+            ->addSelect('customerId')
+            ->where(['customerId' => $customerId])
             ->all();
 
         if (!empty($paymentMethods)) {

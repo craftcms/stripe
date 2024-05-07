@@ -18,7 +18,6 @@ use craft\stripe\records\InvoiceData as InvoiceDataRecord;
 use Stripe\Invoice as StripeInvoice;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
-use yii\db\Expression;
 
 /**
  * Invoices service
@@ -161,9 +160,10 @@ class Invoices extends Component
      */
     public function getInvoicesByCustomerId(string $customerId): array
     {
+        $qb = Craft::$app->getDb()->getQueryBuilder();
         $invoices = $this->_createInvoiceQuery()
-            ->addSelect(new Expression('ssid.data->"$.customer" AS customerId'))
-            ->where(new Expression('ssid.data->"$.customer" = :customerId', ['customerId' => $customerId]))
+            ->addSelect(['customerId' => $qb->jsonExtract('ssid.data', ['customer'])])
+            ->where([$qb->jsonExtract('ssid.data', ['customer']) => $customerId])
             ->all();
 
         if (!empty($invoices)) {

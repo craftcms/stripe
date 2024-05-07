@@ -134,6 +134,9 @@ class Plugin extends BasePlugin
     {
         parent::init();
 
+        // we need to register the behavior as soon as possible
+        $this->registerBehaviors();
+
         // Defer most setup tasks until Craft is fully initialized
         Craft::$app->onInit(function() {
             $request = Craft::$app->getRequest();
@@ -146,7 +149,6 @@ class Plugin extends BasePlugin
             $this->registerVariables();
             $this->registerTwigExtension();
             $this->registerResaveCommands();
-            $this->registerBehaviors();
             $this->registerConditionRules();
             $this->handleUserElementChanges();
 
