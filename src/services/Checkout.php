@@ -58,8 +58,7 @@ class Checkout extends Component
         ?string $successUrl = null,
         ?string $cancelUrl = null,
         ?array $params = null,
-    ): string
-    {
+    ): string {
         $customer = null;
         if ($user === false) {
             $customer = false;
