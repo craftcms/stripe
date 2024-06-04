@@ -22,6 +22,8 @@ use yii\web\Response;
  */
 class CheckoutController extends Controller
 {
+    protected array|bool|int $allowAnonymous = true;
+
     /**
      * @inheritdoc
      */
@@ -41,6 +43,10 @@ class CheckoutController extends Controller
         $request = Craft::$app->getRequest();
 
         $currentUser = Craft::$app->getUser()->getIdentity();
+
+        if ($currentUser === null) {
+            $currentUser = false;
+        }
 
         // process line items
         $postLineItems = $request->getRequiredBodyParam('lineItems');

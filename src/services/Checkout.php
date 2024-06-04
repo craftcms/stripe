@@ -9,14 +9,18 @@ namespace craft\stripe\services;
 
 use Craft;
 use craft\elements\User;
+use craft\errors\SiteNotFoundException;
 use craft\helpers\UrlHelper;
 use craft\stripe\elements\Price;
 use craft\stripe\events\CheckoutSessionEvent;
 use craft\stripe\models\Customer;
 use craft\stripe\Plugin;
 use Stripe\Checkout\Session as StripeCheckoutSession;
+use Stripe\Exception\ApiErrorException;
 use Stripe\Price as StripePrice;
 use yii\base\Component;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
  * Checkout service
@@ -37,22 +41,30 @@ class Checkout extends Component
      * Returns checkout URL based on the provided email.
      *
      * @param array $lineItems
-     * @param string|User|null $user User Element or email address
+     * @param string|User|false|null $user User Element or email address
      * @param string|null $successUrl
      * @param string|null $cancelUrl
+     * @param array|null $params
      * @return string
+     * @throws ApiErrorException
+     * @throws \Throwable
+     * @throws SiteNotFoundException
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function getCheckoutUrl(
         array $lineItems = [],
-        string|User|null $user = null,
+        string|User|null|false $user = null,
         ?string $successUrl = null,
         ?string $cancelUrl = null,
         ?array $params = null,
-    ): string {
+    ): string
+    {
         $customer = null;
-
+        if ($user === false) {
+            $customer = false;
         // if passed in user is a string - it should be an email address
-        if (is_string($user)) {
+        } elseif (is_string($user)) {
             // try to find the first Stripe Customer for this email;
             // if none is found just use the email that was passed in
             $customer = $this->getCheckoutCustomerByEmail($user) ?? $user;
@@ -135,7 +147,7 @@ class Checkout extends Component
      */
     private function startCheckoutSession(
         array $lineItems,
-        Customer|string|null $customer = null,
+        Customer|string|null|false $customer = null,
         ?string $successUrl = null,
         ?string $cancelUrl = null,
         ?array $params = null,
@@ -151,7 +163,7 @@ class Checkout extends Component
 
         if ($customer instanceof Customer) {
             $data['customer'] = $customer->stripeId;
-        } else {
+        } elseif ($customer !== false) {
             $data['customer_email'] = $customer;
         }
 
