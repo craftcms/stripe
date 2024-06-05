@@ -151,7 +151,7 @@ class Checkout extends Component
 
         if ($customer instanceof Customer) {
             $data['customer'] = $customer->stripeId;
-        } else {
+        } elseif ($customer !== null) {
             $data['customer_email'] = $customer;
         }
 
