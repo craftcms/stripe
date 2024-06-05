@@ -211,7 +211,7 @@ To output a checkout link, use the `stripeCheckoutUrl()` function:
         quantity: 1,
       },
     ],
-    null,
+    currentUser ? currentUser.email : null,
     'shop/thank-you?session={CHECKOUT_SESSION_ID}',
     product.url,
     {}

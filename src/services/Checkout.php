@@ -51,23 +51,16 @@ class Checkout extends Component
     ): string {
         $customer = null;
 
-        // if passed in user is a string - it should be an email address
-        if (is_string($user)) {
+        // if User element is passed in
+        if ($user instanceof User) {
+            // try to find the first Stripe Customer for that User's email
+            // if none is found just use the User's email we have on account
+            $customer = $this->getCheckoutCustomerByEmail($user->email) ?? $user->email;
+        } else if (is_string($user)) {
+            // if passed in user is a string - it should be an email address;
             // try to find the first Stripe Customer for this email;
             // if none is found just use the email that was passed in
             $customer = $this->getCheckoutCustomerByEmail($user) ?? $user;
-        } else {
-            // if user is null - try to get the currently logged in user
-            if ($user === null) {
-                $user = Craft::$app->getUser()->getIdentity();
-            }
-
-            // if User element is passed in, or we just got one via getIdentity
-            if ($user instanceof User) {
-                // try to find the first Stripe Customer for that User's email
-                // if none is found just use the User's email we have on account
-                $customer = $this->getCheckoutCustomerByEmail($user->email) ?? $user->email;
-            }
         }
 
         return $this->startCheckoutSession(
