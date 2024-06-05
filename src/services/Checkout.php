@@ -56,7 +56,7 @@ class Checkout extends Component
             // try to find the first Stripe Customer for that User's email
             // if none is found just use the User's email we have on account
             $customer = $this->getCheckoutCustomerByEmail($user->email) ?? $user->email;
-        } else if (is_string($user)) {
+        } elseif (is_string($user)) {
             // if passed in user is a string - it should be an email address;
             // try to find the first Stripe Customer for this email;
             // if none is found just use the email that was passed in
