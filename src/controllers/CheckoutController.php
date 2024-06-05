@@ -22,6 +22,8 @@ use yii\web\Response;
  */
 class CheckoutController extends Controller
 {
+    protected array|bool|int $allowAnonymous = true;
+
     /**
      * @inheritdoc
      */
