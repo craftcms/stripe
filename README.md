@@ -198,13 +198,13 @@ When a customer is ready to buy a product or start a subscription, you’ll prov
 
 Clicking a checkout link takes the customer to Stripe’s hosted checkout page, where they can complete a payment using whatever methods are available and enabled in your account.
 
-To output a checkout link, use the `craft.stripeCheckoutUrl()` function:
+To output a checkout link, use the `stripeCheckoutUrl()` function:
 
 ```twig
 {% set price = product.prices.one() %}
 
 {{ tag('a', {
-  href: craft.stripe.checkout.getCheckoutUrl(
+  href: stripeCheckoutUrl(
     [
       {
         price: price.stripeId,
@@ -416,7 +416,7 @@ You can set `$event->isValid` to prevent updates from being persisted during the
 
 ### Checkout Events
 
-Customize the parameters sent to Stripe when generating a Checkout session by listening to the `craft\stripe\services\Checkout::EVENT_BEFORE_START_CHECKOUT_SESSION` event. The `craft\stripe\events\CheckoutSessionEvent` will have a `sessionData` property containing the request data that is about to be sent with the Stripe API client. You may modify or extend this data to suit your application—whatever the value of the property is after all handlers have been invoked is passed verbatim to the API client:
+Customize the parameters sent to Stripe when generating a Checkout session by listening to the `craft\stripe\services\Checkout::EVENT_BEFORE_START_CHECKOUT_SESSION` event. The `craft\stripe\events\CheckoutSessionEvent` will have a `params` property containing the request data that is about to be sent with the Stripe API client. You may modify or extend this data to suit your application—whatever the value of the property is after all handlers have been invoked is passed verbatim to the API client:
 
 ```php
 craft\base\Event::on(
@@ -433,11 +433,11 @@ craft\base\Event::on(
 
         if ($currentUser->isInGroup('members')) {
             // Memoize + assign values:
-            $data = $event->sourceData;
+            $data = $event->params;
             $data['metadata']['is_member'] = true;
 
             // Set back onto the event:
-            $event->sourceData = $data;
+            $event->params = $data;
         }
     },
 );
