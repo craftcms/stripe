@@ -230,7 +230,7 @@ class WebhooksController extends Controller
             $configService->setDotEnvVar('STRIPE_WH_KEY', $response->secret ?? '');
         } catch (\Throwable $e) {
             $success = false;
-            Craft::error('Couldn\'t save you Stripe Webhook Signing Secret in the .env file. ' . $e->getMessage());
+            Craft::error('Couldn\'t save the Stripe Webhook Signing Secret in the .env file. ' . $e->getMessage());
         }
         $success ? $settings->webhookSigningSecret = '$STRIPE_WH_KEY' : $response->secret;
 
@@ -239,7 +239,7 @@ class WebhooksController extends Controller
             $configService->setDotEnvVar('STRIPE_WH_ID', $response->id ?? '');
         } catch (\Throwable $e) {
             $success = false;
-            Craft::error('Couldn\'t save you Stripe Webhook Id in the .env file. ' . $e->getMessage());
+            Craft::error('Couldn\'t save the Stripe Webhook ID in the .env file. ' . $e->getMessage());
         }
         $success ? $settings->webhookId = '$STRIPE_WH_ID' : $response->id;
 
