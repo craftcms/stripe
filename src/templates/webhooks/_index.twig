@@ -8,23 +8,26 @@
 
 {% block content %}
 
-    <h3>{{ "Webhook Management"|t('stripe') }}</h3>
+    <h2>{{ "Webhook Management"|t('stripe') }}</h2>
 
-    <div class="{{ hasWebhook ? 'hidden' : '' }}">
-        <p>{{ "Create the webhook for the current environment."|t('stripe') }}</p>
+    {% if not hasWebhook %}
+        <p>{{ "Create the webhook for the current environment."|t('stripe') }} <a class="go" href="https://github.com/craftcms/stripe#webhooks">{{ 'Learn more'|t('app') }}</a></p>
+    {% endif %}
+
+    {# Divs needed for the Admin Table js below #}
+    <div class="pane tablepane hairline">
+        <div id="webhooks-container">
+        </div>
+    </div>
+
+    {% if not hasWebhook %}
         <form method="POST">
             {{ actionInput('stripe/webhooks/create') }}
             {{ redirectInput('stripe/webhooks') }}
             {{ csrfInput() }}
             <button class="btn primary" type="submit">{{ "Create"|t('stripe') }}</button>
         </form>
-    </div>
-
-    {# Divs needed for the Admin Table js below #}
-    <div class="field">
-        <div id="webhooks-container">
-        </div>
-    </div>
+    {% endif %}
 
 {% set tableData = [] %}
     {% if webhookInfo is not empty %}
