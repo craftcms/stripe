@@ -246,8 +246,7 @@ class WebhooksController extends Controller
         if (!Craft::$app->getPlugins()->savePluginSettings($plugin, $settings->toArray())) {
             Craft::$app->getSession()->setNotice(Craft::t(
                 'stripe',
-                'Webhook registered successfully, but we had trouble saving the Webhook Signing Secret. 
-            Please go to your Stripe Dashboard, get the webhook signing secret and add it to your plugin’s settings.')
+                'Webhook registered successfully, but we had trouble saving the Webhook Signing Secret. Please go to your Stripe Dashboard, get the webhook signing secret and add it to your plugin’s settings.')
             );
         } else {
             $this->setSuccessFlash(Craft::t(
