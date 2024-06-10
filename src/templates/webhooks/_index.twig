@@ -29,7 +29,8 @@
         </form>
     {% endif %}
 
-{% set tableData = [] %}
+    {% set tableData = [] %}
+
     {% if webhookInfo is not empty %}
         {% set tableData = [{
             id: webhookInfo.id,
@@ -43,11 +44,11 @@
 
     {% js %}
         var columns = [
-        { name: '__slot:title', title: '{{ 'Topic'|t('stripe') }}' },
-        { name: 'apiVersion', title: '{{ 'API Version'|t('stripe') }}' },
-        { name: 'livemode', title: '{{ 'Live Mode'|t('stripe') }}' },
-        { name: 'whStatus', title: '{{ 'Status'|t('stripe') }}' },
-        { name: 'address', title: '{{ 'URL'|t('stripe') }}' },
+            { name: '__slot:title', title: '{{ 'Topic'|t('stripe') }}' },
+            { name: 'apiVersion', title: '{{ 'API Version'|t('stripe') }}' },
+            { name: 'livemode', title: '{{ 'Live Mode'|t('stripe') }}' },
+            { name: 'whStatus', title: '{{ 'Status'|t('stripe') }}' },
+            { name: 'address', title: '{{ 'URL'|t('stripe') }}' },
         ];
 
         new Craft.VueAdminTable({
@@ -60,9 +61,9 @@
             deleteSuccessMessage: Craft.t('stripe', "Webhook deleted"),
             emptyMessage: Craft.t('stripe', 'No webhooks exist yet.'),
             tableData: {{ tableData|json_encode|raw }},
-            deleteCallback: function(){
-            window.location.reload(); // We need to reload to get the create button showing again
-        }
+            deleteCallback: function() {
+                window.location.reload(); // We need to reload to get the create button showing again
+            },
         });
     {% endjs %}
 {% endblock %}
