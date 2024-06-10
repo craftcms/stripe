@@ -137,7 +137,7 @@ class WebhooksController extends Controller
         $pluginSettings = $plugin->getSettings();
 
         if (!$pluginSettings->secretKey) {
-            throw new InvalidConfigException('No Stripe API key found, check credentials in settings.');
+            throw new ServerErrorHttpException('No Stripe API key found, check credentials in settings.');
         }
 
         $stripe = $plugin->getApi()->getClient();
