@@ -19,6 +19,7 @@ use Stripe\Webhook;
 use Stripe\WebhookEndpoint;
 use yii\base\InvalidConfigException;
 use yii\web\Response as YiiResponse;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The WebhooksController handles Stripe webhook event.
@@ -93,7 +94,7 @@ class WebhooksController extends Controller
         $pluginSettings = $plugin->getSettings();
 
         if (!$pluginSettings->secretKey) {
-            throw new InvalidConfigException('No Stripe API key found, check credentials in settings.');
+            throw new ServerErrorHttpException('No Stripe API key found. Make sure you have added one in the plugin’s settings screen.');
         }
 
         $webhookInfo = [];
@@ -262,7 +263,6 @@ class WebhooksController extends Controller
      * @param Plugin $plugin
      * @param string $webhookId
      * @return WebhookEndpoint
-     * @throws InvalidConfigException
      * @throws \Stripe\Exception\ApiErrorException
      */
     private function getWebhookInfo(Plugin $plugin, string $webhookId): WebhookEndpoint
