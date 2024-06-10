@@ -28,9 +28,20 @@ use yii\web\Response as YiiResponse;
 class WebhooksController extends Controller
 {
     public $defaultAction = 'handle';
-    public $enableCsrfValidation = false;
     public array|bool|int $allowAnonymous = ['handle'];
 
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        // Disable CSRF only for incoming webhooks (to agree with `allowAnonymous`, above):
+        if ($action->id === 'handle') {
+            $this->enableCsrfValidation = false;
+        }
+
+        return parent::beforeAction($action);
+    }
     /**
      * Handle incoming Stripe webhook event
      *
