@@ -19,6 +19,7 @@ use Stripe\Webhook;
 use Stripe\WebhookEndpoint;
 use yii\base\InvalidConfigException;
 use yii\web\Response as YiiResponse;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The WebhooksController handles Stripe webhook event.
@@ -28,9 +29,20 @@ use yii\web\Response as YiiResponse;
 class WebhooksController extends Controller
 {
     public $defaultAction = 'handle';
-    public $enableCsrfValidation = false;
     public array|bool|int $allowAnonymous = ['handle'];
 
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        // Disable CSRF only for incoming webhooks (to agree with `allowAnonymous`, above):
+        if ($action->id === 'handle') {
+            $this->enableCsrfValidation = false;
+        }
+
+        return parent::beforeAction($action);
+    }
     /**
      * Handle incoming Stripe webhook event
      *
@@ -82,7 +94,7 @@ class WebhooksController extends Controller
         $pluginSettings = $plugin->getSettings();
 
         if (!$pluginSettings->secretKey) {
-            throw new InvalidConfigException('No Stripe API key found, check credentials in settings.');
+            throw new ServerErrorHttpException('No Stripe API key found. Make sure you have added one in the plugin’s settings screen.');
         }
 
         $webhookInfo = [];
@@ -125,7 +137,7 @@ class WebhooksController extends Controller
         $pluginSettings = $plugin->getSettings();
 
         if (!$pluginSettings->secretKey) {
-            throw new InvalidConfigException('No Stripe API key found, check credentials in settings.');
+            throw new ServerErrorHttpException('No Stripe API key found, check credentials in settings.');
         }
 
         $stripe = $plugin->getApi()->getClient();
@@ -218,7 +230,7 @@ class WebhooksController extends Controller
             $configService->setDotEnvVar('STRIPE_WH_KEY', $response->secret ?? '');
         } catch (\Throwable $e) {
             $success = false;
-            Craft::error('Couldn\'t save you Stripe Webhook Signing Secret in the .env file. ' . $e->getMessage());
+            Craft::error('Couldn\'t save the Stripe Webhook Signing Secret in the .env file. ' . $e->getMessage());
         }
         $success ? $settings->webhookSigningSecret = '$STRIPE_WH_KEY' : $response->secret;
 
@@ -227,15 +239,14 @@ class WebhooksController extends Controller
             $configService->setDotEnvVar('STRIPE_WH_ID', $response->id ?? '');
         } catch (\Throwable $e) {
             $success = false;
-            Craft::error('Couldn\'t save you Stripe Webhook Id in the .env file. ' . $e->getMessage());
+            Craft::error('Couldn\'t save the Stripe Webhook ID in the .env file. ' . $e->getMessage());
         }
         $success ? $settings->webhookId = '$STRIPE_WH_ID' : $response->id;
 
         if (!Craft::$app->getPlugins()->savePluginSettings($plugin, $settings->toArray())) {
             Craft::$app->getSession()->setNotice(Craft::t(
                 'stripe',
-                'Webhook registered successfully, but we had trouble saving the Webhook Signing Secret. 
-            Please go to your Stripe Dashboard, get the webhook signing secret and add it to your plugin’s settings.')
+                'Webhook registered successfully, but we had trouble saving the Webhook Signing Secret. Please go to your Stripe Dashboard, get the webhook signing secret and add it to your plugin’s settings.')
             );
         } else {
             $this->setSuccessFlash(Craft::t(
@@ -251,7 +262,6 @@ class WebhooksController extends Controller
      * @param Plugin $plugin
      * @param string $webhookId
      * @return WebhookEndpoint
-     * @throws InvalidConfigException
      * @throws \Stripe\Exception\ApiErrorException
      */
     private function getWebhookInfo(Plugin $plugin, string $webhookId): WebhookEndpoint

@@ -94,7 +94,7 @@ class Plugin extends BasePlugin
     /**
      * @inheritdoc
      */
-    public string $minVersionRequired = '5.0.0';
+    public string $minVersionRequired = '1.0.0';
 
     /**
      * @var string stripe environment determined from the key
@@ -563,15 +563,29 @@ class Plugin extends BasePlugin
         Event::on(User::class, User::EVENT_AFTER_SAVE, function(ModelEvent $event) {
             /** @var User|StripeCustomerBehavior $user */
             $user = $event->sender;
-            if (!empty($user->email) && $user->getStripeCustomers()->isEmpty()) {
-                // search for customer in Stripe by their email address
+
+            // Do they have an email at all?
+            if (empty($user->email)) {
+                return;
+            }
+
+            // Do we have any existing Stripe customer records for them?
+            if (!$user->getStripeCustomers()->isEmpty()) {
+                return;
+            }
+
+            // Search for customer in Stripe by their email address:
+            try {
+                // If the plugin isn't configured yet, this may fail:
                 $stripe = $this->getApi()->getClient();
                 $stripeCustomers = $stripe->customers->search(['query' => "email:'{$user->email}'"]);
-                // if we found Stripe customers with that email address - kick off the queue job to sync data
+
+                // If we found Stripe customers with that email address, kick off the queue job to sync data:
                 if (!$stripeCustomers->isEmpty()) {
-                    // sync data via the queue
                     Queue::push(new SyncData());
                 }
+            } catch (\Stripe\Exception\ExceptionInterface $e) {
+                Craft::error("Tried to synchronize user data, but the plugin was not fully configured: {$e->getMessage()}", 'stripe');
             }
         });
     }
