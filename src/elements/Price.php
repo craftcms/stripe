@@ -619,8 +619,7 @@ class Price extends Element implements NestedElementInterface
         ?string $successUrl = null,
         ?string $cancelUrl = null,
         ?array $params = null,
-    ): string
-    {
+    ): string {
         return Plugin::getInstance()->getCheckout()->getCheckoutUrl(
             [
                 [
