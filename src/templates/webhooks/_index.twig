@@ -8,25 +8,29 @@
 
 {% block content %}
 
-    <h3>{{ "Webhook Management"|t('stripe') }}</h3>
+    <h2>{{ "Webhook Management"|t('stripe') }}</h2>
 
-    <div class="{{ hasWebhook ? 'hidden' : '' }}">
-        <p>{{ "Create the webhook for the current environment."|t('stripe') }}</p>
+    {% if not hasWebhook %}
+        <p>{{ "Create the webhook for the current environment."|t('stripe') }} <a class="go" href="https://github.com/craftcms/stripe#webhooks">{{ 'Learn more'|t('app') }}</a></p>
+    {% endif %}
+
+    {# Divs needed for the Admin Table js below #}
+    <div class="pane tablepane hairline">
+        <div id="webhooks-container">
+        </div>
+    </div>
+
+    {% if not hasWebhook %}
         <form method="POST">
             {{ actionInput('stripe/webhooks/create') }}
             {{ redirectInput('stripe/webhooks') }}
             {{ csrfInput() }}
             <button class="btn primary" type="submit">{{ "Create"|t('stripe') }}</button>
         </form>
-    </div>
+    {% endif %}
 
-    {# Divs needed for the Admin Table js below #}
-    <div class="field">
-        <div id="webhooks-container">
-        </div>
-    </div>
+    {% set tableData = [] %}
 
-{% set tableData = [] %}
     {% if webhookInfo is not empty %}
         {% set tableData = [{
             id: webhookInfo.id,
@@ -40,11 +44,11 @@
 
     {% js %}
         var columns = [
-        { name: '__slot:title', title: '{{ 'Topic'|t('stripe') }}' },
-        { name: 'apiVersion', title: '{{ 'API Version'|t('stripe') }}' },
-        { name: 'livemode', title: '{{ 'Live Mode'|t('stripe') }}' },
-        { name: 'whStatus', title: '{{ 'Status'|t('stripe') }}' },
-        { name: 'address', title: '{{ 'URL'|t('stripe') }}' },
+            { name: '__slot:title', title: '{{ 'Topic'|t('stripe') }}' },
+            { name: 'apiVersion', title: '{{ 'API Version'|t('stripe') }}' },
+            { name: 'livemode', title: '{{ 'Live Mode'|t('stripe') }}' },
+            { name: 'whStatus', title: '{{ 'Status'|t('stripe') }}' },
+            { name: 'address', title: '{{ 'URL'|t('stripe') }}' },
         ];
 
         new Craft.VueAdminTable({
@@ -57,9 +61,9 @@
             deleteSuccessMessage: Craft.t('stripe', "Webhook deleted"),
             emptyMessage: Craft.t('stripe', 'No webhooks exist yet.'),
             tableData: {{ tableData|json_encode|raw }},
-            deleteCallback: function(){
-            window.location.reload(); // We need to reload to get the create button showing again
-        }
+            deleteCallback: function() {
+                window.location.reload(); // We need to reload to get the create button showing again
+            },
         });
     {% endjs %}
 {% endblock %}
