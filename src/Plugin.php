@@ -94,7 +94,7 @@ class Plugin extends BasePlugin
     /**
      * @inheritdoc
      */
-    public string $minVersionRequired = '5.0.0';
+    public string $minVersionRequired = '1.0.0';
 
     /**
      * @var string stripe environment determined from the key
