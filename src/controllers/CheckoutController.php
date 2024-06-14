@@ -22,6 +22,8 @@ use yii\web\Response;
  */
 class CheckoutController extends Controller
 {
+    protected array|bool|int $allowAnonymous = true;
+
     /**
      * @inheritdoc
      */
@@ -40,8 +42,6 @@ class CheckoutController extends Controller
 
         $request = Craft::$app->getRequest();
 
-        $currentUser = Craft::$app->getUser()->getIdentity();
-
         // process line items
         $postLineItems = $request->getRequiredBodyParam('lineItems');
         $lineItems = collect($postLineItems)->filter(fn($item) => $item['quantity'] > 0)->all();
@@ -52,9 +52,16 @@ class CheckoutController extends Controller
 
         $successUrl = $request->getValidatedBodyParam('successUrl');
         $cancelUrl = $request->getValidatedBodyParam('cancelUrl');
+        $customer = $request->getBodyParam('customer');
+
+        if ($customer == 'false' || $customer == '0' || $customer === false || $customer === 0) {
+            // if customer was explicitly set to something falsy,
+            // go with false to prevent trying to find the currently logged in user further down the line
+            $customer = false;
+        }
 
         // start checkout session
-        $url = Plugin::getInstance()->getCheckout()->getCheckoutUrl($lineItems, $currentUser, $successUrl, $cancelUrl);
+        $url = Plugin::getInstance()->getCheckout()->getCheckoutUrl($lineItems, $customer, $successUrl, $cancelUrl);
 
         return $this->redirect($url);
     }

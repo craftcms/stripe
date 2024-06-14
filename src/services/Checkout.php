@@ -37,14 +37,15 @@ class Checkout extends Component
      * Returns checkout URL based on the provided email.
      *
      * @param array $lineItems
-     * @param string|User|null $user User Element or email address
+     * @param string|User|false|null $user User Element or email address
      * @param string|null $successUrl
      * @param string|null $cancelUrl
+     * @param array|null $params
      * @return string
      */
     public function getCheckoutUrl(
         array $lineItems = [],
-        string|User|null $user = null,
+        string|User|false|null $user = null,
         ?string $successUrl = null,
         ?string $cancelUrl = null,
         ?array $params = null,
@@ -151,7 +152,7 @@ class Checkout extends Component
 
         if ($customer instanceof Customer) {
             $data['customer'] = $customer->stripeId;
-        } else {
+        } elseif (is_string($customer)) {
             $data['customer_email'] = $customer;
         }
 

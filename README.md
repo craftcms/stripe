@@ -185,7 +185,12 @@ The Stripe plugin handles this relationship using [nested elements](https://craf
       {{ price.data|unitAmount }}
       {{ tag('a', {
         text: "Buy now",
-        href: price.getCheckoutUrl(),
+        href: price.getCheckoutUrl(
+          currentUser ?? false,
+          'shop/thank-you?session={CHECKOUT_SESSION_ID}',
+          product.url,
+          {}
+        ),
       }) }}
     </li>
   {% endfor %}
@@ -198,20 +203,20 @@ When a customer is ready to buy a product or start a subscription, you’ll prov
 
 Clicking a checkout link takes the customer to Stripe’s hosted checkout page, where they can complete a payment using whatever methods are available and enabled in your account.
 
-To output a checkout link, use the `craft.stripeCheckoutUrl()` function:
+To output a checkout link, use the `stripeCheckoutUrl()` function:
 
 ```twig
 {% set price = product.prices.one() %}
 
 {{ tag('a', {
-  href: craft.stripe.checkout.getCheckoutUrl(
+  href: stripeCheckoutUrl(
     [
       {
         price: price.stripeId,
         quantity: 1,
       },
     ],
-    null,
+    currentUser ?? false,
     'shop/thank-you?session={CHECKOUT_SESSION_ID}',
     product.url,
     {}
@@ -219,6 +224,9 @@ To output a checkout link, use the `craft.stripeCheckoutUrl()` function:
   text: 'Checkout',
 }) }}
 ```
+
+> [!TIP]
+> Passing `false` as the second parameter to the `stripeCheckoutUrl()` allows you to create an anonymous checkout URL.
 
 ### Checkout Form
 
@@ -232,6 +240,9 @@ As an alternative to generating static Checkout links, you can build a [form](ht
   {{ actionInput('stripe/checkout') }}
   {{ hiddenInput('successUrl', 'shop/thank-you?session={CHECKOUT_SESSION_ID}'|hash) }}
   {{ hiddenInput('cancelUrl', 'shop'|hash) }}
+  {% if not currentUser %}
+    {{ hiddenInput('customer', 'false') }}
+  {% endif %}
 
   <select name="lineItems[0][price]">
     {% for price in prices %}
@@ -244,6 +255,12 @@ As an alternative to generating static Checkout links, you can build a [form](ht
   <button>Buy now</button>
 </form>
 ```
+
+> [!TIP]
+> By default, the currently logged-in user will be used.
+> 
+> To allow an anonymous checkout, you can add `{{ hiddenInput('customer', 'false') }}` to the form.
+
 
 ### Billing Portal
 
@@ -416,7 +433,7 @@ You can set `$event->isValid` to prevent updates from being persisted during the
 
 ### Checkout Events
 
-Customize the parameters sent to Stripe when generating a Checkout session by listening to the `craft\stripe\services\Checkout::EVENT_BEFORE_START_CHECKOUT_SESSION` event. The `craft\stripe\events\CheckoutSessionEvent` will have a `sessionData` property containing the request data that is about to be sent with the Stripe API client. You may modify or extend this data to suit your application—whatever the value of the property is after all handlers have been invoked is passed verbatim to the API client:
+Customize the parameters sent to Stripe when generating a Checkout session by listening to the `craft\stripe\services\Checkout::EVENT_BEFORE_START_CHECKOUT_SESSION` event. The `craft\stripe\events\CheckoutSessionEvent` will have a `params` property containing the request data that is about to be sent with the Stripe API client. You may modify or extend this data to suit your application—whatever the value of the property is after all handlers have been invoked is passed verbatim to the API client:
 
 ```php
 craft\base\Event::on(
@@ -433,11 +450,11 @@ craft\base\Event::on(
 
         if ($currentUser->isInGroup('members')) {
             // Memoize + assign values:
-            $data = $event->sourceData;
+            $data = $event->params;
             $data['metadata']['is_member'] = true;
 
             // Set back onto the event:
-            $event->sourceData = $data;
+            $event->params = $data;
         }
     },
 );

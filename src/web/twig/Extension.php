@@ -7,6 +7,7 @@
 
 namespace craft\stripe\web\twig;
 
+use craft\elements\User;
 use craft\stripe\helpers\Price;
 use craft\stripe\Plugin;
 use Twig\Extension\AbstractExtension;
@@ -46,7 +47,7 @@ class Extension extends AbstractExtension
         return [
             new TwigFunction('stripeCheckoutUrl', function(
                 array $lineItems = [],
-                ?string $customer = null,
+                string|User|false|null $customer = null,
                 ?string $successUrl = null,
                 ?string $cancelUrl = null,
                 ?array $params = null,
