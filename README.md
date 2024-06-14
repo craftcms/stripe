@@ -185,7 +185,12 @@ The Stripe plugin handles this relationship using [nested elements](https://craf
       {{ price.data|unitAmount }}
       {{ tag('a', {
         text: "Buy now",
-        href: price.getCheckoutUrl(),
+        href: price.getCheckoutUrl(
+          currentUser ?? false,
+          'shop/thank-you?session={CHECKOUT_SESSION_ID}',
+          product.url,
+          {}
+        ),
       }) }}
     </li>
   {% endfor %}
@@ -211,7 +216,7 @@ To output a checkout link, use the `stripeCheckoutUrl()` function:
         quantity: 1,
       },
     ],
-    currentUser,
+    currentUser ?? false,
     'shop/thank-you?session={CHECKOUT_SESSION_ID}',
     product.url,
     {}
@@ -221,7 +226,7 @@ To output a checkout link, use the `stripeCheckoutUrl()` function:
 ```
 
 > [!TIP]
-> To allow anonymous checkout, you can pass `false` as the second parameter to the `stripeCheckoutUrl()`.
+> Passing `false` as the second parameter to the `stripeCheckoutUrl()` allows you to create an anonymous checkout URL.
 
 ### Checkout Form
 
@@ -235,6 +240,9 @@ As an alternative to generating static Checkout links, you can build a [form](ht
   {{ actionInput('stripe/checkout') }}
   {{ hiddenInput('successUrl', 'shop/thank-you?session={CHECKOUT_SESSION_ID}'|hash) }}
   {{ hiddenInput('cancelUrl', 'shop'|hash) }}
+  {% if not currentUser %}
+    {{ hiddenInput('customer', 'false') }}
+  {% endif %}
 
   <select name="lineItems[0][price]">
     {% for price in prices %}
@@ -249,9 +257,9 @@ As an alternative to generating static Checkout links, you can build a [form](ht
 ```
 
 > [!TIP]
-> By default, `stripe/checkout` action will be attempted for the currently logged-in user.
+> By default, the currently logged-in user will be used.
 > 
-> If you'd like to allow anonymous checkout, even when user is logged in, you can add `{{ hiddenInput('customer', 'false') }}` to the form.
+> To allow an anonymous checkout, you can add `{{ hiddenInput('customer', 'false') }}` to the form.
 
 
 ### Billing Portal
