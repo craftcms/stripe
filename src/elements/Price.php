@@ -606,11 +606,20 @@ class Price extends Element implements NestedElementInterface
     /**
      * Shortcut to get the checkout URL for the price element.
      *
+     * @param string|User|false|null $customer,
+     * @param string|null $successUrl,
+     * @param string|null $cancelUrl,
+     * @param array|null $params,
      * @return string
      * @throws InvalidConfigException
      * @throws \Throwable
      */
-    public function getCheckoutUrl(): string
+    public function getCheckoutUrl(
+        string|User|false|null $customer = null,
+        ?string $successUrl = null,
+        ?string $cancelUrl = null,
+        ?array $params = null,
+    ): string
     {
         return Plugin::getInstance()->getCheckout()->getCheckoutUrl(
             [
@@ -619,7 +628,10 @@ class Price extends Element implements NestedElementInterface
                     'quantity' => 1,
                 ],
             ],
-            Craft::$app->getUser()->getIdentity(),
+            $customer,
+            $successUrl,
+            $cancelUrl,
+            $params
         );
     }
 }
