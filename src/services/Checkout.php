@@ -37,30 +37,38 @@ class Checkout extends Component
      * Returns checkout URL based on the provided email.
      *
      * @param array $lineItems
-     * @param string|User|null $user User Element or email address
+     * @param string|User|false|null $user User Element or email address
      * @param string|null $successUrl
      * @param string|null $cancelUrl
+     * @param array|null $params
      * @return string
      */
     public function getCheckoutUrl(
         array $lineItems = [],
-        string|User|null $user = null,
+        string|User|false|null $user = null,
         ?string $successUrl = null,
         ?string $cancelUrl = null,
         ?array $params = null,
     ): string {
         $customer = null;
 
-        // if User element is passed in
-        if ($user instanceof User) {
-            // try to find the first Stripe Customer for that User's email
-            // if none is found just use the User's email we have on account
-            $customer = $this->getCheckoutCustomerByEmail($user->email) ?? $user->email;
-        } elseif (is_string($user)) {
-            // if passed in user is a string - it should be an email address;
+        // if passed in user is a string - it should be an email address
+        if (is_string($user)) {
             // try to find the first Stripe Customer for this email;
             // if none is found just use the email that was passed in
             $customer = $this->getCheckoutCustomerByEmail($user) ?? $user;
+        } else {
+            // if user is null - try to get the currently logged in user
+            if ($user === null) {
+                $user = Craft::$app->getUser()->getIdentity();
+            }
+
+            // if User element is passed in, or we just got one via getIdentity
+            if ($user instanceof User) {
+                // try to find the first Stripe Customer for that User's email
+                // if none is found just use the User's email we have on account
+                $customer = $this->getCheckoutCustomerByEmail($user->email) ?? $user->email;
+            }
         }
 
         return $this->startCheckoutSession(
@@ -144,7 +152,7 @@ class Checkout extends Component
 
         if ($customer instanceof Customer) {
             $data['customer'] = $customer->stripeId;
-        } elseif ($customer !== null) {
+        } elseif (is_string($customer)) {
             $data['customer_email'] = $customer;
         }
 

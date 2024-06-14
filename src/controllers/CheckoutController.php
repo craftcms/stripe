@@ -42,8 +42,6 @@ class CheckoutController extends Controller
 
         $request = Craft::$app->getRequest();
 
-        $currentUser = Craft::$app->getUser()->getIdentity();
-
         // process line items
         $postLineItems = $request->getRequiredBodyParam('lineItems');
         $lineItems = collect($postLineItems)->filter(fn($item) => $item['quantity'] > 0)->all();
@@ -54,6 +52,15 @@ class CheckoutController extends Controller
 
         $successUrl = $request->getValidatedBodyParam('successUrl');
         $cancelUrl = $request->getValidatedBodyParam('cancelUrl');
+        $customer = $request->getBodyParam('customer');
+
+        if ($customer == 'false' || $customer == '0' || $customer === false) {
+            // if customer was explicitly set to something falsy,
+            // go with false to prevent trying to find the currently logged in user further down the line
+            $currentUser = false;
+        } else {
+            $currentUser = $customer;
+        }
 
         // start checkout session
         $url = Plugin::getInstance()->getCheckout()->getCheckoutUrl($lineItems, $currentUser, $successUrl, $cancelUrl);

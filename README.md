@@ -220,6 +220,9 @@ To output a checkout link, use the `stripeCheckoutUrl()` function:
 }) }}
 ```
 
+> [!TIP]
+> To allow anonymous checkout, you can pass `false` as the second parameter to the `stripeCheckoutUrl()`.
+
 ### Checkout Form
 
 As an alternative to generating static Checkout links, you can build a [form](https://craftcms.com/docs/5.x/development/forms.html) that sends a list of items and other params to Craft, which will create a checkout session on-the-fly, then redirect the customer to the Stripe-hosted checkout page:
@@ -244,6 +247,12 @@ As an alternative to generating static Checkout links, you can build a [form](ht
   <button>Buy now</button>
 </form>
 ```
+
+> [!TIP]
+> By default, `stripe/checkout` action will be attempted for the currently logged-in user.
+> 
+> If you'd like to allow anonymous checkout, even when user is logged in, you can add `{{ hiddenInput('customer', 'false') }}` to the form.
+
 
 ### Billing Portal
 

@@ -47,7 +47,7 @@ class Extension extends AbstractExtension
         return [
             new TwigFunction('stripeCheckoutUrl', function(
                 array $lineItems = [],
-                string|User|null $customer = null,
+                string|User|false|null $customer = null,
                 ?string $successUrl = null,
                 ?string $cancelUrl = null,
                 ?array $params = null,
