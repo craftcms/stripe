@@ -54,16 +54,14 @@ class CheckoutController extends Controller
         $cancelUrl = $request->getValidatedBodyParam('cancelUrl');
         $customer = $request->getBodyParam('customer');
 
-        if ($customer == 'false' || $customer == '0' || $customer === false) {
+        if ($customer == 'false' || $customer == '0' || $customer === false || $customer === 0) {
             // if customer was explicitly set to something falsy,
             // go with false to prevent trying to find the currently logged in user further down the line
-            $currentUser = false;
-        } else {
-            $currentUser = $customer;
+            $customer = false;
         }
 
         // start checkout session
-        $url = Plugin::getInstance()->getCheckout()->getCheckoutUrl($lineItems, $currentUser, $successUrl, $cancelUrl);
+        $url = Plugin::getInstance()->getCheckout()->getCheckoutUrl($lineItems, $customer, $successUrl, $cancelUrl);
 
         return $this->redirect($url);
     }
