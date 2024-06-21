@@ -418,10 +418,8 @@ class Plugin extends BasePlugin
      */
     private function registerTwigExtension(): void
     {
-        if (!Craft::$app->getRequest()->getIsCpRequest()) {
-            // Register the Twig extension
-            Craft::$app->getView()->registerTwigExtension(new Extension());
-        }
+        // Register the Twig extension
+        Craft::$app->getView()->registerTwigExtension(new Extension());
     }
 
     public function registerResaveCommands(): void
