@@ -14,6 +14,7 @@ use craft\base\NestedElementTrait;
 use craft\db\Query;
 use craft\db\Table as CraftTable;
 use craft\elements\User;
+use craft\enums\Color;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -203,7 +204,7 @@ class Price extends Element implements NestedElementInterface
     {
         return [
             self::STATUS_LIVE => Craft::t('app', 'Live'),
-            self::STATUS_STRIPE_ARCHIVED => ['label' => Craft::t('stripe', 'Archived in Stripe'), 'color' => 'red'],
+            self::STATUS_STRIPE_ARCHIVED => ['label' => Craft::t('stripe', 'Archived in Stripe'), 'color' => Color::Red],
             //self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
         ];
     }

@@ -278,7 +278,7 @@ class Api extends Component
     }
 
     /**
-     * Get parsed webhook signing secret secret
+     * Get parsed webhook signing secret
      * @return string|null
      */
     public function getWebhookSigningSecret(): ?string

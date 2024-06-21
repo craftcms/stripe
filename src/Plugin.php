@@ -134,53 +134,47 @@ class Plugin extends BasePlugin
     {
         parent::init();
 
-        // we need to register the behavior as soon as possible
         $this->registerBehaviors();
+        $this->registerElementTypes();
+        $this->registerUtilityTypes();
+        $this->registerUserEditScreens();
+        $this->registerFieldTypes();
+        $this->registerFieldLayoutElements();
+        $this->registerVariables();
+        $this->registerTwigExtension();
+        $this->registerResaveCommands();
+        $this->registerConditionRules();
+        $this->handleUserElementChanges();
 
-        // Defer most setup tasks until Craft is fully initialized
-        Craft::$app->onInit(function() {
-            $request = Craft::$app->getRequest();
-
-            $this->registerElementTypes();
-            $this->registerUtilityTypes();
-            $this->registerUserEditScreens();
-            $this->registerFieldTypes();
-            $this->registerFieldLayoutElements();
-            $this->registerVariables();
-            $this->registerTwigExtension();
-            $this->registerResaveCommands();
-            $this->registerConditionRules();
-            $this->handleUserElementChanges();
-
-            if (!$request->getIsConsoleRequest()) {
-                if ($request->getIsCpRequest()) {
-                    $this->registerCpRoutes();
-                } else {
-                    $this->registerSiteRoutes();
-                }
+        $request = Craft::$app->getRequest();
+        if (!$request->getIsConsoleRequest()) {
+            if ($request->getIsCpRequest()) {
+                $this->registerCpRoutes();
+            } else {
+                $this->registerSiteRoutes();
             }
+        }
 
-            $projectConfigService = Craft::$app->getProjectConfig();
-            $productsService = $this->getProducts();
-            $pricesService = $this->getPrices();
-            $subscriptionService = $this->getSubscriptions();
+        $projectConfigService = Craft::$app->getProjectConfig();
+        $productsService = $this->getProducts();
+        $pricesService = $this->getPrices();
+        $subscriptionService = $this->getSubscriptions();
 
-            $projectConfigService->onAdd(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
-                ->onUpdate(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
-                ->onRemove(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleDeletedFieldLayout']);
+        $projectConfigService->onAdd(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
+            ->onUpdate(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
+            ->onRemove(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleDeletedFieldLayout']);
 
-            $projectConfigService->onAdd(self::PC_PATH_PRICE_FIELD_LAYOUTS, [$pricesService, 'handleChangedFieldLayout'])
-                ->onUpdate(self::PC_PATH_PRICE_FIELD_LAYOUTS, [$pricesService, 'handleChangedFieldLayout'])
-                ->onRemove(self::PC_PATH_PRICE_FIELD_LAYOUTS, [$pricesService, 'handleDeletedFieldLayout']);
+        $projectConfigService->onAdd(self::PC_PATH_PRICE_FIELD_LAYOUTS, [$pricesService, 'handleChangedFieldLayout'])
+            ->onUpdate(self::PC_PATH_PRICE_FIELD_LAYOUTS, [$pricesService, 'handleChangedFieldLayout'])
+            ->onRemove(self::PC_PATH_PRICE_FIELD_LAYOUTS, [$pricesService, 'handleDeletedFieldLayout']);
 
-            $projectConfigService->onAdd(self::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$subscriptionService, 'handleChangedFieldLayout'])
-                ->onUpdate(self::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$subscriptionService, 'handleChangedFieldLayout'])
-                ->onRemove(self::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$subscriptionService, 'handleDeletedFieldLayout']);
+        $projectConfigService->onAdd(self::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$subscriptionService, 'handleChangedFieldLayout'])
+            ->onUpdate(self::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$subscriptionService, 'handleChangedFieldLayout'])
+            ->onRemove(self::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$subscriptionService, 'handleDeletedFieldLayout']);
 
-            // get stripe environment from the secret key
-            $this->stripeMode = $this->getStripeMode();
-            $this->stripeBaseUrl = "$this->dashboardUrl/$this->stripeMode";
-        });
+        // get stripe environment from the secret key
+        $this->stripeMode = $this->getStripeMode();
+        $this->stripeBaseUrl = "$this->dashboardUrl/$this->stripeMode";
     }
 
     /**
@@ -424,10 +418,8 @@ class Plugin extends BasePlugin
      */
     private function registerTwigExtension(): void
     {
-        if (!Craft::$app->getRequest()->getIsCpRequest()) {
-            // Register the Twig extension
-            Craft::$app->getView()->registerTwigExtension(new Extension());
-        }
+        // Register the Twig extension
+        Craft::$app->getView()->registerTwigExtension(new Extension());
     }
 
     public function registerResaveCommands(): void

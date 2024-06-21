@@ -15,6 +15,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
+use craft\enums\Color;
 use craft\enums\PropagationMethod;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -186,7 +187,7 @@ class Product extends Element
     {
         return [
             self::STATUS_LIVE => Craft::t('app', 'Live'),
-            self::STATUS_STRIPE_ARCHIVED => ['label' => Craft::t('stripe', 'Archived in Stripe'), 'color' => 'red'],
+            self::STATUS_STRIPE_ARCHIVED => ['label' => Craft::t('stripe', 'Archived in Stripe'), 'color' => Color::Red],
             self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
         ];
     }
