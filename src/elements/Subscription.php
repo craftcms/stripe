@@ -10,6 +10,7 @@ namespace craft\stripe\elements;
 use Craft;
 use craft\base\Element;
 use craft\elements\User;
+use craft\enums\Color;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -226,8 +227,8 @@ class Subscription extends Element
     {
         return [
             self::STATUS_LIVE => Craft::t('app', 'Live'),
-            self::STATUS_STRIPE_SCHEDULED => ['label' => Craft::t('stripe', 'Scheduled in Stripe'), 'color' => 'orange'],
-            self::STATUS_STRIPE_CANCELED => ['label' => Craft::t('stripe', 'Canceled in Stripe'), 'color' => 'red'],
+            self::STATUS_STRIPE_SCHEDULED => ['label' => Craft::t('stripe', 'Scheduled in Stripe'), 'color' => Color::Orange],
+            self::STATUS_STRIPE_CANCELED => ['label' => Craft::t('stripe', 'Canceled in Stripe'), 'color' => Color::Red],
             self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
         ];
     }
