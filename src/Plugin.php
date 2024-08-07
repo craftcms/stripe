@@ -551,7 +551,8 @@ class Plugin extends BasePlugin
                     if ($customers->isNotEmpty()) {
                         $client = $this->getApi()->getClient();
                         foreach ($customers->all() as $customer) {
-                            $client->customers->update($customer->stripeId, ['email' => $newEmail]);
+                            $updatedCustomer = $client->customers->update($customer->stripeId, ['email' => $newEmail]);
+                            $this->getCustomers()->createOrUpdateCustomer($updatedCustomer);
                         }
                     }
                 }
