@@ -20,6 +20,7 @@ class Webhooks extends Component
 {
     /**
      * @event StripeWebhookEvent Event triggered once an event from Stripe has been received (but after the plugin had a chance to process it too).
+     * @since 1.2.0
      *
      * ---
      *
