@@ -43,6 +43,7 @@ class WebhooksController extends Controller
 
         return parent::beforeAction($action);
     }
+
     /**
      * Handle incoming Stripe webhook event
      *
@@ -52,13 +53,11 @@ class WebhooksController extends Controller
     {
         $apiService = Plugin::getInstance()->getApi();
         $webhookService = Plugin::getInstance()->getWebhooks();
-        //$client = $apiService->getClient();
         $webhookSigningSecret = $apiService->getWebhookSigningSecret();
 
         // verify
         $payload = @file_get_contents('php://input');
         $signatureHeader = $_SERVER['HTTP_STRIPE_SIGNATURE'];
-        //$event = null;
 
         try {
             $event = Webhook::constructEvent(
