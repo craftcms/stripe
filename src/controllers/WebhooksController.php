@@ -75,10 +75,14 @@ class WebhooksController extends Controller
             return $this->asRaw('Err');
         }
 
+        $this->response->setStatusCode(200);
+        // as per https://docs.stripe.com/webhooks#acknowledge-events-immediately - send response asap
+        $this->response->sendAndClose();
+
         // Handle the event
         $webhookService->processEvent($event);
 
-        $this->response->setStatusCode(200);
+        // leaving this in even after sendAndClose() so that the response type matches
         return $this->asRaw('OK');
     }
 
