@@ -179,7 +179,7 @@ class Plugin extends BasePlugin
 
             // get stripe environment from the secret key
             $this->stripeMode = $this->getStripeMode();
-            $this->stripeBaseUrl = "$this->dashboardUrl/$this->stripeMode";
+            $this->stripeBaseUrl = $this->dashboardUrl . ($this->stripeMode == 'test' ? '/test' : '/');
         });
     }
 

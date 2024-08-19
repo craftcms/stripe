@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a SQL error that occurred when syncing a subscriptions that were missing a `latest_invoice` value.
+- Fixed links to stripe dashboard when in live mode.
 
 ## 1.1.0 - 2024-06-14
 
