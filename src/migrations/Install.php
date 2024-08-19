@@ -183,7 +183,7 @@ class Install extends Migration
         // latestInvoiceId
         $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " .
             $db->quoteColumnName('latestInvoiceId') . " VARCHAR(255) GENERATED ALWAYS AS (" .
-            $qb->jsonExtract('data', ['latest_invoice']) . ") STORED;");
+            $qb->jsonExtract('data', ['latest_invoice']) . ") STORED NULL;");
         // startDate
         $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " .
             $db->quoteColumnName('startDate') . " VARCHAR(255) GENERATED ALWAYS AS (" .
@@ -232,7 +232,7 @@ class Install extends Migration
 
         $this->createIndex(null, Table::SUBSCRIPTIONDATA, ['stripeId'], true);
         $this->createIndex(null, Table::SUBSCRIPTIONDATA, ['customerId']);
-        $this->createIndex(null, Table::SUBSCRIPTIONDATA, ['latestInvoiceId'], true);
+        $this->createIndex(null, Table::SUBSCRIPTIONDATA, ['latestInvoiceId']);
 
         $this->createIndex(null, Table::CUSTOMERDATA, ['stripeId'], true);
         $this->createIndex(null, Table::CUSTOMERDATA, ['email']);
