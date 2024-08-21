@@ -417,6 +417,31 @@ class Subscription extends Element
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected static function defineSearchableAttributes(): array
+    {
+        return [
+            'email',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     * @noinspection PhpUnused
+     */
+    public function getSearchKeywords(string $attribute): string
+    {
+
+        switch ($attribute) {
+            case 'email':
+                return $this->getCustomer()?->email ?? '';
+            default:
+                return parent::getSearchKeywords($attribute);
+        }
+    }
+
     protected function destructiveActionMenuItems(): array
     {
         $items = parent::destructiveActionMenuItems();
