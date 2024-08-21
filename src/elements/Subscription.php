@@ -433,7 +433,6 @@ class Subscription extends Element
      */
     public function getSearchKeywords(string $attribute): string
     {
-
         switch ($attribute) {
             case 'email':
                 return $this->getCustomer()?->email ?? '';
