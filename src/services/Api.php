@@ -17,6 +17,7 @@ use craft\stripe\models\Customer;
 use craft\stripe\models\Invoice;
 use craft\stripe\models\PaymentMethod;
 use craft\stripe\Plugin;
+use Generator;
 use Stripe\Customer as StripeCustomer;
 use Stripe\Invoice as StripeInvoice;
 use Stripe\PaymentMethod as StripePaymentMethod;
@@ -229,6 +230,33 @@ class Api extends Component
     }
 
     /**
+     * @param string $type
+     * @param array $params
+     * @return Generator
+     */
+    public function fetchAllIterator(string $type, array $params = []): Generator
+    {
+        $params['limit'] = 100;
+
+        $batch = $this->getClient()->$type->all($params);
+        $buffer = [];
+
+        foreach ($batch->autoPagingIterator() as $item) {
+            $buffer[] = $item;
+
+            if (count($buffer) === 100) {
+                yield $buffer;
+                $buffer = [];
+            }
+        }
+
+        // Yield any remaining items
+        if (!empty($buffer)) {
+            yield $buffer;
+        }
+    }
+
+    /**
      * Retrieves single API resource by ID.
      *
      * @param string $id Stripe ID of the object to fetch
@@ -295,7 +323,7 @@ class Api extends Component
      * @param array $params
      * @return array
      */
-    private function prepExpandForFetchAll(array $params): array
+    public function prepExpandForFetchAll(array $params): array
     {
         array_walk($params, fn(&$item) => $item = 'data.' . $item);
 
