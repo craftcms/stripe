@@ -107,7 +107,7 @@ return [
     'Stripe' => 'Stripe',
     'Successfully synced' => 'Successfully synced',
     'Subscriptions' => 'Subscriptions',
-    'Sync All Data from Stripe' => 'Sync All Data from Stripe',
+    'Sync from Stripe' => 'Sync from Stripe',
     'Sync all data' => 'Sync all data',
     'Sync customer-related Stripe data.' => 'Sync customer-related Stripe data.',
     'Template' => 'Template',

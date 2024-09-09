@@ -551,7 +551,7 @@ class Plugin extends BasePlugin
                             'params' => [
                                 'stripeIds' => $stripeIds->toArray(),
                             ],
-                            'label' => Craft::t('stripe', 'Sync Customer from Stripe'),
+                            'label' => Craft::t('stripe', 'Sync from Stripe'),
                         ];
                     }
                 }
