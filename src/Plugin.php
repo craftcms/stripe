@@ -58,6 +58,7 @@ use craft\stripe\web\twig\CraftVariableBehavior;
 use craft\stripe\web\twig\Extension;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
+use Stripe\Exception\ApiErrorException;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\base\ModelEvent;
@@ -580,7 +581,12 @@ class Plugin extends BasePlugin
                     if ($customers->isNotEmpty()) {
                         $client = $this->getApi()->getClient();
                         foreach ($customers->all() as $customer) {
-                            $client->customers->update($customer->stripeId, ['email' => $newEmail]);
+                            try {
+                                $updatedCustomer = $client->customers->update($customer->stripeId, ['email' => $newEmail]);
+                                $this->getCustomers()->createOrUpdateCustomer($updatedCustomer);
+                            } catch (ApiErrorException $e) {
+                                Craft::error("Unable to update customer's email in Stripe: {$e->getMessage()}", 'stripe');
+                            }
                         }
                     }
                 }
