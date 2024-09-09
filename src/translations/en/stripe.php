@@ -105,6 +105,7 @@ return [
     'Stripe Sync All' => 'Stripe Sync All',
     'Stripe Webhook Signing Secret' => 'Stripe Webhook Signing Secret',
     'Stripe' => 'Stripe',
+    'Successfully synced' => 'Successfully synced',
     'Subscriptions' => 'Subscriptions',
     'Sync All Data from Stripe' => 'Sync All Data from Stripe',
     'Sync all data' => 'Sync all data',

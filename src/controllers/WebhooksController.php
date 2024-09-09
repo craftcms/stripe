@@ -158,6 +158,7 @@ class WebhooksController extends Controller
                     'customer.subscription.pending_update_expired',
                     'customer.subscription.deleted',
                     'customer.created',
+                    'customer.updated',
                     'customer.deleted',
                     'payment_method.attached',
                     'payment_method.automatically_updated',

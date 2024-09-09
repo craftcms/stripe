@@ -164,13 +164,14 @@ class Api extends Component
     /**
      * Retrieve all customers.
      *
+     * @param array $params
      * @return array
      */
-    public function fetchAllCustomers(): array
+    public function fetchAllCustomers(array $params = []): array
     {
-        return $this->fetchAll('customers', [
+        return $this->fetchAll('customers', array_merge($params, [
             'expand' => $this->prepExpandForFetchAll(Customer::$expandParams),
-        ]);
+        ]));
     }
 
     /**

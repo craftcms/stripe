@@ -59,6 +59,7 @@ class Webhooks extends Component
                 $plugin->getSubscriptions()->createOrUpdateSubscription($subscription);
                 break;
             case 'customer.created':
+            case 'customer.updated':
                 // retrieve the customer again as we need some expandable info too
                 $customer = $plugin->getApi()->fetchCustomerById($eventObject->id);
                 $plugin->getCustomers()->createOrUpdateCustomer($customer);
