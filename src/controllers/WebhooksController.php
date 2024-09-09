@@ -43,6 +43,7 @@ class WebhooksController extends Controller
 
         return parent::beforeAction($action);
     }
+
     /**
      * Handle incoming Stripe webhook event
      *
@@ -52,13 +53,11 @@ class WebhooksController extends Controller
     {
         $apiService = Plugin::getInstance()->getApi();
         $webhookService = Plugin::getInstance()->getWebhooks();
-        //$client = $apiService->getClient();
         $webhookSigningSecret = $apiService->getWebhookSigningSecret();
 
         // verify
         $payload = @file_get_contents('php://input');
         $signatureHeader = $_SERVER['HTTP_STRIPE_SIGNATURE'];
-        //$event = null;
 
         try {
             $event = Webhook::constructEvent(
@@ -76,10 +75,14 @@ class WebhooksController extends Controller
             return $this->asRaw('Err');
         }
 
+        $this->response->setStatusCode(200);
+        // as per https://docs.stripe.com/webhooks#acknowledge-events-immediately - send response asap
+        $this->response->sendAndClose();
+
         // Handle the event
         $webhookService->processEvent($event);
 
-        $this->response->setStatusCode(200);
+        // leaving this in even after sendAndClose() so that the response type matches
         return $this->asRaw('OK');
     }
 

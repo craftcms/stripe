@@ -7,8 +7,8 @@
 
 namespace craft\stripe\services;
 
+use craft\stripe\events\StripeEvent;
 use craft\stripe\Plugin;
-use Stripe\Stripe;
 use yii\base\Component;
 
 /**
@@ -18,6 +18,35 @@ use yii\base\Component;
  */
 class Webhooks extends Component
 {
+    /**
+     * @event StripeWebhookEvent Event triggered once an event from Stripe has been received (but after the plugin had a chance to process it too).
+     * @since 1.2.0
+     *
+     * ---
+     *
+     * ```php
+     * use craft\stripe\events\StripeWebhookEvent;
+     * use craft\stripe\services\Webhooks;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Webhooks::class,
+     *     Webhooks::EVENT_STRIPE_EVENT,
+     *     function(StripeWebhookEvent $event) {
+     *         $stripeEvent = $event->stripeEvent;
+     *         $eventObject = $stripeEvent->data->object;
+     *         // process the event based on its type
+     *         switch ($stripeEvent->type) {
+     *             case 'product.created':
+     *                 $productStripeId = $eventObject->id;
+     *                 // do something
+     *         }
+     *     }
+     * );
+     * ```
+     */
+    public const EVENT_STRIPE_EVENT = 'stripeEvent';
+
     /**
      * Process events received from Stripe
      *
@@ -98,6 +127,15 @@ class Webhooks extends Component
             case 'invoice.deleted':
                 $plugin->getInvoices()->deleteInvoiceByStripeId($eventObject->id);
                 break;
+            default:
+                // do nothing
+                break;
         }
+
+
+        $stripeEvent = new StripeEvent([
+            'stripeEvent' => $event,
+        ]);
+        $this->trigger(self::EVENT_STRIPE_EVENT, $stripeEvent);
     }
 }
