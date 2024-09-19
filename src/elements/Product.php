@@ -112,7 +112,7 @@ class Product extends Element
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('stripe', 'stripe product');
+        return Craft::t('stripe', 'Stripe product');
     }
 
     /**
