@@ -599,7 +599,10 @@ class Product extends Element
                 return null;
             }
 
-            $price = $this->getPrices()
+            /** @var ElementCollection<int|string, Price> $prices */
+            $prices = $this->getPrices();
+
+            $price = $prices
                 ->filter(fn(Price $price) => $price->stripeId === $this->getData()['default_price'])
                 ->first();
 
@@ -626,7 +629,9 @@ class Product extends Element
                 return ElementCollection::make();
             }
 
-            $this->_prices = $this->createPriceQuery()->collect();
+            /** @var ElementCollection<int|string, Price> $prices */
+            $prices = $this->createPriceQuery()->collect();
+            $this->_prices = $prices;
         }
 
         return $this->_prices;
