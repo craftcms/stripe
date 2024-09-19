@@ -395,7 +395,6 @@ class Plugin extends BasePlugin
         Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, static function(RegisterComponentTypesEvent $event) {
             $event->types[] = ProductsField::class;
         });
-
     }
 
     /**

@@ -20,7 +20,7 @@
   "prefer-stable": true,
   "require": {
     "php": "^8.2",
-    "craftcms/cms": "^5.1.0",
+    "craftcms/cms": "^5.3.0",
     "stripe/stripe-php": "^13|^14"
   },
   "require-dev": {
