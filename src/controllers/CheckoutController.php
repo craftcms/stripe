@@ -57,6 +57,9 @@ class CheckoutController extends Controller
         $successUrl = $request->getValidatedBodyParam('successUrl');
         $cancelUrl = $request->getValidatedBodyParam('cancelUrl');
         $customer = $request->getBodyParam('customer');
+        // we're intentionally not passing any params from the form,
+        // so that you can't change what you get checked out with;
+        // you can pass params via EVENT_BEFORE_START_CHECKOUT_SESSION event
 
         if ($customer == 'false' || $customer == '0' || $customer === false || $customer === 0) {
             // if customer was explicitly set to something falsy,
