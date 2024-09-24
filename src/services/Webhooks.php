@@ -56,7 +56,8 @@ class Webhooks extends Component
             case 'customer.subscription.deleted':
                 // retrieve the subscription again as we need some expandable info too
                 $subscription = $plugin->getApi()->fetchSubscriptionById($eventObject->id);
-                $plugin->getSubscriptions()->createOrUpdateSubscription($subscription);
+                // we only want to check if there's an unsaved draft for a subscription when subscription has been created; not in any other cases
+                $plugin->getSubscriptions()->createOrUpdateSubscription($subscription, $event->type === 'customer.subscription.created');
                 break;
             case 'customer.created':
                 // retrieve the customer again as we need some expandable info too

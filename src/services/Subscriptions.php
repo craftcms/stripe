@@ -78,10 +78,13 @@ class Subscriptions extends Component
      * This takes the stripe subscription data from the API and creates or updates a Subscription element.
      *
      * @param StripeSubscription $subscription
+     * @param bool $checkForUnsavedDraft
      * @return bool Whether the synchronization succeeded.
      */
-    public function createOrUpdateSubscription(StripeSubscription $subscription): bool
+    public function createOrUpdateSubscription(StripeSubscription $subscription, bool $checkForUnsavedDraft = false): bool
     {
+        $processUnsavedDraft = false;
+
         // Find the subscription element or create one
         /** @var SubscriptionElement|null $subscriptionElement */
         $subscriptionElement = SubscriptionElement::find()
@@ -90,8 +93,18 @@ class Subscriptions extends Component
             ->one();
 
         if ($subscriptionElement === null) {
-            /** @var SubscriptionElement $subscriptionElement */
-            $subscriptionElement = new SubscriptionElement();
+            if ($checkForUnsavedDraft) {
+                $subscriptionElement = $this->checkForUnsavedDraft($subscription);
+
+                // if we were supposed to check for unsaved draft, and we found one - we need to do some extra processing
+                if ($subscriptionElement !== null) {
+                    $processUnsavedDraft = true;
+                }
+            }
+
+            if ($subscriptionElement === null) {
+                $subscriptionElement = new SubscriptionElement();
+            }
         }
 
         // Build our attribute set from the Stripe subscription data:
@@ -118,10 +131,18 @@ class Subscriptions extends Component
             return false;
         }
 
-        if (!Craft::$app->getElements()->saveElement($subscriptionElement)) {
-            Craft::error("Failed to synchronize Stripe subscription ID #{$subscription->id}.", 'stripe');
+        if ($processUnsavedDraft) {
+            if (!Craft::$app->getDrafts()->applyDraft($subscriptionElement)) {
+                Craft::error("Failed to synchronize Stripe subscription ID #{$subscription->id}.", 'stripe');
 
-            return false;
+                return false;
+            }
+        } else {
+            if (!Craft::$app->getElements()->saveElement($subscriptionElement)) {
+                Craft::error("Failed to synchronize Stripe subscription ID #{$subscription->id}.", 'stripe');
+
+                return false;
+            }
         }
 
         $attributes['subscriptionId'] = $subscriptionElement->id;
@@ -220,5 +241,39 @@ class Subscriptions extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Return Subscription element draft by its uid stored in the checkout session's metadata.
+     *
+     * @param StripeSubscription $subscription
+     * @return SubscriptionElement|null
+     * @throws \Stripe\Exception\ApiErrorException
+     * @throws \yii\base\InvalidConfigException
+     */
+    protected function checkForUnsavedDraft(StripeSubscription $subscription): ?SubscriptionElement
+    {
+        // get checkout session by subscription id
+        $stripe = Plugin::getInstance()->getApi()->getClient();
+        $sessionsList = $stripe->checkout->sessions->all(['subscription' => $subscription->id]);
+
+        if ($sessionsList->isEmpty()) {
+            return null;
+        }
+
+        // if we found one, get the metadata from the session
+        $checkoutSession = $sessionsList->first();
+        $uid = $checkoutSession->metadata['uid'] ?? null;
+
+        if ($uid === null) {
+            return null;
+        }
+
+        // try to find an unsaved Subscription element by the uid from the session's metadata
+        return SubscriptionElement::find()
+            ->uid($uid)
+            ->status(null)
+            ->drafts()
+            ->one();
     }
 }

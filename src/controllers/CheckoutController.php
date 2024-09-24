@@ -8,8 +8,11 @@
 namespace craft\stripe\controllers;
 
 use Craft;
+use craft\helpers\DateTimeHelper;
+use craft\stripe\elements\Subscription;
 use craft\stripe\Plugin;
 use craft\web\Controller;
+use Stripe\Checkout\Session as StripeCheckoutSession;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\MethodNotAllowedHttpException;
@@ -41,6 +44,7 @@ class CheckoutController extends Controller
         $this->requirePostRequest();
 
         $request = Craft::$app->getRequest();
+        $checkoutService = Plugin::getInstance()->getCheckout();
 
         // process line items
         $postLineItems = $request->getRequiredBodyParam('lineItems');
@@ -60,8 +64,25 @@ class CheckoutController extends Controller
             $customer = false;
         }
 
+        $params = [];
+        $fields = $request->getBodyParam('fields');
+        if (!empty($fields)) {
+            // check the checkout mode - if it's subscription, proceed with creating a draft
+            $mode = $checkoutService->getCheckoutMode($lineItems);
+            if ($mode === StripeCheckoutSession::MODE_SUBSCRIPTION) {
+                // create an unpublished & unsaved draft subscription in Craft;
+                $subscription = new Subscription();
+                $subscription->title = DateTimeHelper::now()->format('Y-m-d H:i:s');
+                $subscription->setFieldValuesFromRequest('fields');
+                if (Craft::$app->getDrafts()->saveElementAsDraft($subscription, markAsSaved: false)) {
+                    // send the uid of it to Stripe to be stored as metadata on the Session(!)
+                    $params['metadata']['uid'] = $subscription->uid;
+                }
+            }
+        }
+
         // start checkout session
-        $url = Plugin::getInstance()->getCheckout()->getCheckoutUrl($lineItems, $customer, $successUrl, $cancelUrl);
+        $url = $checkoutService->getCheckoutUrl($lineItems, $customer, $successUrl, $cancelUrl, $params);
 
         return $this->redirect($url);
     }
