@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+> [!NOTE]
+> Stripe plugin now requires additional webhook events to be registered. Re-register the webhook handler in the plugin settings, or add the new events below to the webhook registration in Stripe.
+
+- Webhook handler now listens for `customer.updated` events.
+- It’s now possible to manually sync Stripe customer data on Edit User pages.
+- Added `craft\stripe\events\StripeEvent`.
+- Added `craft\stripe\services\Webhooks::EVENT_STRIPE_EVENT`.
 - Fixed a SQL error that occurred when syncing a subscriptions that were missing a `latest_invoice` value.
 - Fixed links to stripe dashboard when in live mode.
 

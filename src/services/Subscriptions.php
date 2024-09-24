@@ -9,10 +9,10 @@ namespace craft\stripe\services;
 
 use Craft;
 use craft\events\ConfigEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
+use craft\stripe\elements\Subscription;
 use craft\stripe\elements\Subscription as SubscriptionElement;
 use craft\stripe\events\StripeSubscriptionSyncEvent;
 use craft\stripe\Plugin;
@@ -59,14 +59,23 @@ class Subscriptions extends Component
     public function syncAllSubscriptions(): void
     {
         $api = Plugin::getInstance()->getApi();
-        $subscriptions = $api->fetchAllSubscriptions();
 
-        foreach ($subscriptions as $subscription) {
-            $this->createOrUpdateSubscription($subscription);
+        $iterator = $api->fetchAllIterator('subscriptions', [
+            'status' => 'all',
+            'expand' => $api->prepExpandForFetchAll(Subscription::$expandParams),
+        ]);
+
+        $stripeIds = [];
+
+        foreach ($iterator as $batch) {
+            /** @var \Stripe\Subscription[] $batch */
+            foreach ($batch as $subscription) {
+                $stripeIds[] = $subscription->id;
+                $this->createOrUpdateSubscription($subscription);
+            }
         }
 
         // Remove any subscriptions that are no longer in Stripe just in case.
-        $stripeIds = ArrayHelper::getColumn($subscriptions, 'id');
         $deletableSubscriptionElements = SubscriptionElement::find()->stripeId(['not', $stripeIds])->all();
 
         foreach ($deletableSubscriptionElements as $element) {
