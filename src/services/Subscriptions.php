@@ -141,8 +141,10 @@ class Subscriptions extends Component
         }
 
         if ($processUnsavedDraft) {
-            if (!Craft::$app->getDrafts()->applyDraft($subscriptionElement)) {
-                Craft::error("Failed to synchronize Stripe subscription ID #{$subscription->id}.", 'stripe');
+            try {
+                $subscriptionElement = Craft::$app->getDrafts()->applyDraft($subscriptionElement);
+            } catch (\Exception $e) {
+                Craft::error("Failed to synchronize Stripe subscription ID #{$subscription->id}. {$e->getMessage()}", 'stripe');
 
                 return false;
             }
