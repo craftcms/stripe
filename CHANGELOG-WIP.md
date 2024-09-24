@@ -11,6 +11,6 @@
 - Added `craft\stripe\events\StripeEvent`.
 - Added `craft\stripe\services\Webhooks::EVENT_STRIPE_EVENT`.
 - Added `craft\stripe\linktypes\Product`.
-- Fixed a SQL error that occurred when syncing a subscriptions that were missing a `latest_invoice` value.
-- Fixed links to stripe dashboard when in live mode.
+- Fixed a SQL error that occurred when syncing subscriptions that were missing a `latest_invoice` value.
+- Fixed links to Stripe dashboard when in live mode.
 - Stripe now requires Craft CMS 5.3.0 or later.
