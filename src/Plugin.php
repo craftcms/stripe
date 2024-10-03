@@ -26,6 +26,7 @@ use craft\events\DefineMetadataEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterConditionRulesEvent;
 use craft\events\RegisterUrlRulesEvent;
+use craft\fields\Link;
 use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
@@ -42,6 +43,7 @@ use craft\stripe\elements\Subscription;
 use craft\stripe\fieldlayoutelements\PricesField;
 use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\jobs\SyncData;
+use craft\stripe\linktypes\Product as ProductLinkType;
 use craft\stripe\models\Settings;
 use craft\stripe\services\Api;
 use craft\stripe\services\BillingPortal;
@@ -149,6 +151,7 @@ class Plugin extends BasePlugin
             $this->registerUtilityTypes();
             $this->registerUserEditScreens();
             $this->registerFieldTypes();
+            $this->registerLinkTypes();
             $this->registerFieldLayoutElements();
             $this->registerVariables();
             $this->registerTwigExtension();
@@ -391,6 +394,16 @@ class Plugin extends BasePlugin
     {
         Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, static function(RegisterComponentTypesEvent $event) {
             $event->types[] = ProductsField::class;
+        });
+    }
+
+    /**
+     * @return void
+     */
+    private function registerLinkTypes(): void
+    {
+        Event::on(Link::class, Link::EVENT_REGISTER_LINK_TYPES, function(RegisterComponentTypesEvent $event) {
+            $event->types[] = ProductLinkType::class;
         });
     }
 
