@@ -74,12 +74,14 @@ class CheckoutController extends Controller
             $mode = $checkoutService->getCheckoutMode($lineItems);
             if ($mode === StripeCheckoutSession::MODE_SUBSCRIPTION) {
                 // create an unpublished & unsaved draft subscription in Craft;
-                $subscription = new Subscription();
-                $subscription->title = DateTimeHelper::now()->format('Y-m-d H:i:s');
+                $subscription = Craft::createObject([
+                    'class' => Subscription::class,
+                    'attributes' => ['title' => DateTimeHelper::now()->format('Y-m-d H:i:s')],
+                ]);
                 $subscription->setFieldValuesFromRequest('fields');
                 if (Craft::$app->getDrafts()->saveElementAsDraft($subscription, markAsSaved: false)) {
                     // send the uid of it to Stripe to be stored as metadata on the Session(!)
-                    $params['metadata']['uid'] = $subscription->uid;
+                    $params['metadata']['craftSubscriptionUid'] = $subscription->uid;
                 }
             }
         }

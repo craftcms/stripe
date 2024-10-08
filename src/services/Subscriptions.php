@@ -274,7 +274,7 @@ class Subscriptions extends Component
 
         // if we found one, get the metadata from the session
         $checkoutSession = $sessionsList->first();
-        $uid = $checkoutSession->metadata['uid'] ?? null;
+        $uid = $checkoutSession->metadata['craftSubscriptionUid'] ?? null;
 
         if ($uid === null) {
             return null;
