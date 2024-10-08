@@ -84,38 +84,33 @@ class Subscriptions extends Component
     }
 
     /**
-     * This takes the stripe subscription data from the API and creates or updates a Subscription element.
+     * This takes the Stripe subscription data from the API and creates or updates a Subscription element.
      *
      * @param StripeSubscription $subscription
-     * @param bool $checkForUnsavedDraft
      * @return bool Whether the synchronization succeeded.
      */
-    public function createOrUpdateSubscription(StripeSubscription $subscription, bool $checkForUnsavedDraft = false): bool
+    public function createOrUpdateSubscription(StripeSubscription $subscription): bool
     {
-        $processUnsavedDraft = false;
-
         // Find the subscription element or create one
         /** @var SubscriptionElement|null $subscriptionElement */
         $subscriptionElement = SubscriptionElement::find()
             ->stripeId($subscription->id)
             ->status(null)
-            ->one();
+            ->one() ?? new SubscriptionElement();
 
-        if ($subscriptionElement === null) {
-            if ($checkForUnsavedDraft) {
-                $subscriptionElement = $this->checkForUnsavedDraft($subscription);
+        return $this->createOrUpdateSubscriptionElement($subscription, $subscriptionElement);
+    }
 
-                // if we were supposed to check for unsaved draft, and we found one - we need to do some extra processing
-                if ($subscriptionElement !== null) {
-                    $processUnsavedDraft = true;
-                }
-            }
-
-            if ($subscriptionElement === null) {
-                $subscriptionElement = new SubscriptionElement();
-            }
-        }
-
+    /**
+     * Takes the Stripe subscription data from the API a Subscription element and updates the element with the data.
+     *
+     * @param StripeSubscription $subscription
+     * @param SubscriptionElement $subscriptionElement
+     * @return bool Whether the synchronization succeeded.
+     * @since 1.2
+     */
+    public function createOrUpdateSubscriptionElement(StripeSubscription $subscription, SubscriptionElement $subscriptionElement): bool
+    {
         // Build our attribute set from the Stripe subscription data:
         $attributes = [
             'stripeId' => $subscription->id,
@@ -140,7 +135,7 @@ class Subscriptions extends Component
             return false;
         }
 
-        if ($processUnsavedDraft) {
+        if ($subscriptionElement->getIsUnpublishedDraft()) {
             try {
                 $subscriptionElement = Craft::$app->getDrafts()->applyDraft($subscriptionElement);
             } catch (\Exception $e) {
@@ -255,21 +250,20 @@ class Subscriptions extends Component
     }
 
     /**
-     * Return Subscription element draft by its uid stored in the checkout session's metadata.
+     * Return Subscription element draft by its uid stored in the Stripe's checkout session's metadata.
      *
      * @param StripeSubscription $subscription
-     * @return SubscriptionElement|null
-     * @throws \Stripe\Exception\ApiErrorException
-     * @throws \yii\base\InvalidConfigException
+     * @return SubscriptionElement
+     * @since 1.2
      */
-    protected function checkForUnsavedDraft(StripeSubscription $subscription): ?SubscriptionElement
+    public function getUnsavedDraftByUid(StripeSubscription $subscription): SubscriptionElement
     {
         // get checkout session by subscription id
         $stripe = Plugin::getInstance()->getApi()->getClient();
         $sessionsList = $stripe->checkout->sessions->all(['subscription' => $subscription->id]);
 
         if ($sessionsList->isEmpty()) {
-            return null;
+            return new SubscriptionElement();
         }
 
         // if we found one, get the metadata from the session
@@ -277,7 +271,7 @@ class Subscriptions extends Component
         $uid = $checkoutSession->metadata['craftSubscriptionUid'] ?? null;
 
         if ($uid === null) {
-            return null;
+            return new SubscriptionElement();
         }
 
         // try to find an unsaved Subscription element by the uid from the session's metadata
@@ -285,6 +279,6 @@ class Subscriptions extends Component
             ->uid($uid)
             ->status(null)
             ->drafts()
-            ->one();
+            ->one() ?? new SubscriptionElement();
     }
 }

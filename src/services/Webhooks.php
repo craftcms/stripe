@@ -77,6 +77,13 @@ class Webhooks extends Component
                 $plugin->getPrices()->deletePriceByStripeId($eventObject->id);
                 break;
             case 'customer.subscription.created':
+                // retrieve the subscription again as we need some expandable info too
+                $subscription = $plugin->getApi()->fetchSubscriptionById($eventObject->id);
+                // get the unsaved draft for a subscription when subscription
+                $subscriptionElement = $plugin->getSubscriptions()->getUnsavedDraftByUid($subscription);
+                // proceed with creating the element
+                $plugin->getSubscriptions()->createOrUpdateSubscriptionElement($subscription, $subscriptionElement);
+                break;
             case 'customer.subscription.updated':
             case 'customer.subscription.paused':
             case 'customer.subscription.resumed':
@@ -86,7 +93,7 @@ class Webhooks extends Component
                 // retrieve the subscription again as we need some expandable info too
                 $subscription = $plugin->getApi()->fetchSubscriptionById($eventObject->id);
                 // we only want to check if there's an unsaved draft for a subscription when subscription has been created; not in any other cases
-                $plugin->getSubscriptions()->createOrUpdateSubscription($subscription, $event->type === 'customer.subscription.created');
+                $plugin->getSubscriptions()->createOrUpdateSubscription($subscription);
                 break;
             case 'customer.created':
             case 'customer.updated':
