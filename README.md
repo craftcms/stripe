@@ -261,6 +261,11 @@ As an alternative to generating static Checkout links, you can build a [form](ht
 > 
 > To allow an anonymous checkout, you can add `{{ hiddenInput('customer', 'false') }}` to the form.
 
+If you use this method, you can pass custom field values that should be saved in Craft against a newly created Subscription. These values need to be passed as `fields[<fieldHandle>]`. For example:
+```
+<input type="text" name="fields[myPlainTextField]">
+```
+
 
 ### Billing Portal
 
