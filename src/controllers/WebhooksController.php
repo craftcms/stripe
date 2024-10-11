@@ -39,6 +39,10 @@ class WebhooksController extends Controller
         // Disable CSRF only for incoming webhooks (to agree with `allowAnonymous`, above):
         if ($action->id === 'handle') {
             $this->enableCsrfValidation = false;
+        } else {
+            // for all other requests, enforce only admins having access to the webhooks page
+            // and allow that access even if allowAdminChanges is turned off
+            $this->requireAdmin(false);
         }
 
         return parent::beforeAction($action);
@@ -262,6 +266,7 @@ class WebhooksController extends Controller
 
     /**
      * Returns Webhook Endpoint info from Stripe.
+     * It's needed so that we know what the webhook can do.
      *
      * @param Plugin $plugin
      * @param string $webhookId
