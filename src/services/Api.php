@@ -128,7 +128,7 @@ class Api extends Component
 
         foreach ($customers as $customer) {
             // get user for customer's email address
-            $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($customer->email);
+            $user = $customer->email ? Craft::$app->getUsers()->getUserByUsernameOrEmail($customer->email) : null;
 
             // only get payment methods if the user exists
             if ($user) {
