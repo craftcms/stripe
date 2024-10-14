@@ -58,11 +58,14 @@ class Invoices extends Component
         $api = Plugin::getInstance()->getApi();
         $invoices = $api->fetchAllInvoices();
 
+        $count = 0;
         foreach ($invoices as $invoice) {
-            $this->createOrUpdateInvoice($invoice);
+            if ($this->createOrUpdateInvoice($invoice)) {
+                $count++;
+            }
         }
 
-        return count($invoices);
+        return $count;
     }
 
     /**
@@ -84,9 +87,8 @@ class Invoices extends Component
         /** @var InvoiceDataRecord $invoiceDataRecord */
         $invoiceDataRecord = InvoiceDataRecord::find()->where(['stripeId' => $invoice->id])->one() ?: new InvoiceDataRecord();
         $invoiceDataRecord->setAttributes($attributes, false);
-        $invoiceDataRecord->save();
 
-        return true;
+        return $invoiceDataRecord->save();
     }
 
     /**

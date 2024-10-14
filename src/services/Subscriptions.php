@@ -130,9 +130,8 @@ class Subscriptions extends Component
         /** @var SubscriptionDataRecord $subscriptionDataRecord */
         $subscriptionDataRecord = SubscriptionDataRecord::find()->where(['stripeId' => $subscription->id])->one() ?: new SubscriptionDataRecord();
         $subscriptionDataRecord->setAttributes($attributes, false);
-        $subscriptionDataRecord->save();
 
-        return true;
+        return $subscriptionDataRecord->save();
     }
 
     /**

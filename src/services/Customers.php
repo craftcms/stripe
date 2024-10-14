@@ -57,11 +57,14 @@ class Customers extends Component
         $api = Plugin::getInstance()->getApi();
         $customers = $api->fetchAllCustomers();
 
+        $count = 0;
         foreach ($customers as $customer) {
-            $this->createOrUpdateCustomer($customer);
+            if ($this->createOrUpdateCustomer($customer)) {
+                $count++;
+            }
         }
 
-        return count($customers);
+        return $count;
     }
 
     /**
@@ -84,9 +87,8 @@ class Customers extends Component
         /** @var CustomerDataRecord $customerDataRecord */
         $customerDataRecord = CustomerDataRecord::find()->where(['stripeId' => $customer->id])->one() ?: new CustomerDataRecord();
         $customerDataRecord->setAttributes($attributes, false);
-        $customerDataRecord->save();
 
-        return true;
+        return $customerDataRecord->save();
     }
 
     /**
