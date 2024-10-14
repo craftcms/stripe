@@ -5,7 +5,6 @@ namespace craft\stripe\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\stripe\db\Table;
-use craft\stripe\Plugin;
 use craft\stripe\records\Webhook;
 
 /**
@@ -28,19 +27,15 @@ class m241011_135012_add_webhooks_table extends Migration
             'uid' => $this->string(),
         ]);
 
-        // migrate the values from settings
-        $plugin = Plugin::getInstance();
-        $pluginSettings = $plugin->getSettings();
+        // migrate the raw values from settings
+        $rawPluginSettings = Craft::$app->getProjectConfig()->get('plugins.stripe.settings');
 
-        $record = new Webhook();
-        $record->webhookSigningSecret = $pluginSettings['webhookSigningSecret'];
-        $record->webhookId = $pluginSettings['webhookId'];
-        $record->save();
-
-        // clear $webhookSigningSecret and $webhookId from the plugin's settings
-        $pluginSettings->webhookSigningSecret = '';
-        $pluginSettings->webhookId = '';
-        Craft::$app->getPlugins()->savePluginSettings($plugin, $pluginSettings->toArray());
+        if (!empty($rawPluginSettings)) {
+            $record = new Webhook();
+            $record->webhookSigningSecret = $rawPluginSettings['webhookSigningSecret'];
+            $record->webhookId = $rawPluginSettings['webhookId'];
+            $record->save();
+        }
 
         return true;
     }
