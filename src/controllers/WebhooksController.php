@@ -10,7 +10,6 @@ namespace craft\stripe\controllers;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\UrlHelper;
-use craft\stripe\models\Settings;
 use craft\stripe\records\Webhook as WebhookRecord;
 use craft\stripe\Plugin;
 use craft\web\Controller;
