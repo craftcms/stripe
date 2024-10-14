@@ -11,7 +11,8 @@
 - Added `craft\stripe\events\StripeEvent`.
 - Added `craft\stripe\services\Webhooks::EVENT_STRIPE_EVENT`.
 - Fixed a SQL error that occurred when syncing a subscriptions that were missing a `latest_invoice` value.
-- Fixed links to stripe dashboard when in live mode.
+- Fixed links to Stripe dashboard when in live mode.
+- Fixed an error that could occur when syncing Customer and Payment Method data.
 
 ## 1.1.0 - 2024-06-14
 
