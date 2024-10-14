@@ -124,6 +124,7 @@ class WebhooksController extends Controller
         }
 
         return $this->renderTemplate('stripe/webhooks/_index', [
+            'recordId' => $webhookRecord->id,
             'webhookInfo' => $webhookInfo,
             'hasWebhook' => $hasWebhook,
             'webhookSigningSecret' => $webhookSigningSecret,
@@ -243,20 +244,21 @@ class WebhooksController extends Controller
     public function actionDelete(): YiiResponse
     {
         $this->requireAcceptsJson();
+
         $id = Craft::$app->getRequest()->getBodyParam('id');
 
         $stripe = Plugin::getInstance()->getApi()->getClient();
+        $webhookRecord = WebhookRecord::findOne(['id' => $id]);
 
         try {
-            $stripe->webhookEndpoints->delete($id);
+            $stripe->webhookEndpoints->delete(App::parseEnv($webhookRecord->webhookId));
         } catch (\Exception $e) {
             Craft::error('Webhook could not be deleted: ' . $e->getMessage());
             return $this->asFailure(Craft::t('stripe', 'Webhook could not be deleted'));
         }
 
         // delete the record from the table too
-        $record = WebhookRecord::findOne(['webhookId' => $id]);
-        $record->delete();
+        $webhookRecord->delete();
 
         return $this->asSuccess(Craft::t('stripe', 'Webhook deleted'));
     }

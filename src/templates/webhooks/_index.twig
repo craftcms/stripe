@@ -34,7 +34,7 @@
 
     {% if webhookInfo is not empty %}
         {% set tableData = [{
-            id: webhookInfo.id,
+            id: recordId,
             title: webhookInfo.description ?? webhookInfo.id,
             apiVersion: webhookInfo.api_version,
             livemode: webhookInfo.livemode,
