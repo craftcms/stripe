@@ -81,6 +81,29 @@ class Checkout extends Component
     }
 
     /**
+     * Returns checkout mode based on the line items for the checkout.
+     * If there are only one-time products in the $lineItems, the mode should be 'payment'.
+     * If there are any recurring products in the $lineItems, the mode should be 'subscription'.
+     *
+     * @param array $lineItems
+     * @return string
+     */
+    public function getCheckoutMode(array $lineItems): string
+    {
+        // figure out checkout mode based on whether there are any recurring prices in the $lineItems
+        $mode = StripeCheckoutSession::MODE_PAYMENT;
+        $priceTypes = array_map(function($item) {
+            $price = Price::find()->stripeId($item['price'])->one();
+            return $price->getData()['type'];
+        }, $lineItems);
+        if (in_array(StripePrice::TYPE_RECURRING, $priceTypes)) {
+            $mode = StripeCheckoutSession::MODE_SUBSCRIPTION;
+        }
+
+        return $mode;
+    }
+
+    /**
      * Returns the first customer associated with given email address or null.
      *
      * @param string $email
@@ -97,29 +120,6 @@ class Checkout extends Component
         }
 
         return $customer;
-    }
-
-    /**
-     * Returns checkout mode based on the line items for the checkout.
-     * If there are only one-time products in the $lineItems, the mode should be 'payment'.
-     * If there are any recurring products in the $lineItems, the mode should be 'subscription'.
-     *
-     * @param array $lineItems
-     * @return string
-     */
-    private function getCheckoutMode(array $lineItems): string
-    {
-        // figure out checkout mode based on whether there are any recurring prices in the $lineItems
-        $mode = StripeCheckoutSession::MODE_PAYMENT;
-        $priceTypes = array_map(function($item) {
-            $price = Price::find()->stripeId($item['price'])->one();
-            return $price->getData()['type'];
-        }, $lineItems);
-        if (in_array(StripePrice::TYPE_RECURRING, $priceTypes)) {
-            $mode = StripeCheckoutSession::MODE_SUBSCRIPTION;
-        }
-
-        return $mode;
     }
 
     /**

@@ -8,6 +8,7 @@
 namespace craft\stripe;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
 use craft\console\Controller;
@@ -15,14 +16,17 @@ use craft\console\controllers\ResaveController;
 use craft\controllers\UsersController;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
+use craft\enums\MenuItemType;
 use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineConsoleActionsEvent;
 use craft\events\DefineEditUserScreensEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
+use craft\events\DefineMenuItemsEvent;
 use craft\events\DefineMetadataEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterConditionRulesEvent;
 use craft\events\RegisterUrlRulesEvent;
+use craft\fields\Link;
 use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
@@ -39,6 +43,7 @@ use craft\stripe\elements\Subscription;
 use craft\stripe\fieldlayoutelements\PricesField;
 use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\jobs\SyncData;
+use craft\stripe\linktypes\Product as ProductLinkType;
 use craft\stripe\models\Settings;
 use craft\stripe\services\Api;
 use craft\stripe\services\BillingPortal;
@@ -55,6 +60,7 @@ use craft\stripe\web\twig\CraftVariableBehavior;
 use craft\stripe\web\twig\Extension;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
+use Stripe\Exception\ApiErrorException;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\base\ModelEvent;
@@ -145,11 +151,13 @@ class Plugin extends BasePlugin
             $this->registerUtilityTypes();
             $this->registerUserEditScreens();
             $this->registerFieldTypes();
+            $this->registerLinkTypes();
             $this->registerFieldLayoutElements();
             $this->registerVariables();
             $this->registerTwigExtension();
             $this->registerResaveCommands();
             $this->registerConditionRules();
+            $this->registerUserActions();
             $this->handleUserElementChanges();
 
             if (!$request->getIsConsoleRequest()) {
@@ -363,11 +371,11 @@ class Plugin extends BasePlugin
                         $carry = is_string($carry) ? $carry : '';
                         $carry .=
                             Html::beginTag('div') .
-                                Html::tag(
-                                    'a',
-                                    $item->data['name'] . ' (' . $item->stripeId . ')' . Html::tag('span', '', ['data-icon' => 'external']),
-                                    ['href' => $item->getStripeEditUrl(), 'target' => '_blank']
-                                ) .
+                            Html::tag(
+                                'a',
+                                $item->data['name'] . ' (' . $item->stripeId . ')' . Html::tag('span', '', ['data-icon' => 'external']),
+                                ['href' => $item->getStripeEditUrl(), 'target' => '_blank']
+                            ) .
                             Html::endTag('div');
 
                         return $carry;
@@ -386,6 +394,16 @@ class Plugin extends BasePlugin
     {
         Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, static function(RegisterComponentTypesEvent $event) {
             $event->types[] = ProductsField::class;
+        });
+    }
+
+    /**
+     * @return void
+     */
+    private function registerLinkTypes(): void
+    {
+        Event::on(Link::class, Link::EVENT_REGISTER_LINK_TYPES, function(RegisterComponentTypesEvent $event) {
+            $event->types[] = ProductLinkType::class;
         });
     }
 
@@ -530,6 +548,31 @@ class Plugin extends BasePlugin
         );
     }
 
+    private function registerUserActions(): void
+    {
+        Event::on(
+            User::class,
+            Element::EVENT_DEFINE_ACTION_MENU_ITEMS,
+            function(DefineMenuItemsEvent $event) {
+                $sender = $event->sender;
+                if ($email = $sender->email) {
+                    $customers = Plugin::getInstance()->getApi()->fetchAllCustomers(['email' => $email]);
+                    if ($customers) {
+                        $stripeIds = collect($customers)->pluck('id');
+                        $event->items[] = [
+                            'action' => 'stripe/sync/customer',
+                            'type' => MenuItemType::Button,
+                            'params' => [
+                                'stripeIds' => $stripeIds->toArray(),
+                            ],
+                            'label' => Craft::t('stripe', 'Sync from Stripe'),
+                        ];
+                    }
+                }
+            }
+        );
+    }
+
     /**
      * Maybe sync changed user email from Craft to Stripe.
      *
@@ -551,7 +594,12 @@ class Plugin extends BasePlugin
                     if ($customers->isNotEmpty()) {
                         $client = $this->getApi()->getClient();
                         foreach ($customers->all() as $customer) {
-                            $client->customers->update($customer->stripeId, ['email' => $newEmail]);
+                            try {
+                                $updatedCustomer = $client->customers->update($customer->stripeId, ['email' => $newEmail]);
+                                $this->getCustomers()->createOrUpdateCustomer($updatedCustomer);
+                            } catch (ApiErrorException $e) {
+                                Craft::error("Unable to update customer's email in Stripe: {$e->getMessage()}", 'stripe');
+                            }
                         }
                     }
                 }

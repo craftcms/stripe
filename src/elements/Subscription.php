@@ -417,6 +417,30 @@ class Subscription extends Element
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected static function defineSearchableAttributes(): array
+    {
+        return [
+            'email',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     * @noinspection PhpUnused
+     */
+    public function getSearchKeywords(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'email':
+                return $this->getCustomer()?->email ?? '';
+            default:
+                return parent::getSearchKeywords($attribute);
+        }
+    }
+
     protected function destructiveActionMenuItems(): array
     {
         $items = parent::destructiveActionMenuItems();
@@ -479,7 +503,7 @@ class Subscription extends Element
             'stripeEdit' => Html::a('', $this->getStripeEditUrl(), ['target' => '_blank', 'data' => ['icon' => 'external']]),
             'stripeStatus' => $this->getStripeStatusHtml(),
             'products' => Cp::elementPreviewHtml($this->getProducts()),
-            'customerEmail' => $this->getCustomer() ? $this->getCustomer()->email : '',
+            'customerEmail' => $this->getCustomer()?->email ?? '',
             default => parent::attributeHtml($attribute),
         };
     }
