@@ -8,9 +8,7 @@
 namespace craft\stripe\records;
 
 use craft\db\ActiveRecord;
-use craft\records\Element;
 use craft\stripe\db\Table;
-use yii\db\ActiveQueryInterface;
 
 /**
  * Webhook record

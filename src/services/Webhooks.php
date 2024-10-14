@@ -155,7 +155,7 @@ class Webhooks extends Component
      */
     public function getWebhookRecord(): Webhook
     {
-        /** @var Webhook $record */
+        /** @var Webhook|null $record */
         $record = Webhook::find()->one();
         return  $record ?? new Webhook();
     }
