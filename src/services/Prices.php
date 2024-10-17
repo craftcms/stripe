@@ -150,9 +150,8 @@ class Prices extends Component
         /** @var PriceDataRecord $priceDataRecord */
         $priceDataRecord = PriceDataRecord::find()->where(['stripeId' => $price->id])->one() ?: new PriceDataRecord();
         $priceDataRecord->setAttributes($attributes, false);
-        $priceDataRecord->save();
 
-        return true;
+        return $priceDataRecord->save();
     }
 
     /**
