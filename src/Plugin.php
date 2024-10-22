@@ -38,6 +38,7 @@ use craft\stripe\elements\Product;
 use craft\stripe\elements\Subscription;
 use craft\stripe\fieldlayoutelements\PricesField;
 use craft\stripe\fields\Products as ProductsField;
+use craft\stripe\fields\Subscriptions as SubscriptionsField;
 use craft\stripe\jobs\SyncData;
 use craft\stripe\models\Settings;
 use craft\stripe\services\Api;
@@ -386,6 +387,7 @@ class Plugin extends BasePlugin
     {
         Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, static function(RegisterComponentTypesEvent $event) {
             $event->types[] = ProductsField::class;
+            $event->types[] = SubscriptionsField::class;
         });
     }
 
