@@ -24,4 +24,11 @@ class CustomerData extends ActiveRecord
     {
         return Table::CUSTOMERDATA;
     }
+
+    public function rules()
+    {
+        return [
+            [['email'], 'required'],
+        ];
+    }
 }
