@@ -31,16 +31,4 @@ class PaymentMethod extends Model
     {
         return Plugin::getInstance()->stripeBaseUrl . "/customers/{$this->getData()['customer']}";
     }
-
-//    /**
-//     * @inheritdoc
-//     */
-//    protected function defineRules(): array
-//    {
-//        $rules = parent::defineRules();
-//        $rules[] = [['reference'], UniqueValidator::class, 'targetClass' => CustomerRecord::class];
-//        $rules[] = [['gatewayId', 'userId', 'reference', 'data'], 'required'];
-//
-//        return $rules;
-//    }
 }

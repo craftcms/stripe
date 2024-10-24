@@ -30,4 +30,20 @@ class SyncController extends Controller
 
         return $this->asSuccess(Craft::t('stripe', 'Stripe Products, Prices, Subscriptions, Customers, Invoices and Payment Methods successfully synced'));
     }
+
+    /**
+     * @return YiiResponse
+     * @throws \yii\base\InvalidConfigException
+     * @throws \yii\web\BadRequestHttpException
+     */
+    public function actionCustomer(): YiiResponse
+    {
+        $stripeIds = Craft::$app->getRequest()->getRequiredParam('stripeIds');
+        foreach (explode(',', $stripeIds) as $stripeId) {
+            $stripeCustomer = Plugin::getInstance()->getApi()->fetchCustomerById($stripeId);
+            Plugin::getInstance()->getCustomers()->createOrUpdateCustomer($stripeCustomer);
+        }
+
+        return $this->asSuccess(Craft::t('stripe', 'Stripe Customers successfully synced'));
+    }
 }

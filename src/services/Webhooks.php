@@ -7,8 +7,9 @@
 
 namespace craft\stripe\services;
 
+use craft\stripe\events\StripeEvent;
 use craft\stripe\Plugin;
-use Stripe\Stripe;
+use craft\stripe\records\Webhook;
 use yii\base\Component;
 
 /**
@@ -18,6 +19,35 @@ use yii\base\Component;
  */
 class Webhooks extends Component
 {
+    /**
+     * @event StripeWebhookEvent Event triggered once an event from Stripe has been received (but after the plugin had a chance to process it too).
+     * @since 1.2.0
+     *
+     * ---
+     *
+     * ```php
+     * use craft\stripe\events\StripeWebhookEvent;
+     * use craft\stripe\services\Webhooks;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Webhooks::class,
+     *     Webhooks::EVENT_STRIPE_EVENT,
+     *     function(StripeWebhookEvent $event) {
+     *         $stripeEvent = $event->stripeEvent;
+     *         $eventObject = $stripeEvent->data->object;
+     *         // process the event based on its type
+     *         switch ($stripeEvent->type) {
+     *             case 'product.created':
+     *                 $productStripeId = $eventObject->id;
+     *                 // do something
+     *         }
+     *     }
+     * );
+     * ```
+     */
+    public const EVENT_STRIPE_EVENT = 'stripeEvent';
+
     /**
      * Process events received from Stripe
      *
@@ -48,6 +78,13 @@ class Webhooks extends Component
                 $plugin->getPrices()->deletePriceByStripeId($eventObject->id);
                 break;
             case 'customer.subscription.created':
+                // retrieve the subscription again as we need some expandable info too
+                $subscription = $plugin->getApi()->fetchSubscriptionById($eventObject->id);
+                // get the unsaved draft for a subscription when subscription
+                $subscriptionElement = $plugin->getSubscriptions()->getUnsavedDraftByUid($subscription);
+                // proceed with creating the element
+                $plugin->getSubscriptions()->createOrUpdateSubscriptionElement($subscription, $subscriptionElement);
+                break;
             case 'customer.subscription.updated':
             case 'customer.subscription.paused':
             case 'customer.subscription.resumed':
@@ -56,9 +93,11 @@ class Webhooks extends Component
             case 'customer.subscription.deleted':
                 // retrieve the subscription again as we need some expandable info too
                 $subscription = $plugin->getApi()->fetchSubscriptionById($eventObject->id);
+                // we only want to check if there's an unsaved draft for a subscription when subscription has been created; not in any other cases
                 $plugin->getSubscriptions()->createOrUpdateSubscription($subscription);
                 break;
             case 'customer.created':
+            case 'customer.updated':
                 // retrieve the customer again as we need some expandable info too
                 $customer = $plugin->getApi()->fetchCustomerById($eventObject->id);
                 $plugin->getCustomers()->createOrUpdateCustomer($customer);
@@ -97,6 +136,27 @@ class Webhooks extends Component
             case 'invoice.deleted':
                 $plugin->getInvoices()->deleteInvoiceByStripeId($eventObject->id);
                 break;
+            default:
+                // do nothing
+                break;
         }
+
+
+        $stripeEvent = new StripeEvent([
+            'stripeEvent' => $event,
+        ]);
+        $this->trigger(self::EVENT_STRIPE_EVENT, $stripeEvent);
+    }
+
+    /**
+     * Get the webhook data from the database. There should always be max one record there.
+     *
+     * @return Webhook
+     */
+    public function getWebhookRecord(): Webhook
+    {
+        /** @var Webhook|null $record */
+        $record = Webhook::find()->one();
+        return  $record ?? new Webhook();
     }
 }

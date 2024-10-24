@@ -1,4 +1,5 @@
 {% extends "_layouts/cp" %}
+{% import '_includes/forms.twig' as forms %}
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 {% set selectedSubnavItem = 'stripeWebhooks' %}
 
@@ -33,7 +34,7 @@
 
     {% if webhookInfo is not empty %}
         {% set tableData = [{
-            id: webhookInfo.id,
+            id: recordId,
             title: webhookInfo.description ?? webhookInfo.id,
             apiVersion: webhookInfo.api_version,
             livemode: webhookInfo.livemode,
@@ -66,5 +67,36 @@
             },
         });
     {% endjs %}
+
+    <hr />
+
+    <h2>{{ "Webhook Settings"|t('stripe') }}</h2>
+    <form method="POST">
+        {{ actionInput('stripe/webhooks/save-settings') }}
+        {{ redirectInput('stripe/webhooks') }}
+        {{ csrfInput() }}
+
+        {{ forms.autosuggestField({
+            first: true,
+            label: 'Webhook Signing Secret'|t('stripe'),
+            id: 'webhookSigningSecret',
+            name: 'webhookSigningSecret',
+            value: webhookSigningSecret,
+            suggestEnvVars: true,
+            autofocus: true,
+        }) }}
+
+        {{ forms.autosuggestField({
+            first: true,
+            label: 'Webhook ID'|t('stripe'),
+            id: 'webhookId',
+            name: 'webhookId',
+            value: webhookId,
+            suggestEnvVars: true,
+            autofocus: true,
+        }) }}
+
+        <button class="btn primary" type="submit">{{ "Save"|t('app') }}</button>
+    </form>
 {% endblock %}
 

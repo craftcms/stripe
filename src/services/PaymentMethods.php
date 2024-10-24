@@ -58,11 +58,14 @@ class PaymentMethods extends Component
         $api = Plugin::getInstance()->getApi();
         $paymentMethods = $api->fetchAllPaymentMethods();
 
+        $count = 0;
         foreach ($paymentMethods as $paymentMethod) {
-            $this->createOrUpdatePaymentMethod($paymentMethod);
+            if ($this->createOrUpdatePaymentMethod($paymentMethod)) {
+                $count++;
+            }
         }
 
-        return count($paymentMethods);
+        return $count;
     }
 
     /**
@@ -84,9 +87,8 @@ class PaymentMethods extends Component
         /** @var PaymentMethodDataRecord $paymentMethodDataRecord */
         $paymentMethodDataRecord = PaymentMethodDataRecord::find()->where(['stripeId' => $paymentMethod->id])->one() ?: new PaymentMethodDataRecord();
         $paymentMethodDataRecord->setAttributes($attributes, false);
-        $paymentMethodDataRecord->save();
 
-        return true;
+        return $paymentMethodDataRecord->save();
     }
 
     /**

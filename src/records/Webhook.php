@@ -11,24 +11,19 @@ use craft\db\ActiveRecord;
 use craft\stripe\db\Table;
 
 /**
- * Customer Data record
+ * Webhook record
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
- * @property string $stripeId
- * @property string $data
+ * @property int $id
+ * @property string $webhookSigningSecret
+ * @property string $webhookId
+ * @since 1.2
  */
-class CustomerData extends ActiveRecord
+class Webhook extends ActiveRecord
 {
     public static function tableName()
     {
-        return Table::CUSTOMERDATA;
-    }
-
-    public function rules()
-    {
-        return [
-            [['email'], 'required'],
-        ];
+        return Table::WEBHOOKS;
     }
 }

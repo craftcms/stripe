@@ -131,9 +131,8 @@ class Products extends Component
         /** @var ProductDataRecord $productDataRecord */
         $productDataRecord = ProductDataRecord::find()->where(['stripeId' => $product->id])->one() ?: new ProductDataRecord();
         $productDataRecord->setAttributes($attributes, false);
-        $productDataRecord->save();
 
-        return true;
+        return $productDataRecord->save();
     }
 
     /**

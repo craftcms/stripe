@@ -141,6 +141,16 @@ class Install extends Migration
             'uid' => $this->string(),
         ]);
 
+        $this->archiveTableIfExists(Table::WEBHOOKS);
+        $this->createTable(Table::WEBHOOKS, [
+            'id' => $this->primaryKey(),
+            'webhookSigningSecret' => $this->string()->notNull(),
+            'webhookId' => $this->string()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->string(),
+        ]);
+
         // create generated columns
         $this->createGeneratedColumns();
     }
