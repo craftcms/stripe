@@ -14,16 +14,15 @@
 {% block content %}
     <div id="invoices-vue-admin-table"></div>
 {% endblock %}
-
 {% js %}
     var columns = [
-        { name: '__slot:title', title: Craft.t('stripe', 'Invoice No'), sortField: 'number|asc' },
-        { name: 'amount', title: Craft.t('stripe', 'Amount'), sortField: 'total|asc' },
-        { name: 'customerEmail', title: Craft.t('stripe', 'Customer Email'), sortField: 'customer_email|asc' },
-        { name: 'stripeStatus', title: Craft.t('stripe', 'Status'), sortField: 'status|asc' },
-        { name: 'due', title: Craft.t('stripe', 'Due') },
+        { name: '__slot:title', title: Craft.t('stripe', 'Invoice No'), sortField: 'number' },
+        { name: 'amount', title: Craft.t('stripe', 'Amount'), sortField: 'custom:total:decimal' },
+        { name: 'customerEmail', title: Craft.t('stripe', 'Customer Email'), sortField: true },
+        { name: 'stripeStatus', title: Craft.t('stripe', 'Status'), sortField: 'custom:status' },
+        { name: 'due', title: Craft.t('stripe', 'Due'), sortField: 'custom:due_date' },
         { name: 'frequency', title: Craft.t('stripe', 'Frequency') },
-        { name: 'created', title: Craft.t('stripe', 'Created') },
+        { name: 'created', title: Craft.t('stripe', 'Created'), sortField: 'custom:created' },
     ];
 
     new Craft.VueAdminTable({

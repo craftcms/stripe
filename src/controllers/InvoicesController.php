@@ -74,12 +74,7 @@ class InvoicesController extends Controller
         }
 
         // ordering
-        $orderBy = ["stripe_invoicedata.created" => SORT_DESC];
-        if (!empty($sort)) {
-            $sort = $sort[0];
-            $field = substr($sort['sortField'], 0, strpos($sort['sortField'], '|'));
-            $orderBy = ["stripe_invoicedata.$field" => SORT_DESC];
-        }
+        $orderBy = $this->getOrderByParam($sort);
         $sqlQuery->orderBy($orderBy);
 
 
@@ -96,5 +91,56 @@ class InvoicesController extends Controller
             'pagination' => AdminTable::paginationLinks($page, $total, $limit),
             'data' => $tableData,
         ]);
+    }
+
+    /**
+     * Returns orderBy param to be used when querying invoices.
+     *
+     * @param array|null $sort
+     * @return array
+     */
+    private function getOrderByParam(?array $sort): array
+    {
+        // the default
+        $orderBy = ["created" => SORT_DESC];
+
+        // if sort value was passed
+        if (!empty($sort)) {
+            // get the sortField name;
+            $field = $sort[0]['sortField'];
+
+            // if it's set to true, the col name matches the sort field, so get it from ['field']
+            if ($field == 'true') {
+                $field = $sort[0]['field'];
+            }
+            // if it starts with 'custom:' it means we have to do some magic first as we don't have a column with that name in the db
+            if (str_starts_with($field, 'custom:')) {
+                // we'll be doing some casting too
+                if (substr_count($field, ':') == 2) {
+                    $cast = substr($field, strrpos($field, ':') + 1);
+                    $fieldName = substr(str_replace(':' . $cast, '', $field), 7);
+                } else {
+                    $cast = null;
+                    $fieldName = substr($field, 7);
+                }
+
+                $field = Craft::$app->getDb()->getQueryBuilder()->jsonExtract('data', [$fieldName]);
+                if ($cast) {
+                    $field = 'CAST(' . $field . ' AS ' . $cast . ')';
+                }
+            }
+
+            // figure out sort direction
+            if ($sort[0]['direction'] == 'asc') {
+                $direction = SORT_ASC;
+            } else {
+                $direction = SORT_DESC;
+            }
+
+            // put it all together
+            $orderBy = ["$field" => $direction];
+        }
+
+        return $orderBy;
     }
 }
