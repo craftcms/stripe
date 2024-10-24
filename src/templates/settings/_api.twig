@@ -21,14 +21,3 @@
     suggestEnvVars: true,
     autofocus: true,
 }) }}
-
-{{ forms.autosuggestField({
-    first: true,
-    label: 'Webhook Signing Secret'|t('stripe'),
-    id: 'webhookSigningSecret',
-    name: 'settings[webhookSigningSecret]',
-    value: settings.webhookSigningSecret,
-    errors: settings.getErrors('webhookSigningSecret'),
-    suggestEnvVars: true,
-    autofocus: true,
-}) }}

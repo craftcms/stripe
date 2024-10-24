@@ -33,11 +33,13 @@ class Settings extends Model
 
     /**
      * @var string
+     * @deprecated in 1.2; stored in its own table now
      */
     public string $webhookSigningSecret = '';
 
     /**
      * @var string
+     * @deprecated in 1.2; stored in its own table now
      */
     public string $webhookId = '';
 

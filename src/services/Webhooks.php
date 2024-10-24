@@ -9,6 +9,7 @@ namespace craft\stripe\services;
 
 use craft\stripe\events\StripeEvent;
 use craft\stripe\Plugin;
+use craft\stripe\records\Webhook;
 use yii\base\Component;
 
 /**
@@ -145,5 +146,17 @@ class Webhooks extends Component
             'stripeEvent' => $event,
         ]);
         $this->trigger(self::EVENT_STRIPE_EVENT, $stripeEvent);
+    }
+
+    /**
+     * Get the webhook data from the database. There should always be max one record there.
+     *
+     * @return Webhook
+     */
+    public function getWebhookRecord(): Webhook
+    {
+        /** @var Webhook|null $record */
+        $record = Webhook::find()->one();
+        return  $record ?? new Webhook();
     }
 }
