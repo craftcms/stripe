@@ -1,5 +1,8 @@
 # Release Notes for Stripe
 
+## Unreleased
+- Fixed getting a default price for a Product element. ([#40](https://github.com/craftcms/stripe/pull/40))
+
 ## 1.2.0 - 2024-11-06
 
 > [!NOTE]

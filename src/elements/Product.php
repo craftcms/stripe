@@ -596,15 +596,21 @@ class Product extends Element
     public function getDefaultPrice(): Price|null
     {
         if (!isset($this->_defaultPrice)) {
-            if ($this->getData()['default_price'] === null) {
+            $defaultPriceId = $this->getData()['default_price'];
+            if ($defaultPriceId === null) {
                 return null;
+            }
+
+            // depending on whether we're expanding a default_price when getting a product from Stripe, this will be a string or an array
+            if (is_array($defaultPriceId)) {
+                $defaultPriceId = $defaultPriceId['id'];
             }
 
             /** @var ElementCollection<int|string, Price> $prices */
             $prices = $this->getPrices();
 
             $price = $prices
-                ->filter(fn(Price $price) => $price->stripeId === $this->getData()['default_price'])
+                ->filter(fn(Price $price) => $price->stripeId === $defaultPriceId)
                 ->first();
 
             if (!$price) {
