@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Fixed a styling issue with the element's meta card footer.
+
 ## 1.2.0 - 2024-11-06
 
 > [!NOTE]
