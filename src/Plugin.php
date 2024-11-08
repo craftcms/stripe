@@ -580,7 +580,7 @@ class Plugin extends BasePlugin
             $user = $event->sender;
             $userRecord = UserRecord::findOne($user->id);
             $settings = $this->getSettings();
-            if ($user->isCredentialed && $settings['syncChangedUserEmailsToStripe']) {
+            if ($userRecord && $user->isCredentialed && $settings['syncChangedUserEmailsToStripe']) {
                 $oldEmail = $userRecord->getAttribute('email');
                 $newEmail = $user->email;
                 if ($oldEmail != $newEmail) {
