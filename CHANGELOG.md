@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Fixed a PHP error that could occur when saving a new user.
+
 ## 1.2.0.1 - 2024-11-07
 
 - Fixed an infinite loop that could occur when querying for a user.
