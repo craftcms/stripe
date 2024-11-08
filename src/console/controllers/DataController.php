@@ -8,9 +8,8 @@
 namespace craft\stripe\console\controllers;
 
 use Craft;
-use craft\db\ActiveRecord;
-use Exception;
 use craft\console\Controller;
+use craft\db\ActiveRecord;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\stripe\elements\Product;
@@ -18,6 +17,7 @@ use craft\stripe\elements\Subscription;
 use craft\stripe\records\CustomerData;
 use craft\stripe\records\InvoiceData;
 use craft\stripe\records\PaymentMethodData;
+use Exception;
 use yii\console\ExitCode;
 
 /**
