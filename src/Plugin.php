@@ -583,7 +583,7 @@ class Plugin extends BasePlugin
             if ($userRecord && $user->isCredentialed && $settings['syncChangedUserEmailsToStripe']) {
                 $oldEmail = $userRecord->getAttribute('email');
                 $newEmail = $user->email;
-                if ($oldEmail != $newEmail) {
+                if ($oldEmail && $newEmail && ($oldEmail != $newEmail)) {
                     $customers = $user->getStripeCustomers();
                     if ($customers->isNotEmpty()) {
                         $client = $this->getApi()->getClient();
