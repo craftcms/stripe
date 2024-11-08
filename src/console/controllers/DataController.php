@@ -38,7 +38,7 @@ class DataController extends Controller
      */
     public function actionReset(): int
     {
-        $this->stdout('Resetting Stripe plugin data will permanently delete all:' .PHP_EOL);
+        $this->stdout('Resetting Stripe plugin data will permanently delete all:' . PHP_EOL);
         $this->stdout('  > products' . PHP_EOL);
         $this->stdout('  > prices' . PHP_EOL);
         $this->stdout('  > subscriptions' . PHP_EOL);
