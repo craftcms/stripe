@@ -193,7 +193,7 @@ class Install extends Migration
         // latestInvoiceId
         $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " .
             $db->quoteColumnName('latestInvoiceId') . " VARCHAR(255) GENERATED ALWAYS AS (" .
-            $qb->jsonExtract('data', ['latest_invoice']) . ") STORED NULL;");
+            $qb->jsonExtract('data', ['latest_invoice']) . ") STORED;");
         // startDate
         $this->execute("ALTER TABLE " . Table::SUBSCRIPTIONDATA . " ADD COLUMN " .
             $db->quoteColumnName('startDate') . " VARCHAR(255) GENERATED ALWAYS AS (" .
