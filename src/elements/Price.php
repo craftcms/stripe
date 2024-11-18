@@ -414,7 +414,7 @@ class Price extends Element implements NestedElementInterface
             ],
             'stripeEdit' => [
                 'label' => Craft::t('stripe', 'Stripe Edit'),
-                'placeholder' => Html::a('', "#", ['target' => '_blank', 'data' => ['icon' => 'external']])
+                'placeholder' => Html::a('', "#", ['target' => '_blank', 'data' => ['icon' => 'external']]),
             ],
             'type' => [
                 'label' => Craft::t('stripe', 'Type'),
@@ -422,7 +422,7 @@ class Price extends Element implements NestedElementInterface
             ],
             'unitPrice' => [
                 'label' => Craft::t('stripe', 'Unit Price'),
-                'placeholder' => MoneyHelper::toString(new Money(1234, new Currency('USD'))).'/month',
+                'placeholder' => MoneyHelper::toString(new Money(1234, new Currency('USD'))) . '/month',
             ],
             'pricePerUnit' => [
                 'label' => Craft::t('stripe', 'Price per Unit'),
@@ -430,11 +430,11 @@ class Price extends Element implements NestedElementInterface
             ],
             'interval' => [
                 'label' => Craft::t('stripe', 'Interval'),
-                'placeholder' =>  PriceHelper::getInterval([
+                'placeholder' => PriceHelper::getInterval([
                     'recurring' => [
                         'interval_count' => 1,
                         'interval' => 'month',
-                    ]
+                    ],
                 ]),
             ],
             'currency' => [

@@ -365,7 +365,7 @@ class Subscription extends Element
             ],
             'stripeEdit' => [
                 'label' => Craft::t('stripe', 'Stripe Edit'),
-                'placeholder' => Html::a('', "#", ['target' => '_blank', 'data' => ['icon' => 'external']])
+                'placeholder' => Html::a('', "#", ['target' => '_blank', 'data' => ['icon' => 'external']]),
             ],
             'customerEmail' => [
                 'label' => Craft::t('stripe', 'Customer Email'),
