@@ -65,6 +65,7 @@ use Stripe\Exception\ApiErrorException;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\base\ModelEvent;
+use yii\console\ExitCode;
 
 /**
  * Stripe plugin
@@ -449,9 +450,18 @@ class Plugin extends BasePlugin
                 'action' => function(): int {
                     /** @var ResaveController $controller */
                     $controller = Craft::$app->controller;
+
+                    if (!empty($controller->withFields)) {
+                        $fieldLayout = Craft::$app->getFields()->getLayoutByType(Product::class);
+                        if (!$controller->hasTheFields($fieldLayout)) {
+                            $controller->output($controller->markdownToAnsi('The product field layout doesn’t satisfy `--with-fields`.'));
+                            return ExitCode::UNSPECIFIED_ERROR;
+                        }
+                    }
+
                     return $controller->resaveElements(Product::class);
                 },
-                'options' => [],
+                'options' => ['withFields'],
                 'helpSummary' => 'Re-saves Stripe products.',
             ];
 
@@ -459,9 +469,18 @@ class Plugin extends BasePlugin
                 'action' => function(): int {
                     /** @var ResaveController $controller */
                     $controller = Craft::$app->controller;
+
+                    if (!empty($controller->withFields)) {
+                        $fieldLayout = Craft::$app->getFields()->getLayoutByType(Price::class);
+                        if (!$controller->hasTheFields($fieldLayout)) {
+                            $controller->output($controller->markdownToAnsi('The product field layout doesn’t satisfy `--with-fields`.'));
+                            return ExitCode::UNSPECIFIED_ERROR;
+                        }
+                    }
+
                     return $controller->resaveElements(Price::class);
                 },
-                'options' => [],
+                'options' => ['withFields'],
                 'helpSummary' => 'Re-saves Stripe prices.',
             ];
 
@@ -469,9 +488,18 @@ class Plugin extends BasePlugin
                 'action' => function(): int {
                     /** @var ResaveController $controller */
                     $controller = Craft::$app->controller;
+
+                    if (!empty($controller->withFields)) {
+                        $fieldLayout = Craft::$app->getFields()->getLayoutByType(Subscription::class);
+                        if (!$controller->hasTheFields($fieldLayout)) {
+                            $controller->output($controller->markdownToAnsi('The product field layout doesn’t satisfy `--with-fields`.'));
+                            return ExitCode::UNSPECIFIED_ERROR;
+                        }
+                    }
+
                     return $controller->resaveElements(Subscription::class);
                 },
-                'options' => [],
+                'options' => ['withFields'],
                 'helpSummary' => 'Re-saves Stripe subscriptions.',
             ];
         });
