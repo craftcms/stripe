@@ -1,5 +1,10 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Stripe now requires Craft CMS 5.5.0 or later. ([#56](https://github.com/craftcms/stripe/pull/56))
+- Added support for defining card attributes for the Product, Price and Subscription field layouts. ([#56](https://github.com/craftcms/stripe/pull/56))
+
 ## 1.2.0.2 - 2024-11-08
 
 - Fixed a PHP error that could occur when saving a new user.
