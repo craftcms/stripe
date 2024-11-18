@@ -69,6 +69,12 @@ class Settings extends Model
     public ?string $defaultCancelUrl = null;
 
     /**
+     * @var bool Whether creating a subscription for an email address that doesn't belong to any user,
+     * should create an inactive user.
+     */
+    public bool $createUserIfMissing = false;
+
+    /**
      * @var mixed
      */
     private mixed $_productFieldLayout;
