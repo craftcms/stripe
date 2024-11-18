@@ -1,6 +1,7 @@
 # Release Notes for Stripe
 
 ## Unreleased
+
 - Stripe now requires Craft CMS 5.5.0 or later. ([#55](https://github.com/craftcms/stripe/pull/55))
 - Added support for `--with-fields` option for the `resave/*` commands. ([#55](https://github.com/craftcms/stripe/pull/55))
 
