@@ -17,6 +17,8 @@ use craft\elements\NestedElementManager;
 use craft\elements\User;
 use craft\enums\Color;
 use craft\enums\PropagationMethod;
+use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -328,6 +330,44 @@ class Product extends Element
             'stripeStatus',
             'stripeEdit',
             'link',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineCardAttributes(): array
+    {
+        return array_merge(parent::defineCardAttributes(), [
+            'stripeId' => [
+                'label' => Craft::t('stripe', 'Stripe ID'),
+                'placeholder' => 'prod_xxxxxxxxxxx',
+            ],
+            'stripeEdit' => [
+                'label' => Craft::t('stripe', 'Stripe Edit'),
+                'placeholder' => Html::a('', "#", ['target' => '_blank', 'data' => ['icon' => 'external']])
+            ],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function attributePreviewHtml(array $attribute): mixed
+    {
+        return match ($attribute['value']) {
+            'stripeEdit', 'link' => $attribute['placeholder'],
+            default => ElementHelper::attributeHtml($attribute['placeholder'] ?? $attribute['label']),
+        };
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineDefaultCardAttributes(): array
+    {
+        return [
+            'stripeId',
         ];
     }
 

@@ -14,6 +14,7 @@ use craft\enums\Color;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -349,6 +350,58 @@ class Subscription extends Element
             'stripeId',
             'customerEmail',
             'stripeEdit',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineCardAttributes(): array
+    {
+        return array_merge(parent::defineCardAttributes(), [
+            'stripeId' => [
+                'label' => Craft::t('stripe', 'Stripe ID'),
+                'placeholder' => 'sub_xxxxxxxxxxx',
+            ],
+            'stripeEdit' => [
+                'label' => Craft::t('stripe', 'Stripe Edit'),
+                'placeholder' => Html::a('', "#", ['target' => '_blank', 'data' => ['icon' => 'external']])
+            ],
+            'customerEmail' => [
+                'label' => Craft::t('stripe', 'Customer Email'),
+                'placeholder' => 'test@example.com',
+            ],
+            'products' => [
+                'label' => Craft::t('stripe', 'Products'),
+                'placeholder' => function() {
+                    $mockup = new Product();
+                    $mockup->title = Craft::t('stripe', '{type} Title', ['type' => $mockup->displayName()]);
+
+                    return Cp::chipHtml($mockup);
+                },
+            ],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function attributePreviewHtml(array $attribute): mixed
+    {
+        return match ($attribute['value']) {
+            'stripeEdit', 'link' => $attribute['placeholder'],
+            'products' => call_user_func($attribute['placeholder']),
+            default => ElementHelper::attributeHtml($attribute['placeholder'] ?? $attribute['label']),
+        };
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineDefaultCardAttributes(): array
+    {
+        return [
+            'customerEmail',
         ];
     }
 

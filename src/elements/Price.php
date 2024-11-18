@@ -16,8 +16,10 @@ use craft\db\Table as CraftTable;
 use craft\elements\User;
 use craft\enums\Color;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\MoneyHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\stripe\db\Table;
@@ -27,6 +29,9 @@ use craft\stripe\helpers\Price as PriceHelper;
 use craft\stripe\Plugin;
 use craft\stripe\records\Price as PriceRecord;
 use craft\stripe\web\assets\stripecp\StripeCpAsset;
+use Money\Currency;
+use Money\Money;
+use Stripe\Price as StripePrice;
 use yii\base\InvalidConfigException;
 
 /**
@@ -390,6 +395,73 @@ class Price extends Element implements NestedElementInterface
             'stripeStatus',
             'type',
             'unitPrice',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineCardAttributes(): array
+    {
+        return array_merge(parent::defineCardAttributes(), [
+            'primaryCurrency' => [
+                'label' => Craft::t('stripe', 'Primary Currency'),
+                'placeholder' => 'USD',
+            ],
+            'stripeId' => [
+                'label' => Craft::t('stripe', 'Stripe ID'),
+                'placeholder' => 'price_xxxxxxxxxxx',
+            ],
+            'stripeEdit' => [
+                'label' => Craft::t('stripe', 'Stripe Edit'),
+                'placeholder' => Html::a('', "#", ['target' => '_blank', 'data' => ['icon' => 'external']])
+            ],
+            'type' => [
+                'label' => Craft::t('stripe', 'Type'),
+                'placeholder' => StripePrice::TYPE_RECURRING,
+            ],
+            'unitPrice' => [
+                'label' => Craft::t('stripe', 'Unit Price'),
+                'placeholder' => MoneyHelper::toString(new Money(1234, new Currency('USD'))).'/month',
+            ],
+            'pricePerUnit' => [
+                'label' => Craft::t('stripe', 'Price per Unit'),
+                'placeholder' => MoneyHelper::toString(new Money(1234, new Currency('USD'))),
+            ],
+            'interval' => [
+                'label' => Craft::t('stripe', 'Interval'),
+                'placeholder' =>  PriceHelper::getInterval([
+                    'recurring' => [
+                        'interval_count' => 1,
+                        'interval' => 'month',
+                    ]
+                ]),
+            ],
+            'currency' => [
+                'label' => Craft::t('stripe', 'Currency'),
+                'placeholder' => 'USD',
+            ],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function attributePreviewHtml(array $attribute): mixed
+    {
+        return match ($attribute['value']) {
+            'stripeEdit', 'link' => $attribute['placeholder'],
+            default => ElementHelper::attributeHtml($attribute['placeholder'] ?? $attribute['label']),
+        };
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineDefaultCardAttributes(): array
+    {
+        return [
+            'stripeId',
         ];
     }
 
