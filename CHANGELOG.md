@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Added `craft\stripe\models\Settings->$createUserIfMissing` ([#57](https://github.com/craftcms/stripe/pull/57))
+
 ## 1.2.0.2 - 2024-11-08
 
 - Fixed a PHP error that could occur when saving a new user.
