@@ -473,7 +473,7 @@ class Plugin extends BasePlugin
                     if (!empty($controller->withFields)) {
                         $fieldLayout = Craft::$app->getFields()->getLayoutByType(Price::class);
                         if (!$controller->hasTheFields($fieldLayout)) {
-                            $controller->output($controller->markdownToAnsi('The product field layout doesn’t satisfy `--with-fields`.'));
+                            $controller->output($controller->markdownToAnsi('The price field layout doesn’t satisfy `--with-fields`.'));
                             return ExitCode::UNSPECIFIED_ERROR;
                         }
                     }
