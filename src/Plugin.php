@@ -575,15 +575,15 @@ class Plugin extends BasePlugin
     private function handleUserElementChanges(): void
     {
         // if email address got changed - update stripe
-        Event::on(UserRecord::class, UserRecord::EVENT_BEFORE_UPDATE, function(ModelEvent $event) {
-            $userRecord = $event->sender;
+        Event::on(User::class, User::EVENT_BEFORE_SAVE, function(ModelEvent $event) {
             /** @var User|StripeCustomerBehavior $user */
-            $user = Craft::$app->getUsers()->getUserById($userRecord->id);
+            $user = $event->sender;
+            $userRecord = UserRecord::findOne($user->id);
             $settings = $this->getSettings();
-            if ($user->isCredentialed && $settings['syncChangedUserEmailsToStripe']) {
-                $oldEmail = $userRecord->getOldAttribute('email');
-                $newEmail = $userRecord->getAttribute('email');
-                if ($oldEmail != $newEmail) {
+            if ($userRecord && $user->isCredentialed && $settings['syncChangedUserEmailsToStripe']) {
+                $oldEmail = $userRecord->getAttribute('email');
+                $newEmail = $user->email;
+                if ($oldEmail && $newEmail && ($oldEmail != $newEmail)) {
                     $customers = $user->getStripeCustomers();
                     if ($customers->isNotEmpty()) {
                         $client = $this->getApi()->getClient();
@@ -670,7 +670,6 @@ class Plugin extends BasePlugin
                 'url' => 'stripe/webhooks',
             ];
         }
-
 
         return $ret;
     }
