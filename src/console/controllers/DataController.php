@@ -24,7 +24,7 @@ use yii\console\ExitCode;
  * Data controller
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 1.2.1
+ * @since 1.3.0
  */
 class DataController extends Controller
 {
