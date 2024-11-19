@@ -1,6 +1,6 @@
 # Release Notes for Stripe
 
-## Unreleased
+## 1.3.0 - 2024-11-19
 
 - Stripe now requires Craft CMS 5.5.0 or later.
 - Added support for customizing card attributes for the Product, Price and Subscription field layouts. ([#56](https://github.com/craftcms/stripe/pull/56))
