@@ -17,6 +17,8 @@ use craft\elements\NestedElementManager;
 use craft\elements\User;
 use craft\enums\Color;
 use craft\enums\PropagationMethod;
+use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -334,6 +336,44 @@ class Product extends Element
     /**
      * @inheritdoc
      */
+    protected static function defineCardAttributes(): array
+    {
+        return array_merge(parent::defineCardAttributes(), [
+            'stripeId' => [
+                'label' => Craft::t('stripe', 'Stripe ID'),
+                'placeholder' => 'prod_xxxxxxxxxxx',
+            ],
+            'stripeEdit' => [
+                'label' => Craft::t('stripe', 'Stripe Edit'),
+                'placeholder' => Html::a('', "#", ['target' => '_blank', 'data' => ['icon' => 'external']]),
+            ],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function attributePreviewHtml(array $attribute): mixed
+    {
+        return match ($attribute['value']) {
+            'stripeEdit', 'link' => $attribute['placeholder'],
+            default => ElementHelper::attributeHtml($attribute['placeholder'] ?? $attribute['label']),
+        };
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineDefaultCardAttributes(): array
+    {
+        return [
+            'stripeId',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         // Get the source element IDs
@@ -596,15 +636,21 @@ class Product extends Element
     public function getDefaultPrice(): Price|null
     {
         if (!isset($this->_defaultPrice)) {
-            if ($this->getData()['default_price'] === null) {
+            $defaultPriceId = $this->getData()['default_price'];
+            if ($defaultPriceId === null) {
                 return null;
+            }
+
+            // depending on whether we're expanding a default_price when getting a product from Stripe, this will be a string or an array
+            if (is_array($defaultPriceId)) {
+                $defaultPriceId = $defaultPriceId['id'];
             }
 
             /** @var ElementCollection<int|string, Price> $prices */
             $prices = $this->getPrices();
 
             $price = $prices
-                ->filter(fn(Price $price) => $price->stripeId === $this->getData()['default_price'])
+                ->filter(fn(Price $price) => $price->stripeId === $defaultPriceId)
                 ->first();
 
             if (!$price) {

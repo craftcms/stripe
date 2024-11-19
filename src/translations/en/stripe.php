@@ -72,6 +72,7 @@ return [
     'Price per Unit' => 'Price per Unit',
     'Price Type' => 'Price Type',
     'Prices' => 'Prices',
+    'Primary Currency' => 'Primary Currency',
     'Product Template' => 'Product Template',
     'Product URI format' => 'Product URI format',
     'Products' => 'Products',

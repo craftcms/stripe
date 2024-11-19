@@ -19,7 +19,8 @@
         {% namespace "prices-layout" %}
             {{ forms.fieldLayoutDesignerField({
                 fieldLayout: settings.getPriceFieldLayout(),
-                type: 'craft\\stripe\\elements\\Price'
+                type: 'craft\\stripe\\elements\\Price',
+                withCardViewDesigner: true
             }) }}
         {% endnamespace %}
     </div>
@@ -28,7 +29,8 @@
         {% namespace "subscriptions-layout" %}
             {{ forms.fieldLayoutDesignerField({
                 fieldLayout: settings.getSubscriptionFieldLayout(),
-                type: 'craft\\stripe\\elements\\Subscription'
+                type: 'craft\\stripe\\elements\\Subscription',
+                withCardViewDesigner: true
             }) }}
         {% endnamespace %}
     </div>

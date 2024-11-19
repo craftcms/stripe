@@ -2,7 +2,14 @@
 
 ## Unreleased
 
+- Stripe now requires Craft CMS 5.5.0 or later.
+- Fixed getting a default price for a Product element. ([#40](https://github.com/craftcms/stripe/pull/40))
+- Fixed an issue that could occur when installing or running migration on MariaDB. ([#51](https://github.com/craftcms/stripe/issues/51))
+- Fixed a styling issue with Stripe’s element’s meta card footer.
 - Added `craft\stripe\models\Settings->$createUserIfMissing` ([#57](https://github.com/craftcms/stripe/pull/57))
+- Added `stripe/data/reset` CLI command. ([#42](https://github.com/craftcms/stripe/issues/42))
+- Added support for `--with-fields` option for the `resave/*` commands. ([#55](https://github.com/craftcms/stripe/pull/55))
+- Added support for defining card attributes for the Product, Price and Subscription field layouts. ([#56](https://github.com/craftcms/stripe/pull/56))
 
 ## 1.2.0.2 - 2024-11-08
 

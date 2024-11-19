@@ -15,15 +15,19 @@
 }
 
 .proxy-element-card {
-  position: relative;
-  padding-top: 15px;
-  padding-bottom: 40px;
+  display: grid;
+  padding-inline: 0;
+  padding-block-start: var(--spacing);
 
   .pec-header {
-    position: relative;
-    display: block;
+    grid-column-start: 1;
+    grid-column-end: 1;
     color: $textColor;
     width: 100%;
+    padding-inline: var(--padding);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
 
     &:hover {
       color: $textColor;
@@ -31,11 +35,8 @@
     }
 
     .pec-external-icon {
-      position: absolute;
-      top: 50%;
-      @include right(0px);
-      transform: translate(-50%, -50%);
       color: $textColor;
+      margin-inline-end: 6px;
     }
 
     &:hover {
@@ -45,7 +46,7 @@
     }
 
     .pec-title {
-      margin-bottom: 0;
+      margin-block-end: 0;
     }
 
     .pec-subtitle {
@@ -54,21 +55,26 @@
   }
 
   .meta {
+    grid-column-start: 1;
+    grid-column-end: 1;
+    margin-inline: 0;
+
     ul.elements {
       width: 100%;
     }
   }
 
   .pec-footer {
-    position: absolute;
-    bottom: 0;
+    grid-column-start: 1;
+    grid-column-end: 1;
     width: 100%;
     @include right(0);
     font-size: 12px;
     background-color: $grey100;
     border-bottom-left-radius: $largeBorderRadius;
     border-bottom-right-radius: $largeBorderRadius;
-    padding: 10px 24px;
+    padding-block: 10px;
+    padding-inline: var(--padding);
 
     a {
       color: $textColor;
@@ -86,11 +92,6 @@
       @include right(0px);
       transform: translate(-50%, -50%);
     }
-  }
-
-  hr {
-    margin-left: var(--neg-padding);
-    margin-right: var(--neg-padding);
   }
 }
 
