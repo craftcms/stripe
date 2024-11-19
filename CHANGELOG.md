@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fixed a styling issue with the element's meta card footer.
+- Fixed a styling issue with the element’s `.proxy-element-card` meta card footer.
 
 ## 1.2.0 - 2024-11-06
 
