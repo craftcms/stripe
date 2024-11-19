@@ -3,13 +3,13 @@
 ## Unreleased
 
 - Stripe now requires Craft CMS 5.5.0 or later.
-- Fixed getting a default price for a Product element. ([#40](https://github.com/craftcms/stripe/pull/40))
-- Fixed an issue that could occur when installing or running migration on MariaDB. ([#51](https://github.com/craftcms/stripe/issues/51))
-- Fixed a styling issue with Stripe’s element’s meta card footer. ([#49](https://github.com/craftcms/stripe/pull/49))
-- Added `craft\stripe\models\Settings->$createUserIfMissing` ([#57](https://github.com/craftcms/stripe/pull/57))
-- Added `stripe/data/reset` CLI command. ([#42](https://github.com/craftcms/stripe/issues/42))
-- Added support for `--with-fields` option for the `resave/*` commands. ([#55](https://github.com/craftcms/stripe/pull/55))
-- Added support for defining card attributes for the Product, Price and Subscription field layouts. ([#56](https://github.com/craftcms/stripe/pull/56))
+- Added support for customizing card attributes for the Product, Price and Subscription field layouts. ([#56](https://github.com/craftcms/stripe/pull/56))
+- Added the `stripe/data/reset` command. ([#42](https://github.com/craftcms/stripe/issues/42))
+- The `resave/stripe-products`, `resave/stripe-prices`, and `resave/stripe-subscriptions` commands now support the `--with-fields` option. ([#55](https://github.com/craftcms/stripe/pull/55))
+- Added `craft\stripe\models\Settings::$createUserIfMissing`. ([#57](https://github.com/craftcms/stripe/pull/57))
+- Fixed a bug where `craft\stripe\elements\Product::getDefaultPrice()` was returning `null` for products with tiered pricing. ([#40](https://github.com/craftcms/stripe/pull/40))
+- Fixed a SQL error that occurred on MariaDB. ([#51](https://github.com/craftcms/stripe/issues/51))
+- Fixed a styling issue. ([#49](https://github.com/craftcms/stripe/pull/49))
 
 ## 1.2.0.2 - 2024-11-08
 
