@@ -4,6 +4,14 @@
 
 - Fixed getting a default price for a Product element. ([#40](https://github.com/craftcms/stripe/pull/40))
 
+## 1.2.0.2 - 2024-11-08
+
+- Fixed a PHP error that could occur when saving a new user.
+
+## 1.2.0.1 - 2024-11-07
+
+- Fixed an infinite loop that could occur when querying for a user.
+
 ## 1.2.0 - 2024-11-06
 
 > [!NOTE]
