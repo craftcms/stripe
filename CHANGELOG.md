@@ -4,7 +4,7 @@
 
 - Fixed getting a default price for a Product element. ([#40](https://github.com/craftcms/stripe/pull/40))
 - Fixed an issue that could occur when installing or running migration on MariaDB. ([#51](https://github.com/craftcms/stripe/issues/51))
-- Fixed a styling issue with the element’s `.proxy-element-card` meta card footer.
+- Fixed a styling issue with Stripe’s element’s meta card footer.
 
 ## 1.2.0.2 - 2024-11-08
 
