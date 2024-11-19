@@ -42,6 +42,7 @@
 {% namespace "products-layout" %}
     {{ forms.fieldLayoutDesignerField({
         fieldLayout: settings.getProductFieldLayout(),
-        type: 'craft\\stripe\\elements\\Product'
+        type: 'craft\\stripe\\elements\\Product',
+        withCardViewDesigner: true
     }) }}
 {% endnamespace %}
