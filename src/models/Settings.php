@@ -71,6 +71,7 @@ class Settings extends Model
     /**
      * @var bool Whether creating a subscription for an email address that doesn't belong to any user,
      * should create an inactive user.
+     * @since 1.3.0
      */
     public bool $createUserIfMissing = false;
 
