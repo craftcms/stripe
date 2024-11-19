@@ -492,7 +492,7 @@ class Plugin extends BasePlugin
                     if (!empty($controller->withFields)) {
                         $fieldLayout = Craft::$app->getFields()->getLayoutByType(Subscription::class);
                         if (!$controller->hasTheFields($fieldLayout)) {
-                            $controller->output($controller->markdownToAnsi('The product field layout doesn’t satisfy `--with-fields`.'));
+                            $controller->output($controller->markdownToAnsi('The subscription field layout doesn’t satisfy `--with-fields`.'));
                             return ExitCode::UNSPECIFIED_ERROR;
                         }
                     }
