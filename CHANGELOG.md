@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Added `stripe/data/reset` CLI command. ([#42](https://github.com/craftcms/stripe/issues/42))
+
 ## 1.2.0.2 - 2024-11-08
 
 - Fixed a PHP error that could occur when saving a new user.
