@@ -8,6 +8,7 @@
 namespace craft\stripe\services;
 
 use Craft;
+use craft\elements\User;
 use craft\events\ConfigEvent;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig;
@@ -15,6 +16,7 @@ use craft\models\FieldLayout;
 use craft\stripe\elements\Subscription;
 use craft\stripe\elements\Subscription as SubscriptionElement;
 use craft\stripe\events\StripeSubscriptionSyncEvent;
+use craft\stripe\models\Customer;
 use craft\stripe\Plugin;
 use craft\stripe\records\SubscriptionData as SubscriptionDataRecord;
 use Stripe\Subscription as StripeSubscription;
@@ -151,6 +153,11 @@ class Subscriptions extends Component
             }
         }
 
+        $settings = Plugin::getInstance()->getSettings();
+        if ($settings->createUserIfMissing) {
+            $this->ensureUser($subscription, $subscriptionElement);
+        }
+
         $attributes['subscriptionId'] = $subscriptionElement->id;
 
         // Find the subscription data or create one
@@ -279,5 +286,36 @@ class Subscriptions extends Component
             ->status(null)
             ->drafts()
             ->one() ?? new SubscriptionElement();
+    }
+
+    /**
+     * Ensures that a user with given email address is created if one doesn't already exist.
+     *
+     * @param StripeSubscription $subscription
+     * @param SubscriptionElement $subscriptionElement
+     * @return void
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
+     */
+    private function ensureUser(StripeSubscription $subscription, SubscriptionElement $subscriptionElement): void
+    {
+        $plugin = Plugin::getInstance();
+        $customer = $subscriptionElement->getCustomer();
+        $syncCustomerData = false;
+
+        // if we don't have a customer in our DB (customerdata table), then get the customer from Stripe
+        if (!$customer) {
+            $customer = $plugin->getApi()->fetchCustomerById($subscription->customer);
+            // in this case, we want to ensure the customer data is stored in our database
+            $syncCustomerData = true;
+        }
+        /** @var Customer|\Stripe\Customer $customer */
+        if ($customer->email) {
+            Craft::$app->getUsers()->ensureUserByEmail($customer->email);
+
+            if ($syncCustomerData) {
+                $plugin->getCustomers()->createOrUpdateCustomer($customer);
+            }
+        }
     }
 }
