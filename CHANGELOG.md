@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Fixed an issue that could occur when installing or running migration on MariaDB. ([#51](https://github.com/craftcms/stripe/issues/51))
+
 ## 1.2.0.2 - 2024-11-08
 
 - Fixed a PHP error that could occur when saving a new user.
