@@ -27,7 +27,7 @@ class m240819_121818_loosen_aux_data_uniq extends Migration
         // Step 3: Recreate the virtual column as nullable: https://docs.stripe.com/api/subscriptions/object#subscription_object-latest_invoice
         $this->execute("ALTER TABLE " . $tableName . " ADD COLUMN " .
             $this->db->quoteColumnName('[[latestInvoiceId]]') . " VARCHAR(255) GENERATED ALWAYS AS (" .
-            $this->db->getQueryBuilder()->jsonExtract('data', ['latest_invoice']) . ") STORED NULL");
+            $this->db->getQueryBuilder()->jsonExtract('data', ['latest_invoice']) . ") STORED");
 
         // Step 4: Create a new non-unique index
         $this->createIndex(null, $tableName, ['latestInvoiceId'], unique: false);
