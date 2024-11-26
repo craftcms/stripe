@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Fixed a bug where the Webhook Signing Secret and ID were showing as parsed on the Webhooks page. ([#62](https://github.com/craftcms/stripe/issues/62))
+
 ## 1.3.0 - 2024-11-19
 
 - Stripe now requires Craft CMS 5.5.0 or later.
