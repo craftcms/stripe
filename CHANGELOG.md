@@ -1,5 +1,10 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Fixed a bug where, in certain cases, it was possible to access a Subscription element in a slideout without having permission to access the Stripe plugin. ([#61](https://github.com/craftcms/stripe/pull/61))
+- Fixed a bug where the “Sync from Stripe” user menu item was shown even if user didn't permission to access the Stripe plugin. ([#61](https://github.com/craftcms/stripe/pull/61)) 
+
 ## 1.3.0 - 2024-11-19
 
 - Stripe now requires Craft CMS 5.5.0 or later.
