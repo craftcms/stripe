@@ -410,7 +410,7 @@ class Subscription extends Element
      */
     public function canView(User $user): bool
     {
-        return true;
+        return parent::canView($user) || $user->can('accessPlugin-stripe');
     }
 
     /**
