@@ -2,8 +2,10 @@
 
 ## Unreleased
 
+- Fixed a bug where the products index page gave impression that it was possible to sort by Link. ([#59](https://github.com/craftcms/stripe/issues/59))
 - Fixed a bug where, in certain cases, it was possible to access a Subscription element in a slideout without having permission to access the Stripe plugin. ([#61](https://github.com/craftcms/stripe/pull/61))
-- Fixed a bug where the “Sync from Stripe” user menu item was shown even if user didn't permission to access the Stripe plugin. ([#61](https://github.com/craftcms/stripe/pull/61)) 
+- Fixed a bug where the “Sync from Stripe” user menu item was shown even if user didn't permission to access the Stripe plugin. ([#61](https://github.com/craftcms/stripe/pull/61))
+
 
 ## 1.3.0 - 2024-11-19
 
