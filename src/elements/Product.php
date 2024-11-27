@@ -293,6 +293,7 @@ class Product extends Element
         $sortOptions = parent::defineSortOptions();
 
         unset($sortOptions['stripeEdit']);
+        unset($sortOptions['link']);
 
         $sortOptions['title'] = self::displayName();
 

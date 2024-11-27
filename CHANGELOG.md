@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Fixed a bug where the products index page gave impression that it was possible to sort by Link. ([#59](https://github.com/craftcms/stripe/issues/59))
+
 ## 1.3.0 - 2024-11-19
 
 - Stripe now requires Craft CMS 5.5.0 or later.
