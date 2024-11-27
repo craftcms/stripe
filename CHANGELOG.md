@@ -2,10 +2,10 @@
 
 ## Unreleased
 
-- Fixed a bug where the products index page gave impression that it was possible to sort by Link. ([#59](https://github.com/craftcms/stripe/issues/59))
-- Fixed a bug where, in certain cases, it was possible to access a Subscription element in a slideout without having permission to access the Stripe plugin. ([#61](https://github.com/craftcms/stripe/pull/61))
-- Fixed a bug where the “Sync from Stripe” user menu item was shown even if user didn't have permission to access the Stripe plugin. ([#61](https://github.com/craftcms/stripe/pull/61))
+- Fixed a bug where the Products index page listed “Link” as a sort option.. ([#59](https://github.com/craftcms/stripe/issues/59))
+- Fixed a bug where the “Sync from Stripe” user action item was shown for users who didn’t have access to the Stripe plugin. ([#61](https://github.com/craftcms/stripe/pull/61))
 - Fixed a bug where the Webhook Signing Secret and ID were showing as parsed on the Webhooks page. ([#62](https://github.com/craftcms/stripe/issues/62))
+- Fixed an information disclosure vulnerability. ([#61](https://github.com/craftcms/stripe/pull/61))
 
 ## 1.3.0 - 2024-11-19
 
