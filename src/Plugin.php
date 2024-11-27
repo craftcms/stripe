@@ -577,7 +577,7 @@ class Plugin extends BasePlugin
             Element::EVENT_DEFINE_ACTION_MENU_ITEMS,
             function(DefineMenuItemsEvent $event) {
                 $sender = $event->sender;
-                if ($email = $sender->email) {
+                if ($email = $sender->email && Craft::$app->getUser()->checkPermission('accessPlugin-stripe')) {
                     $customers = Plugin::getInstance()->getApi()->fetchAllCustomers(['email' => $email]);
                     if ($customers) {
                         $stripeIds = collect($customers)->pluck('id');

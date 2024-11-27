@@ -7,6 +7,7 @@
 
 namespace craft\stripe\controllers;
 
+use Craft;
 use craft\controllers\EditUserTrait;
 use craft\elements\User;
 use craft\helpers\Cp;
@@ -56,6 +57,7 @@ class CustomersController extends Controller
             'context' => 'embedded-index',
             'jsSettings' => [
                 'criteria' => ['userId' => $user->id],
+                'static' => !Craft::$app->getUser()->checkPermission('editUsers'),
             ],
         ]);
 
