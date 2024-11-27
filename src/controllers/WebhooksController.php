@@ -112,11 +112,12 @@ class WebhooksController extends Controller
         $webhookSigningSecret = $webhookRecord->webhookSigningSecret;
 
         if (!empty($webhookId)) {
+            $parsedWebhookId = App::parseEnv($webhookRecord->webhookId);
             try {
-                $response = $this->getWebhookInfo($plugin, $webhookId);
+                $response = $this->getWebhookInfo($plugin, $parsedWebhookId);
                 $webhookInfo = $response->toArray();
             } catch (\Exception $e) {
-                Craft::error("Couldn't retrieve webhook with ID $webhookId: " . $e->getMessage());
+                Craft::error("Couldn't retrieve webhook with ID $parsedWebhookId: " . $e->getMessage());
                 $hasWebhook = false;
             }
         } else {
