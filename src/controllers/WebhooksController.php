@@ -108,8 +108,8 @@ class WebhooksController extends Controller
 
         $webhookInfo = [];
         $hasWebhook = true;
-        $webhookId = App::parseEnv($webhookRecord->webhookId);
-        $webhookSigningSecret = App::parseEnv($webhookRecord->webhookSigningSecret);
+        $webhookId = $webhookRecord->webhookId;
+        $webhookSigningSecret = $webhookRecord->webhookSigningSecret;
 
         if (!empty($webhookId)) {
             try {
