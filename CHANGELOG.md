@@ -1,6 +1,6 @@
 # Release Notes for Stripe
 
-## Unreleased
+## 1.3.1 - 2024-11-28
 
 - Fixed a bug where the Products index page listed “Link” as a sort option.. ([#59](https://github.com/craftcms/stripe/issues/59))
 - Fixed a bug where the “Sync from Stripe” user action item was shown for users who didn’t have access to the Stripe plugin. ([#61](https://github.com/craftcms/stripe/pull/61))
