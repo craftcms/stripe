@@ -13,7 +13,7 @@
     <h2>{{ "Webhook Management"|t('stripe') }}</h2>
 
     {% if notConfigured %}
-        <p>{{ "No Stripe API key found. Make sure you have added one in the plugin’s settings screen."|t('stripe') }}
+        <p>{{ "No Stripe API key found. Make sure you have added one in the plugin’s settings screen."|t('stripe') }}</p>
 
     {% else %}
         {% if not hasWebhook %}
