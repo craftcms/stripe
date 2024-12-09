@@ -329,13 +329,15 @@ class Plugin extends BasePlugin
      */
     private function registerUtilityTypes(): void
     {
-        Event::on(
-            Utilities::class,
-            Utilities::EVENT_REGISTER_UTILITIES,
-            function(RegisterComponentTypesEvent $event) {
-                $event->types[] = Sync::class;
-            }
-        );
+        if (!empty(Plugin::getInstance()->getApi()->getApiKey())) {
+            Event::on(
+                Utilities::class,
+                Utilities::EVENT_REGISTER_UTILITIES,
+                function(RegisterComponentTypesEvent $event) {
+                    $event->types[] = Sync::class;
+                }
+            );
+        }
     }
 
     /**
