@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Fixed an information disclosure vulnerability. ([#67](https://github.com/craftcms/stripe/pull/67))
+
 ## 1.3.1 - 2024-11-28
 
 - Fixed a bug where the Products index page listed “Link” as a sort option.. ([#59](https://github.com/craftcms/stripe/issues/59))
