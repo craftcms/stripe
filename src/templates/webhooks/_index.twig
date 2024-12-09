@@ -4,6 +4,7 @@
 {% set selectedSubnavItem = 'stripeWebhooks' %}
 
 {% set title = "Webhooks"|t('stripe') %}
+{% set notConfigured = notConfigured ?? false %}
 
 {% set navItems = {} %}
 
@@ -11,48 +12,52 @@
 
     <h2>{{ "Webhook Management"|t('stripe') }}</h2>
 
-    {% if not hasWebhook %}
-        <p>{{ "Create the webhook for the current environment."|t('stripe') }} <a class="go" href="https://github.com/craftcms/stripe#webhooks">{{ 'Learn more'|t('app') }}</a></p>
-    {% endif %}
+    {% if notConfigured %}
+        <p>{{ "No Stripe API key found. Make sure you have added one in the plugin’s settings screen."|t('stripe') }}
 
-    {# Divs needed for the Admin Table js below #}
-    <div class="pane tablepane hairline">
-        <div id="webhooks-container">
+    {% else %}
+        {% if not hasWebhook %}
+            <p>{{ "Create the webhook for the current environment."|t('stripe') }} <a class="go" href="https://github.com/craftcms/stripe#webhooks">{{ 'Learn more'|t('app') }}</a></p>
+        {% endif %}
+
+        {# Divs needed for the Admin Table js below #}
+        <div class="pane tablepane hairline">
+            <div id="webhooks-container">
+            </div>
         </div>
-    </div>
 
-    {% if not hasWebhook %}
-        <form method="POST">
-            {{ actionInput('stripe/webhooks/create') }}
-            {{ redirectInput('stripe/webhooks') }}
-            {{ csrfInput() }}
-            <button class="btn primary" type="submit">{{ "Create"|t('stripe') }}</button>
-        </form>
-    {% endif %}
+        {% if not hasWebhook %}
+            <form method="POST">
+                {{ actionInput('stripe/webhooks/create') }}
+                {{ redirectInput('stripe/webhooks') }}
+                {{ csrfInput() }}
+                <button class="btn primary" type="submit">{{ "Create"|t('stripe') }}</button>
+            </form>
+        {% endif %}
 
-    {% set tableData = [] %}
+        {% set tableData = [] %}
 
-    {% if webhookInfo is not empty %}
-        {% set tableData = [{
-            id: recordId,
-            title: webhookInfo.description ?? webhookInfo.id,
-            apiVersion: webhookInfo.api_version,
-            livemode: webhookInfo.livemode,
-            whStatus: webhookInfo.status,
-            address: webhookInfo.url,
-        }] %}
-    {% endif %}
+        {% if webhookInfo is not empty %}
+            {% set tableData = [{
+                id: recordId,
+                title: webhookInfo.description ?? webhookInfo.id,
+                apiVersion: webhookInfo.api_version,
+                livemode: webhookInfo.livemode,
+                whStatus: webhookInfo.status,
+                address: webhookInfo.url,
+            }] %}
+        {% endif %}
 
-    {% js %}
-        var columns = [
+        {% js %}
+            var columns = [
             { name: '__slot:title', title: '{{ 'Topic'|t('stripe') }}' },
             { name: 'apiVersion', title: '{{ 'API Version'|t('stripe') }}' },
             { name: 'livemode', title: '{{ 'Live Mode'|t('stripe') }}' },
             { name: 'whStatus', title: '{{ 'Status'|t('stripe') }}' },
             { name: 'address', title: '{{ 'URL'|t('stripe') }}' },
-        ];
+            ];
 
-        new Craft.VueAdminTable({
+            new Craft.VueAdminTable({
             fullPane: false,
             columns: columns,
             container: '#webhooks-container',
@@ -63,40 +68,41 @@
             emptyMessage: Craft.t('stripe', 'No webhooks exist yet.'),
             tableData: {{ tableData|json_encode|raw }},
             deleteCallback: function() {
-                window.location.reload(); // We need to reload to get the create button showing again
+            window.location.reload(); // We need to reload to get the create button showing again
             },
-        });
-    {% endjs %}
+            });
+        {% endjs %}
 
-    <hr />
+        <hr />
 
-    <h2>{{ "Webhook Settings"|t('stripe') }}</h2>
-    <form method="POST">
-        {{ actionInput('stripe/webhooks/save-settings') }}
-        {{ redirectInput('stripe/webhooks') }}
-        {{ csrfInput() }}
+        <h2>{{ "Webhook Settings"|t('stripe') }}</h2>
+        <form method="POST">
+            {{ actionInput('stripe/webhooks/save-settings') }}
+            {{ redirectInput('stripe/webhooks') }}
+            {{ csrfInput() }}
 
-        {{ forms.autosuggestField({
-            first: true,
-            label: 'Webhook Signing Secret'|t('stripe'),
-            id: 'webhookSigningSecret',
-            name: 'webhookSigningSecret',
-            value: webhookSigningSecret,
-            suggestEnvVars: true,
-            autofocus: true,
-        }) }}
+            {{ forms.autosuggestField({
+                first: true,
+                label: 'Webhook Signing Secret'|t('stripe'),
+                id: 'webhookSigningSecret',
+                name: 'webhookSigningSecret',
+                value: webhookSigningSecret,
+                suggestEnvVars: true,
+                autofocus: true,
+            }) }}
 
-        {{ forms.autosuggestField({
-            first: true,
-            label: 'Webhook ID'|t('stripe'),
-            id: 'webhookId',
-            name: 'webhookId',
-            value: webhookId,
-            suggestEnvVars: true,
-            autofocus: true,
-        }) }}
+            {{ forms.autosuggestField({
+                first: true,
+                label: 'Webhook ID'|t('stripe'),
+                id: 'webhookId',
+                name: 'webhookId',
+                value: webhookId,
+                suggestEnvVars: true,
+                autofocus: true,
+            }) }}
 
-        <button class="btn primary" type="submit">{{ "Save"|t('app') }}</button>
-    </form>
+            <button class="btn primary" type="submit">{{ "Save"|t('app') }}</button>
+        </form>
+    {% endif %}
 {% endblock %}
 
