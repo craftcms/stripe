@@ -24,6 +24,16 @@ use yii\web\Response;
 class SettingsController extends Controller
 {
     /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        $this->requireAdmin();
+
+        return parent::beforeAction($action);
+    }
+
+    /**
      * Display a form to allow an administrator to update plugin's API settings.
      *
      * @param Settings|null $settings

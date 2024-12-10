@@ -4,6 +4,7 @@
 
 - Fixed a bug where an error was thrown on the Entry edit page when Stripe was installed, but not configured with an API key yet. ([#66](https://github.com/craftcms/stripe/pull/66))
 - Fixed a bug where “Stripe Sync All” utility was showing when Stripe was installed, but not configured with an API key yet. ([#66](https://github.com/craftcms/stripe/pull/66))
+- Fixed an information disclosure vulnerability. ([#67](https://github.com/craftcms/stripe/pull/67))
 
 ## 1.3.1 - 2024-11-28
 
