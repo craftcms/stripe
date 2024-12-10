@@ -62,6 +62,7 @@ return [
     'No invoices exist yet.' => 'No invoices exist yet.',
     'No payment methods exist yet.' => 'No payment methods exist yet.',
     'No webhooks exist yet.' => 'No webhooks exist yet.',
+    'No Stripe API key found. Make sure you have added one in the plugin’s settings screen.' => 'No Stripe API key found. Make sure you have added one in the plugin’s settings screen.',
     'No' => 'No',
     'One-time' => 'One-time',
     'Open in Stripe' => 'Open in Stripe',
