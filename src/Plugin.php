@@ -329,13 +329,15 @@ class Plugin extends BasePlugin
      */
     private function registerUtilityTypes(): void
     {
-        Event::on(
-            Utilities::class,
-            Utilities::EVENT_REGISTER_UTILITIES,
-            function(RegisterComponentTypesEvent $event) {
-                $event->types[] = Sync::class;
-            }
-        );
+        if (!empty(Plugin::getInstance()->getApi()->getApiKey())) {
+            Event::on(
+                Utilities::class,
+                Utilities::EVENT_REGISTER_UTILITIES,
+                function(RegisterComponentTypesEvent $event) {
+                    $event->types[] = Sync::class;
+                }
+            );
+        }
     }
 
     /**
@@ -572,27 +574,32 @@ class Plugin extends BasePlugin
 
     private function registerUserActions(): void
     {
-        Event::on(
-            User::class,
-            Element::EVENT_DEFINE_ACTION_MENU_ITEMS,
-            function(DefineMenuItemsEvent $event) {
-                $sender = $event->sender;
-                if ($email = $sender->email && Craft::$app->getUser()->checkPermission('accessPlugin-stripe')) {
-                    $customers = Plugin::getInstance()->getApi()->fetchAllCustomers(['email' => $email]);
-                    if ($customers) {
-                        $stripeIds = collect($customers)->pluck('id');
-                        $event->items[] = [
-                            'action' => 'stripe/sync/customer',
-                            'type' => MenuItemType::Button,
-                            'params' => [
-                                'stripeIds' => $stripeIds->toArray(),
-                            ],
-                            'label' => Craft::t('stripe', 'Sync from Stripe'),
-                        ];
+        if (
+            !empty(Plugin::getInstance()->getApi()->getApiKey()) &&
+            Craft::$app->getUser()->checkPermission('accessPlugin-stripe')
+        ) {
+            Event::on(
+                User::class,
+                Element::EVENT_DEFINE_ACTION_MENU_ITEMS,
+                function(DefineMenuItemsEvent $event) {
+                    $sender = $event->sender;
+                    if ($email = $sender->email) {
+                        $customers = Plugin::getInstance()->getApi()->fetchAllCustomers(['email' => $email]);
+                        if ($customers) {
+                            $stripeIds = collect($customers)->pluck('id');
+                            $event->items[] = [
+                                'action' => 'stripe/sync/customer',
+                                'type' => MenuItemType::Button,
+                                'params' => [
+                                    'stripeIds' => $stripeIds->toArray(),
+                                ],
+                                'label' => Craft::t('stripe', 'Sync from Stripe'),
+                            ];
+                        }
                     }
                 }
-            }
-        );
+            );
+        }
     }
 
     /**

@@ -1,5 +1,10 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Fixed a bug where an error was thrown on the Entry edit page when Stripe was installed, but not configured with an API key yet. ([#66](https://github.com/craftcms/stripe/pull/66))
+- Fixed a bug where “Stripe Sync All” utility was showing when Stripe was installed, but not configured with an API key yet. ([#66](https://github.com/craftcms/stripe/pull/66))
+
 ## 1.3.1 - 2024-11-28
 
 - Fixed a bug where the Products index page listed “Link” as a sort option.. ([#59](https://github.com/craftcms/stripe/issues/59))
