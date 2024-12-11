@@ -1,6 +1,6 @@
 # Release Notes for Stripe
 
-## Unreleased
+## 1.3.2 - 2024-12-11
 
 - Fixed an error that occurred on Edit Entry screens if Stripe wasn’t configured with an API key. ([#66](https://github.com/craftcms/stripe/pull/66))
 - Fixed a bug where “Stripe Sync All” utility was showing if Stripe wasn’t configured with an API key. ([#66](https://github.com/craftcms/stripe/pull/66))
