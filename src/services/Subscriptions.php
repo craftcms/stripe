@@ -9,6 +9,7 @@ namespace craft\stripe\services;
 
 use Craft;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\events\ConfigEvent;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig;
@@ -154,7 +155,7 @@ class Subscriptions extends Component
         }
 
         $settings = Plugin::getInstance()->getSettings();
-        if ($settings->createUserIfMissing) {
+        if ($settings->createUserIfMissing && Craft::$app->edition >= CmsEdition::Pro) {
             $this->ensureUser($subscription, $subscriptionElement);
         }
 
