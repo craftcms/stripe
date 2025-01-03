@@ -619,7 +619,9 @@ class Plugin extends BasePlugin
                 $oldEmail = $userRecord->getAttribute('email');
                 $newEmail = $user->email;
                 if ($oldEmail && $newEmail && ($oldEmail != $newEmail)) {
+                    $user->email = $oldEmail;
                     $customers = $user->getStripeCustomers();
+                    $user->email = $newEmail;
                     if ($customers->isNotEmpty()) {
                         $client = $this->getApi()->getClient();
                         foreach ($customers->all() as $customer) {
