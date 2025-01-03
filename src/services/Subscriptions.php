@@ -155,7 +155,7 @@ class Subscriptions extends Component
         }
 
         $settings = Plugin::getInstance()->getSettings();
-        if ($settings->createUserIfMissing && Craft::$app->edition >= CmsEdition::Pro) {
+        if ($settings->createUserIfMissing && Craft::$app->edition->value >= CmsEdition::Pro->value) {
             $this->ensureUser($subscription, $subscriptionElement);
         }
 
