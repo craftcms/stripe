@@ -574,14 +574,14 @@ class Plugin extends BasePlugin
 
     private function registerUserActions(): void
     {
-        if (
-            !empty(Plugin::getInstance()->getApi()->getApiKey()) &&
-            Craft::$app->getUser()->checkPermission('accessPlugin-stripe')
-        ) {
-            Event::on(
-                User::class,
-                Element::EVENT_DEFINE_ACTION_MENU_ITEMS,
-                function(DefineMenuItemsEvent $event) {
+        Event::on(
+            User::class,
+            Element::EVENT_DEFINE_ACTION_MENU_ITEMS,
+            function(DefineMenuItemsEvent $event) {
+                if (
+                    !empty(Plugin::getInstance()->getApi()->getApiKey()) &&
+                    Craft::$app->getUser()->checkPermission('accessPlugin-stripe')
+                ) {
                     $sender = $event->sender;
                     if ($email = $sender->email) {
                         $customers = Plugin::getInstance()->getApi()->fetchAllCustomers(['email' => $email]);
@@ -598,8 +598,8 @@ class Plugin extends BasePlugin
                         }
                     }
                 }
-            );
-        }
+            }
+        );
     }
 
     /**
