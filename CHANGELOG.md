@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Fixed a bug where the plugin was attempting to create missing users when `createUserIfMissing` was `true` but the Craft edition didn’t allow for multiple users. ([#72](https://github.com/craftcms/stripe/pull/72))
+
 ## 1.3.2 - 2024-12-11
 
 - Fixed an error that occurred on Edit Entry screens if Stripe wasn’t configured with an API key. ([#66](https://github.com/craftcms/stripe/pull/66))
