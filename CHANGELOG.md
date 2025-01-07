@@ -1,7 +1,8 @@
 # Release Notes for Stripe
 
 ## Unreleased
-- Fixed an error where the plugin could attempt to check User permissions before Craft was fully initialized. ([#71](https://github.com/craftcms/stripe/issues/71)) 
+
+- Fixed an error where the plugin could attempt to check User permissions before Craft was fully initialized. ([#71](https://github.com/craftcms/stripe/issues/71))
 
 ## 1.3.2 - 2024-12-11
 
