@@ -1,5 +1,8 @@
 # Release Notes for Stripe
 
+## Unreleased
+- Fixed a bug where Craft user’s email address was not synced to Stripe even if `syncChangedUserEmailsToStripe` was set to `true`. ([#69](https://github.com/craftcms/stripe/issues/69))
+
 ## 1.3.2 - 2024-12-11
 
 - Fixed an error that occurred on Edit Entry screens if Stripe wasn’t configured with an API key. ([#66](https://github.com/craftcms/stripe/pull/66))
