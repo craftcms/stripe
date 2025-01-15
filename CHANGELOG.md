@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where Craft user’s email address was not synced to Stripe even if `syncChangedUserEmailsToStripe` was set to `true`. ([#69](https://github.com/craftcms/stripe/issues/69))
+- Fixed a bug where the plugin was attempting to create missing users when `createUserIfMissing` was `true` but the Craft edition didn’t allow for multiple users. ([#72](https://github.com/craftcms/stripe/pull/72))
 
 ## 1.3.2 - 2024-12-11
 
