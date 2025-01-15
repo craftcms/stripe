@@ -1,6 +1,6 @@
 # Release Notes for Stripe
 
-## Unreleased
+## 1.3.3 - 2025-01-15
 
 - Fixed a bug where user email addresses weren’t getting synced when `syncChangedUserEmailsToStripe` was set to `true`. ([#69](https://github.com/craftcms/stripe/issues/69))
 - Fixed a bug where the plugin could cause an element query to be executed before Craft was fully initialized. ([#71](https://github.com/craftcms/stripe/issues/71))
