@@ -35,7 +35,8 @@
     allowAdd: false,
     allowDelete: false,
     allowReorder: false,
-    errors: []|unique
+    errors: []|unique,
+    static: readOnly,
 }) }}
 
 
@@ -43,6 +44,7 @@
     {{ forms.fieldLayoutDesignerField({
         fieldLayout: settings.getProductFieldLayout(),
         type: 'craft\\stripe\\elements\\Product',
-        withCardViewDesigner: true
+        withCardViewDesigner: true,
+        disabled: readOnly,
     }) }}
 {% endnamespace %}

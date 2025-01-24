@@ -1,11 +1,15 @@
 {% extends "stripe/settings/_layout" %}
 {% import '_includes/forms.twig' as forms %}
-{% set fullPageForm = true %}
+
+{% set readOnly = readOnly ?? false %}
+{% set fullPageForm = not readOnly %}
 
 {% block content %}
     {% set headlessMode = craft.app.config.general.headlessMode %}
-    {{ actionInput('stripe/settings/save-settings') }}
-    {{ redirectInput('stripe/settings') }}
+    {% if not readOnly %}
+        {{ actionInput('stripe/settings/save-settings') }}
+        {{ redirectInput('stripe/settings') }}
+    {% endif %}
 
     <div id="api">
         {% include 'stripe/settings/_api.twig' %}
@@ -20,7 +24,8 @@
             {{ forms.fieldLayoutDesignerField({
                 fieldLayout: settings.getPriceFieldLayout(),
                 type: 'craft\\stripe\\elements\\Price',
-                withCardViewDesigner: true
+                withCardViewDesigner: true,
+                disabled: readOnly,
             }) }}
         {% endnamespace %}
     </div>
@@ -30,7 +35,8 @@
             {{ forms.fieldLayoutDesignerField({
                 fieldLayout: settings.getSubscriptionFieldLayout(),
                 type: 'craft\\stripe\\elements\\Subscription',
-                withCardViewDesigner: true
+                withCardViewDesigner: true,
+                disabled: readOnly,
             }) }}
         {% endnamespace %}
     </div>
