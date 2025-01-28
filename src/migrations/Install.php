@@ -270,11 +270,6 @@ class Install extends Migration
 
         $this->addForeignKey(null, Table::SUBSCRIPTIONDATA, ['subscriptionId'],Table::SUBSCRIPTIONS, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::SUBSCRIPTIONS, ['id'], CraftTable::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
-
-//        $this->addForeignKey(null, Table::INVOICEDATA, ['customerId'], Table::CUSTOMERDATA, ['stripeId'], 'SET NULL', 'CASCADE');
-//        $this->addForeignKey(null, Table::PAYMENTMETHODDATA, ['customerId'], Table::CUSTOMERDATA, ['stripeId'], 'SET NULL', 'CASCADE');
-//        $this->addForeignKey(null, Table::SUBSCRIPTIONDATA, ['customerId'], Table::CUSTOMERDATA, ['stripeId'], 'SET NULL', 'SET NULL');
-//        $this->addForeignKey(null, Table::PRICEDATA, ['productId'], Table::PRODUCTDATA, ['stripeId'], 'SET NULL', 'CASCADE');
     }
 
     /**
@@ -324,7 +319,6 @@ class Install extends Migration
     {
         if ($this->tableExists($tableName)) {
             $this->dropAllForeignKeysToTable($tableName);
-            //MigrationHelper::dropAllForeignKeysOnTable($tableName, $this);
         }
     }
 
