@@ -1,5 +1,10 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- CKEditor now requires Craft CMS 5.6+. 
+- Added support for viewing Stripe settings when `allowAdminChanges` is disabled. ([#78](https://github.com/craftcms/stripe/pull/78))
+
 ## 1.3.3 - 2025-01-15
 
 - Fixed a bug where user email addresses weren’t getting synced when `syncChangedUserEmailsToStripe` was set to `true`. ([#69](https://github.com/craftcms/stripe/issues/69))
