@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Fixed a bug that occurred when searching through Stripe invoices via the control panel. ([#79](https://github.com/craftcms/stripe/issues/79))
+
 ## 1.3.3 - 2025-01-15
 
 - Fixed a bug where user email addresses weren’t getting synced when `syncChangedUserEmailsToStripe` was set to `true`. ([#69](https://github.com/craftcms/stripe/issues/69))
