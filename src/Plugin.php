@@ -26,6 +26,8 @@ use craft\events\DefineMetadataEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterConditionRulesEvent;
 use craft\events\RegisterUrlRulesEvent;
+use craft\feedme\events\RegisterFeedMeFieldsEvent;
+use craft\feedme\services\Fields as FeedMeFields;
 use craft\fields\Link;
 use craft\helpers\Html;
 use craft\helpers\Queue;
@@ -40,6 +42,7 @@ use craft\stripe\elements\conditions\users\HasStripeCustomerConditionRule;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
 use craft\stripe\elements\Subscription;
+use craft\stripe\feedme\fields\Products as FeedMeProducts;
 use craft\stripe\fieldlayoutelements\PricesField;
 use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\fields\Subscriptions as SubscriptionsField;
@@ -154,6 +157,7 @@ class Plugin extends BasePlugin
         $this->registerResaveCommands();
         $this->registerConditionRules();
         $this->registerUserActions();
+        $this->registerFeedMeEvents();
         $this->handleUserElementChanges();
 
         $request = Craft::$app->getRequest();
@@ -338,6 +342,16 @@ class Plugin extends BasePlugin
                 }
             );
         }
+    }
+
+    /**
+     * @return void
+     */
+    private function registerFeedMeEvents(): void
+    {
+        Event::on(FeedMeFields::class, FeedMeFields::EVENT_REGISTER_FEED_ME_FIELDS, function(RegisterFeedMeFieldsEvent $event) {
+            $event->fields[] = FeedMeProducts::class;
+        });
     }
 
     /**
