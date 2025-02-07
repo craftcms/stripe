@@ -52,7 +52,31 @@ class Subscriptions extends Component
      * );
      * ```
      */
-    public const EVENT_BEFORE_SYNCHRONIZE_SUBSCRIPTION = 'beforeSynchronizeSusbscription';
+    public const EVENT_BEFORE_SYNCHRONIZE_SUBSCRIPTION = 'beforeSynchronizeSubscription';
+
+    /**
+     * @event StripeSubscriptionSyncEvent Event triggered after Stripe subscription data is saved to a subscription element.
+     *
+     * ---
+     *
+     * ```php
+     * use craft\stripe\events\StripeSubscriptionSyncEvent;
+     * use craft\stripe\services\Subscriptions;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Subscriptions::class,
+     *     Subscriptions::EVENT_AFTER_SYNCHRONIZE_SUBSCRIPTION,
+     *     function(StripeSubscriptionSyncEvent $event) {
+     *         // Cancel the sync if a flag is set via a Stripe metadata:
+     *         if ($event->element->data['metadata']['do_not_sync'] ?? false) {
+     *             $event->isValid = false;
+     *         }
+     *     }
+     * );
+     * ```
+     */
+    public const EVENT_AFTER_SYNCHRONIZE_SUBSCRIPTION = 'afterSynchronizeSubscription';
 
     /**
      * @return void
@@ -166,7 +190,17 @@ class Subscriptions extends Component
         $subscriptionDataRecord = SubscriptionDataRecord::find()->where(['stripeId' => $subscription->id])->one() ?: new SubscriptionDataRecord();
         $subscriptionDataRecord->setAttributes($attributes, false);
 
-        return $subscriptionDataRecord->save();
+        $result = $subscriptionDataRecord->save();
+
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SYNCHRONIZE_SUBSCRIPTION)) {
+            $event = new StripeSubscriptionSyncEvent([
+                'element' => $subscriptionElement,
+                'source' => $subscription,
+            ]);
+            $this->trigger(self::EVENT_AFTER_SYNCHRONIZE_SUBSCRIPTION, $event);
+        }
+
+        return $result;
     }
 
     /**
