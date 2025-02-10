@@ -1,5 +1,10 @@
 # Release Notes for Stripe
 
+## Unreleased
+- Added `EVENT_AFTER_SYNCHRONIZE_PRODUCT`
+- Added `EVENT_AFTER_SYNCHRONIZE_PRICE`
+- Added `EVENT_AFTER_SYNCHRONIZE_SUBSCRIPTION`
+
 ## 1.3.3 - 2025-01-15
 
 - Fixed a bug where user email addresses weren’t getting synced when `syncChangedUserEmailsToStripe` was set to `true`. ([#69](https://github.com/craftcms/stripe/issues/69))
