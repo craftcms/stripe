@@ -54,6 +54,27 @@ class Products extends Component
     public const EVENT_BEFORE_SYNCHRONIZE_PRODUCT = 'beforeSynchronizeProduct';
 
     /**
+     * @event StripeProductSyncEvent Event triggered just after Stripe product data is saved to a product element.
+     *
+     * ---
+     *
+     * ```php
+     * use craft\stripe\events\StripeProductSyncEvent;
+     * use craft\stripe\services\Products;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Products::class,
+     *     Products::EVENT_AFTER_SYNCHRONIZE_PRODUCT,
+     *     function(StripeProductSyncEvent $event) {
+     *         // Do additional processing
+     *     }
+     * );
+     * ```
+     */
+    public const EVENT_AFTER_SYNCHRONIZE_PRODUCT = 'afterSynchronizeProduct';
+
+    /**
      * @return void
      * @throws \Throwable
      * @throws \yii\base\InvalidConfigException
@@ -132,7 +153,17 @@ class Products extends Component
         $productDataRecord = ProductDataRecord::find()->where(['stripeId' => $product->id])->one() ?: new ProductDataRecord();
         $productDataRecord->setAttributes($attributes, false);
 
-        return $productDataRecord->save();
+        $result = $productDataRecord->save();
+
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SYNCHRONIZE_PRODUCT)) {
+            $event = new StripeProductSyncEvent([
+                'element' => $productElement,
+                'source' => $product,
+            ]);
+            $this->trigger(self::EVENT_AFTER_SYNCHRONIZE_PRODUCT, $event);
+        }
+
+        return $result;
     }
 
     /**
