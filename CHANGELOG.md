@@ -2,8 +2,9 @@
 
 ## Unreleased
 
-- It’s now possible to associate Stripe Products with elements imported via Feed Me.
+- It’s now possible to associate Stripe Products and Subscriptions with elements imported via Feed Me.
 - Added `craft\stripe\feedme\fields\Products`.
+- Added `craft\stripe\feedme\fields\Subscriptions`.
 
 ## 1.3.3 - 2025-01-15
 
