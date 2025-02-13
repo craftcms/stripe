@@ -43,6 +43,7 @@ use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
 use craft\stripe\elements\Subscription;
 use craft\stripe\feedme\fields\Products as FeedMeProducts;
+use craft\stripe\feedme\fields\Subscriptions as FeedMeSubscriptions;
 use craft\stripe\fieldlayoutelements\PricesField;
 use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\fields\Subscriptions as SubscriptionsField;
@@ -356,6 +357,7 @@ class Plugin extends BasePlugin
 
         Event::on(FeedMeFields::class, FeedMeFields::EVENT_REGISTER_FEED_ME_FIELDS, function(RegisterFeedMeFieldsEvent $event) {
             $event->fields[] = FeedMeProducts::class;
+            $event->fields[] = FeedMeSubscriptions::class;
         });
     }
 
