@@ -69,7 +69,7 @@ class InvoicesController extends Controller
             $sqlQuery->andWhere([
                 'or',
                 ['like', "stripe_invoicedata.number", $search],
-                ['like', "stripe_invoicedata.customer_email", $search],
+                ['like', "stripe_invoicedata.customerEmail", $search],
             ]);
         }
 

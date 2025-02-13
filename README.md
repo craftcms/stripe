@@ -418,8 +418,11 @@ The Stripe plugin emits events just before updating each product, price, or subs
 Class + Event | Event Model | `$source`
 --- | --- | ---
 `craft\stripe\services\Products::EVENT_BEFORE_SYNCHRONIZE_PRODUCT` | `craft\stripe\events\StripeProductSyncEvent` | [Product](https://docs.stripe.com/api/products/object)
+`craft\stripe\services\Products::EVENT_AFTER_SYNCHRONIZE_PRODUCT` | `craft\stripe\events\StripeProductSyncEvent` | [Product](https://docs.stripe.com/api/products/object)
 `craft\stripe\services\Prices::EVENT_BEFORE_SYNCHRONIZE_PRICE` | `craft\stripe\events\StripePriceSyncEvent` | [Price](https://docs.stripe.com/api/prices/object)
+`craft\stripe\services\Prices::EVENT_AFTER_SYNCHRONIZE_PRICE` | `craft\stripe\events\StripePriceSyncEvent` | [Price](https://docs.stripe.com/api/prices/object)
 `craft\stripe\services\Subscriptions::EVENT_BEFORE_SYNCHRONIZE_SUBSCRIPTION` | `craft\stripe\events\StripeSubscriptionSyncEvent` | [Subscription](https://docs.stripe.com/api/subscriptions/object)
+`craft\stripe\services\Subscriptions::EVENT_AFTER_SYNCHRONIZE_SUBSCRIPTION` | `craft\stripe\events\StripeSubscriptionSyncEvent` | [Subscription](https://docs.stripe.com/api/subscriptions/object)
 
 ```php
 craft\base\Event::on(
