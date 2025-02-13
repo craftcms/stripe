@@ -55,6 +55,7 @@ class Prices extends Component
 
     /**
      * @event StripePriceSyncEvent Event triggered just after Stripe price data is saved to a price element.
+     * @since 1.4.0
      *
      * ---
      *

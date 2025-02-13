@@ -56,6 +56,7 @@ class Subscriptions extends Component
 
     /**
      * @event StripeSubscriptionSyncEvent Event triggered after Stripe subscription data is saved to a subscription element.
+     * @since 1.4.0
      *
      * ---
      *

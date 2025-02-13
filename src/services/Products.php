@@ -55,6 +55,7 @@ class Products extends Component
 
     /**
      * @event StripeProductSyncEvent Event triggered just after Stripe product data is saved to a product element.
+     * @since 1.4.0
      *
      * ---
      *
