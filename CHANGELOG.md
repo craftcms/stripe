@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- It’s now possible to associate Stripe Products and Subscriptions with elements imported via Feed Me.
+- Added `craft\stripe\feedme\fields\Products`.
+- Added `craft\stripe\feedme\fields\Subscriptions`.
+- Added `craft\stripe\services\Products::EVENT_AFTER_SYNCHRONIZE_PRODUCT` ([#82](https://github.com/craftcms/stripe/pull/82))
+- Added `craft\stripe\services\Prices::EVENT_AFTER_SYNCHRONIZE_PRICE` ([#82](https://github.com/craftcms/stripe/pull/82))
+- Added `craft\stripe\services\Subscriptions::EVENT_AFTER_SYNCHRONIZE_SUBSCRIPTION` ([#82](https://github.com/craftcms/stripe/pull/82))
 - Fixed a bug that occurred when searching through Stripe invoices via the control panel. ([#79](https://github.com/craftcms/stripe/issues/79))
 
 ## 1.3.3 - 2025-01-15

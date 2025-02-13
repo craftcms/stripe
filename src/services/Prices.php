@@ -30,7 +30,7 @@ use yii\base\Component;
 class Prices extends Component
 {
     /**
-     * @event StripePriceSyncEvent Event triggered just before Stripe price] data is saved to a price element.
+     * @event StripePriceSyncEvent Event triggered just before Stripe price data is saved to a price element.
      *
      * ---
      *
@@ -52,6 +52,28 @@ class Prices extends Component
      * ```
      */
     public const EVENT_BEFORE_SYNCHRONIZE_PRICE = 'beforeSynchronizePrice';
+
+    /**
+     * @event StripePriceSyncEvent Event triggered just after Stripe price data is saved to a price element.
+     * @since 1.4.0
+     *
+     * ---
+     *
+     * ```php
+     * use craft\stripe\events\StripePriceSyncEvent;
+     * use craft\stripe\services\Prices;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Prices::class,
+     *     Prices::EVENT_AFTER_SYNCHRONIZE_PRODUCT,
+     *     function(StripePriceSyncEvent $event) {
+     *         // Do additional processing
+     *     }
+     * );
+     * ```
+     */
+    public const EVENT_AFTER_SYNCHRONIZE_PRICE = 'afterSynchronizePrice';
 
     /**
      * @return void
@@ -151,7 +173,17 @@ class Prices extends Component
         $priceDataRecord = PriceDataRecord::find()->where(['stripeId' => $price->id])->one() ?: new PriceDataRecord();
         $priceDataRecord->setAttributes($attributes, false);
 
-        return $priceDataRecord->save();
+        $result = $priceDataRecord->save();
+
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SYNCHRONIZE_PRICE)) {
+            $event = new StripePriceSyncEvent([
+                'element' => $priceElement,
+                'source' => $price,
+            ]);
+            $this->trigger(self::EVENT_AFTER_SYNCHRONIZE_PRICE, $event);
+        }
+
+        return $result;
     }
 
     /**
