@@ -1,5 +1,11 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- It’s now possible to associate Stripe Products and Subscriptions with elements imported via Feed Me.
+- Added `craft\stripe\feedme\fields\Products`.
+- Added `craft\stripe\feedme\fields\Subscriptions`.
+
 ## 1.3.3 - 2025-01-15
 
 - Fixed a bug where user email addresses weren’t getting synced when `syncChangedUserEmailsToStripe` was set to `true`. ([#69](https://github.com/craftcms/stripe/issues/69))
