@@ -23,12 +23,23 @@ use yii\web\Response;
  */
 class SettingsController extends Controller
 {
+    private bool $readOnly;
+
     /**
      * @inheritdoc
      */
     public function beforeAction($action): bool
     {
-        $this->requireAdmin();
+        $viewActions = ['index'];
+        if (in_array($action->id, $viewActions)) {
+            // Some actions require admin but not allowAdminChanges
+            $this->requireAdmin(false);
+        } else {
+            // All other actions require an admin & allowAdminChanges
+            $this->requireAdmin();
+        }
+
+        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 
         return parent::beforeAction($action);
     }
@@ -64,7 +75,12 @@ class SettingsController extends Controller
         ];
         $selectedTab = 'apiConnection';
 
-        return $this->renderTemplate('stripe/settings/index', compact('settings', 'tabs', 'selectedTab'));
+        return $this->renderTemplate('stripe/settings/index', [
+            'settings' => $settings,
+            'tabs' => $tabs,
+            'selectedTab' => $selectedTab,
+            'readOnly' => $this->readOnly,
+        ]);
     }
 
     /**

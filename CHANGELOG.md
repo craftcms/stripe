@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- CKEditor now requires Craft CMS 5.6+.
+- Added support for viewing Stripe settings when `allowAdminChanges` is disabled. ([#78](https://github.com/craftcms/stripe/pull/78))
 - It’s now possible to associate Stripe Products and Subscriptions with elements imported via Feed Me. ([#81](https://github.com/craftcms/stripe/pull/81))
 - Added `craft\stripe\feedme\fields\Products`. ([#81](https://github.com/craftcms/stripe/pull/81))
 - Added `craft\stripe\feedme\fields\Subscriptions`. ([#81](https://github.com/craftcms/stripe/pull/81))

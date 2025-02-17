@@ -101,6 +101,11 @@ class Plugin extends BasePlugin
     /**
      * @inheritdoc
      */
+    public bool $hasReadOnlyCpSettings = true;
+
+    /**
+     * @inheritdoc
+     */
     public bool $hasCpSection = true;
 
     /**
@@ -204,6 +209,14 @@ class Plugin extends BasePlugin
      * @inheritdoc
      */
     public function getSettingsResponse(): mixed
+    {
+        return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('stripe/settings'));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsResponse(): mixed
     {
         return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('stripe/settings'));
     }
@@ -713,14 +726,12 @@ class Plugin extends BasePlugin
         ];
 
 
-        if (Craft::$app->getUser()->getIsAdmin() && Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+        if (Craft::$app->getUser()->getIsAdmin()) {
             $ret['subnav']['stripeSettings'] = [
                 'label' => Craft::t('stripe', 'Settings'),
                 'url' => 'stripe/settings',
             ];
-        }
 
-        if (Craft::$app->getUser()->getIsAdmin()) {
             $ret['subnav']['stripeWebhooks'] = [
                 'label' => Craft::t('stripe', 'Webhooks'),
                 'url' => 'stripe/webhooks',
