@@ -909,7 +909,7 @@ class SubscriptionQuery extends ElementQuery
         }
 
         if (isset($this->nextPaymentDate)) {
-            $this->subQuery->andWhere(Db::parseTimestampParam(
+            $this->subQuery->andWhere(Db::parseDateParam(
                 "stripe_subscriptiondata.currentPeriodEnd",
                 $this->nextPaymentDate,
             ));
