@@ -1,6 +1,6 @@
 # Release Notes for Stripe
 
-## Unreleased
+## 1.4.0 - 2025-02-18
 
 - Stripe now requires Craft CMS 5.6+.
 - It’s now possible to view (but not edit) plugin settings on environments where `allowAdminChanges` is disabled. ([#78](https://github.com/craftcms/stripe/pull/78))
