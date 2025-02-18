@@ -602,7 +602,7 @@ class SubscriptionQuery extends ElementQuery
      *
      * ```twig
      * {# Fetch {elements} with a payment due soon #}
-     * {% set aWeekFromNow = date('+7 days')|format('u') %}
+     * {% set aWeekFromNow = date('+7 days')|date('U') %}
      *
      * {% set {elements-var} = {twig-method}
      *   .nextPaymentDate("< #{aWeekFromNow}")
