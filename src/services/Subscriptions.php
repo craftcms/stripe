@@ -292,6 +292,30 @@ class Subscriptions extends Component
     }
 
     /**
+     * Resumes subscription by Stripe id.
+     *
+     * @param string $stripeId
+     * @return bool
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function resumeSubscriptionByStripeId(string $stripeId): bool
+    {
+        $stripe = Plugin::getInstance()->getApi()->getClient();
+
+        try {
+            $stripe->subscriptions->update($stripeId, [
+                'cancel_at_period_end' => false,
+            ]);
+        } catch (\Exception $exception) {
+            Craft::error($exception->getMessage(), 'stripe');
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Return Subscription element draft by its uid stored in the Stripe's checkout session's metadata.
      *
      * @param StripeSubscription $subscription

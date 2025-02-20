@@ -495,6 +495,27 @@ class Subscription extends Element
         }
     }
 
+    protected function safeActionMenuItems(): array
+    {
+        $items = parent::safeActionMenuItems();
+
+        // If
+        /** @var \Stripe\Subscription $stripeSubscription */
+        $stripeSubscription = $this->getData();
+        if ($this->stripeStatus === self::STRIPE_STATUS_ACTIVE && $stripeSubscription['cancel_at_period_end']) {
+            $items[] = [
+                'icon' => 'circle-play',
+                'label' => Craft::t('stripe', 'Resume subscription'),
+                'action' => 'stripe/subscriptions/resume',
+                'params' => [
+                    'stripeId' => $this->stripeId,
+                ],
+            ];
+        }
+
+        return $items;
+    }
+
     protected function destructiveActionMenuItems(): array
     {
         $items = parent::destructiveActionMenuItems();
@@ -508,15 +529,20 @@ class Subscription extends Element
                 'immediately' => true,
             ],
         ];
-        $items[] = [
-            'icon' => 'ban',
-            'label' => Craft::t('stripe', 'Cancel at period end'),
-            'action' => 'stripe/subscriptions/cancel',
-            'params' => [
-                'stripeId' => $this->stripeId,
-                'immediately' => false,
-            ],
-        ];
+
+        /** @var \Stripe\Subscription $stripeSubscription */
+        $stripeSubscription = $this->getData();
+        if (!$stripeSubscription['cancel_at_period_end']) {
+            $items[] = [
+                'icon' => 'ban',
+                'label' => Craft::t('stripe', 'Cancel at period end'),
+                'action' => 'stripe/subscriptions/cancel',
+                'params' => [
+                    'stripeId' => $this->stripeId,
+                    'immediately' => false,
+                ],
+            ];
+        }
 
         return $items;
     }
