@@ -5,7 +5,7 @@
 {% set fullPageForm = not readOnly %}
 
 {% if readOnly %}
-    {% set contentNotice = readOnlyNotice() %}
+    {% set contentNotice = readOnlyNotice() ?? '' %}
 {% endif %}
 
 {% block content %}
