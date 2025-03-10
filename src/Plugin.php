@@ -29,6 +29,7 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\feedme\events\RegisterFeedMeFieldsEvent;
 use craft\feedme\services\Fields as FeedMeFields;
 use craft\fields\Link;
+use craft\helpers\App;
 use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
@@ -748,6 +749,11 @@ class Plugin extends BasePlugin
      */
     private function getStripeMode(): string
     {
+        // Allow explicit override of the mode for old API keys
+        if (App::env('STRIPE_MODE')) {
+            return App::env('STRIPE_MODE');
+        }
+
         $secretKey = $this->getApi()->getApiKey();
 
         if (!str_starts_with($secretKey, 'sk_test_')) {
