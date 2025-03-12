@@ -62,7 +62,7 @@ class SubscriptionsController extends Controller
             return $this->asFailure(Craft::t('app', 'Unable to resume subscription.'));
         }
 
-        return $this->asSuccess(Craft::t('app', 'Subscription resumed'));
+        return $this->asSuccess(Craft::t('app', 'Subscription resumed.'));
     }
 
     public function actionCancel(): Response
@@ -81,6 +81,6 @@ class SubscriptionsController extends Controller
             return $this->asFailure(Craft::t('app', 'Unable to cancel subscription.'));
         }
 
-        return $this->asSuccess(Craft::t('app', 'Subscription cancelled'));
+        return $this->asSuccess(Craft::t('app', 'Subscription cancelled.'));
     }
 }
