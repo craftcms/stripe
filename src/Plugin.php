@@ -749,11 +749,6 @@ class Plugin extends BasePlugin
      */
     private function getStripeMode(): string
     {
-        // Allow explicit override of the mode for old API keys
-        if (App::env('STRIPE_MODE')) {
-            return App::env('STRIPE_MODE');
-        }
-
         $secretKey = $this->getApi()->getApiKey();
 
         if (!str_starts_with($secretKey, 'sk_test_')) {
