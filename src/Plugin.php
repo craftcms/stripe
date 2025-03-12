@@ -29,7 +29,6 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\feedme\events\RegisterFeedMeFieldsEvent;
 use craft\feedme\services\Fields as FeedMeFields;
 use craft\fields\Link;
-use craft\helpers\App;
 use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
