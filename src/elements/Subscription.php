@@ -501,9 +501,9 @@ class Subscription extends Element
 
         /** @var \Stripe\Subscription $stripeSubscription */
         $stripeSubscription = $this->getData();
-        if ($this->stripeStatus === self::STRIPE_STATUS_ACTIVE && $stripeSubscription['cancel_at_period_end']) {
+        if ($this->stripeStatus !== self::STRIPE_STATUS_CANCELED && $stripeSubscription['cancel_at_period_end']) {
             $items[] = [
-                'icon' => 'circle-play',
+                'icon' => 'play',
                 'label' => Craft::t('stripe', 'Resume subscription'),
                 'action' => 'stripe/subscriptions/resume',
                 'params' => [
@@ -538,7 +538,6 @@ class Subscription extends Element
                 'action' => 'stripe/subscriptions/cancel',
                 'params' => [
                     'stripeId' => $this->stripeId,
-                    'immediately' => false,
                 ],
             ];
         }
