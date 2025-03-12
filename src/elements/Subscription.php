@@ -499,7 +499,6 @@ class Subscription extends Element
     {
         $items = parent::safeActionMenuItems();
 
-        // If
         /** @var \Stripe\Subscription $stripeSubscription */
         $stripeSubscription = $this->getData();
         if ($this->stripeStatus === self::STRIPE_STATUS_ACTIVE && $stripeSubscription['cancel_at_period_end']) {
