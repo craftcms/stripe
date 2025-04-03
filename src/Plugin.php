@@ -401,11 +401,12 @@ class Plugin extends BasePlugin
                 return Html::beginTag('div') .
                     $event->sender->getStripeCustomers()->reduce(function($carry, $item) {
                         $carry = is_string($carry) ? $carry : '';
+
                         $carry .=
                             Html::beginTag('div') .
                             Html::tag(
                                 'a',
-                                $item->data['name'] . ' (' . $item->stripeId . ')' . Html::tag('span', '', ['data-icon' => 'external']),
+                                htmlspecialchars($item->data['name']) . ' (' . $item->stripeId . ')' . Html::tag('span', '', ['data-icon' => 'external']),
                                 ['href' => $item->getStripeEditUrl(), 'target' => '_blank']
                             ) .
                             Html::endTag('div');
