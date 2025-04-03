@@ -401,7 +401,6 @@ class Plugin extends BasePlugin
                 return Html::beginTag('div') .
                     $event->sender->getStripeCustomers()->reduce(function($carry, $item) {
                         $carry = is_string($carry) ? $carry : '';
-
                         $carry .=
                             Html::beginTag('div') .
                             Html::tag(
