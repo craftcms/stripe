@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Clarified that timestamps must be passed into `nextPaymentDate` queries. ([#83](https://github.com/craftcms/stripe/pull/83))
+- Fixed an XSS vulnerability.
 
 ## 1.4.0 - 2025-02-18
 
