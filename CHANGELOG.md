@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Clarified that timestamps must be passed into `nextPaymentDate` queries. ([#83](https://github.com/craftcms/stripe/pull/83))
+
 ## 1.4.0 - 2025-02-18
 
 - Stripe now requires Craft CMS 5.6+.

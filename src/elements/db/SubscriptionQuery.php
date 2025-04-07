@@ -588,19 +588,21 @@ class SubscriptionQuery extends ElementQuery
     /**
      * Narrows the query results based on the subscriptions’ next payment dates.
      *
+     * Values must be a unix timestamp.
+     *
      * Possible values include:
      *
      * | Value | Fetches {elements}…
      * | - | -
-     * | `'>= 2018-04-01'` | with a next payment on or after 2018-04-01.
-     * | `'< 2018-05-01'` | with a next payment before 2018-05-01
-     * | `['and', '>= 2018-04-04', '< 2018-05-01']` | with a next payment between 2018-04-01 and 2018-05-01.
+     * | `'>= 1522558800'` | with a next payment on or after 1522558800 (2018-04-01).
+     * | `'< 1525150800'` | with a next payment before 1525150800 (2018-05-01)
+     * | `['and', '>= 1522558800', '< 1525150800']` | with a next payment between 1522558800 (2018-04-01) and 1525150800 (2018-05-01).
      *
      * ---
      *
      * ```twig
      * {# Fetch {elements} with a payment due soon #}
-     * {% set aWeekFromNow = date('+7 days')|atom %}
+     * {% set aWeekFromNow = date('+7 days')|date('U') %}
      *
      * {% set {elements-var} = {twig-method}
      *   .nextPaymentDate("< #{aWeekFromNow}")
@@ -609,7 +611,7 @@ class SubscriptionQuery extends ElementQuery
      *
      * ```php
      * // Fetch {elements} with a payment due soon
-     * $aWeekFromNow = new \DateTime('+7 days')->format(\DateTime::ATOM);
+     * $aWeekFromNow = new \DateTime('+7 days')->getTimestamp()
      *
      * ${elements-var} = {php-method}
      *     ->nextPaymentDate("< {$aWeekFromNow}")
