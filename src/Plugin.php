@@ -405,7 +405,7 @@ class Plugin extends BasePlugin
                             Html::beginTag('div') .
                             Html::tag(
                                 'a',
-                                $item->data['name'] . ' (' . $item->stripeId . ')' . Html::tag('span', '', ['data-icon' => 'external']),
+                                htmlspecialchars($item->data['name']) . ' (' . $item->stripeId . ')' . Html::tag('span', '', ['data-icon' => 'external']),
                                 ['href' => $item->getStripeEditUrl(), 'target' => '_blank']
                             ) .
                             Html::endTag('div');
