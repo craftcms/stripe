@@ -116,7 +116,7 @@ class Subscription
                         }
                         break;
                     case 'products':
-                        $products = $subscription->getProducts();
+                        $products = array_filter($subscription->getProducts());
                         $html = '<ul class="elements chips">';
                         foreach ($products as $product) {
                             $html .= '<li>' . Cp::elementChipHtml($product, ['size' => Cp::CHIP_SIZE_SMALL]) . '</li>';
