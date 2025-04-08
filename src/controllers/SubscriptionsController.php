@@ -47,7 +47,7 @@ class SubscriptionsController extends Controller
         return SubscriptionHelper::renderCardHtml($product);
     }
 
-    public function actionResume(): Response
+    public function actionResume(): ?Response
     {
         $this->requirePostRequest();
         $stripeId = Craft::$app->getRequest()->getRequiredParam('stripeId');
@@ -65,7 +65,12 @@ class SubscriptionsController extends Controller
         return $this->asSuccess(Craft::t('app', 'Subscription resumed.'));
     }
 
-    public function actionCancel(): Response
+    /**
+     * Cancels subscription by its stripe id, either immediately or at period end.
+     *
+     * @return Response|null
+     */
+    public function actionCancel(): ?Response
     {
         $this->requirePostRequest();
         $stripeId = Craft::$app->getRequest()->getRequiredParam('stripeId');
