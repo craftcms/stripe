@@ -519,27 +519,30 @@ class Subscription extends Element
     {
         $items = parent::destructiveActionMenuItems();
 
-        $items[] = [
-            'icon' => 'ban',
-            'label' => Craft::t('stripe', 'Cancel Immediately'),
-            'action' => 'stripe/subscriptions/cancel',
-            'params' => [
-                'stripeId' => $this->stripeId,
-                'immediately' => true,
-            ],
-        ];
-
-        /** @var \Stripe\Subscription $stripeSubscription */
-        $stripeSubscription = $this->getData();
-        if (!$stripeSubscription['cancel_at_period_end']) {
+        if ($this->stripeStatus !== self::STRIPE_STATUS_CANCELED) {
             $items[] = [
                 'icon' => 'ban',
-                'label' => Craft::t('stripe', 'Cancel at period end'),
+                'label' => Craft::t('stripe', 'Cancel Immediately'),
                 'action' => 'stripe/subscriptions/cancel',
                 'params' => [
                     'stripeId' => $this->stripeId,
+                    'immediately' => true,
                 ],
             ];
+
+
+            /** @var \Stripe\Subscription $stripeSubscription */
+            $stripeSubscription = $this->getData();
+            if (!$stripeSubscription['cancel_at_period_end']) {
+                $items[] = [
+                    'icon' => 'ban',
+                    'label' => Craft::t('stripe', 'Cancel at period end'),
+                    'action' => 'stripe/subscriptions/cancel',
+                    'params' => [
+                        'stripeId' => $this->stripeId,
+                    ],
+                ];
+            }
         }
 
         return $items;
