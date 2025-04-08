@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Clarified that timestamps must be passed into `nextPaymentDate` queries. ([#83](https://github.com/craftcms/stripe/pull/83))
+- It’s now possible to resume a subscription that was set to cancel at period end. ([#84](https://github.com/craftcms/stripe/pull/84))
 - Fixed an issue that could occur when editing a subscription with corresponding product element not synced into the cms. ([#86](https://github.com/craftcms/stripe/pull/86))
 - Fixed an XSS vulnerability.
 
