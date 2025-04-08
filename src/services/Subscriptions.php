@@ -20,6 +20,7 @@ use craft\stripe\events\StripeSubscriptionSyncEvent;
 use craft\stripe\models\Customer;
 use craft\stripe\Plugin;
 use craft\stripe\records\SubscriptionData as SubscriptionDataRecord;
+use Stripe\Stripe;
 use Stripe\Subscription as StripeSubscription;
 use yii\base\Component;
 
@@ -277,12 +278,38 @@ class Subscriptions extends Component
 
         try {
             if ($immediately) {
-                $stripe->subscriptions->cancel($stripeId);
+                $subscription = $stripe->subscriptions->cancel($stripeId);
             } else {
-                $stripe->subscriptions->update($stripeId, [
+                $subscription = $stripe->subscriptions->update($stripeId, [
                     'cancel_at_period_end' => true,
                 ]);
             }
+            Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription($subscription);
+        } catch (\Exception $exception) {
+            Craft::error($exception->getMessage(), 'stripe');
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Resumes subscription by Stripe id.
+     *
+     * @param string $stripeId
+     * @return bool
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function resumeSubscriptionByStripeId(string $stripeId): bool
+    {
+        $stripe = Plugin::getInstance()->getApi()->getClient();
+
+        try {
+            $subscription = $stripe->subscriptions->update($stripeId, [
+                'cancel_at_period_end' => false,
+            ]);
+            Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription($subscription);
         } catch (\Exception $exception) {
             Craft::error($exception->getMessage(), 'stripe');
             return false;

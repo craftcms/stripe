@@ -47,7 +47,30 @@ class SubscriptionsController extends Controller
         return SubscriptionHelper::renderCardHtml($product);
     }
 
-    public function actionCancel(): Response
+    public function actionResume(): ?Response
+    {
+        $this->requirePostRequest();
+        $stripeId = Craft::$app->getRequest()->getRequiredParam('stripeId');
+
+        $subscriptionElement = SubscriptionElement::find()->stripeId($stripeId)->one();
+        if (!$subscriptionElement) {
+            Craft::error("Resume subscription - subscription element with Stripe ID {$stripeId} not found.", 'stripe');
+            return $this->asFailure(Craft::t('app', 'Unable to resume subscription.'));
+        }
+
+        if (!Plugin::getInstance()->getSubscriptions()->resumeSubscriptionByStripeId($subscriptionElement->stripeId)) {
+            return $this->asFailure(Craft::t('app', 'Unable to resume subscription.'));
+        }
+
+        return $this->asSuccess(Craft::t('app', 'Subscription resumed.'));
+    }
+
+    /**
+     * Cancels subscription by its stripe id, either immediately or at period end.
+     *
+     * @return Response|null
+     */
+    public function actionCancel(): ?Response
     {
         $this->requirePostRequest();
         $stripeId = Craft::$app->getRequest()->getRequiredParam('stripeId');
@@ -63,6 +86,6 @@ class SubscriptionsController extends Controller
             return $this->asFailure(Craft::t('app', 'Unable to cancel subscription.'));
         }
 
-        return $this->asSuccess(Craft::t('app', 'Subscription cancelled'));
+        return $this->asSuccess(Craft::t('app', 'Subscription cancelled.'));
     }
 }
