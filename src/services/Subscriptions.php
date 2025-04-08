@@ -300,6 +300,7 @@ class Subscriptions extends Component
      * @return bool
      * @throws \Throwable
      * @throws \yii\db\StaleObjectException
+     * @since 1.5.0
      */
     public function resumeSubscriptionByStripeId(string $stripeId): bool
     {

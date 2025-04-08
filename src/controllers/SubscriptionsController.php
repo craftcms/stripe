@@ -47,6 +47,12 @@ class SubscriptionsController extends Controller
         return SubscriptionHelper::renderCardHtml($product);
     }
 
+    /**
+     * Resumes subscription by Stripe id.
+     * 
+     * @return Response|null
+     * @since 1.5.0
+     */
     public function actionResume(): ?Response
     {
         $this->requirePostRequest();

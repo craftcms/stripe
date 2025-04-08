@@ -1,6 +1,6 @@
 # Release Notes for Stripe
 
-## Unreleased
+## 1.5.0 - 2025-04-08
 
 - It’s now possible to resume subscriptions that are set to cancel at period end. ([#84](https://github.com/craftcms/stripe/pull/84))
 - Fixed an error that could occur when editing a subscription if its corresponding product hadn’t been synced yet. ([#86](https://github.com/craftcms/stripe/pull/86))
