@@ -20,6 +20,7 @@ return [
     'API Version' => 'API Version',
     'Archived in Stripe' => 'Archived in Stripe',
     'Are you sure you want run a complete sync of all Stripe Products, Prices, Subscriptions, Customers, Invoices and Payment Methods?' => 'Are you sure you want run a complete sync of all Stripe Products, Prices, Subscriptions, Customers, Invoices and Payment Methods?',
+    'Are you sure you want to sync this user\'s Stripe customer data?' => 'Are you sure you want to sync this user\'s Stripe customer data?',
     'Are you sure you want to delete this webhook?' => 'Are you sure you want to delete this webhook?',
     'Cancel at period end' => 'Cancel at period end',
     'Cancel at' => 'Cancel at',
