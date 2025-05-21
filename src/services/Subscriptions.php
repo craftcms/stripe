@@ -120,6 +120,13 @@ class Subscriptions extends Component
      */
     public function createOrUpdateSubscription(StripeSubscription $subscription): bool
     {
+        // Duplicates seem to be possible: https://github.com/craftcms/stripe/issues/44
+        $lockKey = "stripe-subscription:$subscription->id";
+        $mutex = Craft::$app->getMutex();
+        if (!$mutex->acquire($lockKey, 15)) {
+            throw new MutexException($lockKey, 'Could not acquire a lock to save the create or update subscription.');
+        }
+
         // Find the subscription element or create one
         /** @var SubscriptionElement|null $subscriptionElement */
         $subscriptionElement = SubscriptionElement::find()
