@@ -10,6 +10,7 @@ namespace craft\stripe\services;
 use Craft;
 use craft\elements\User;
 use craft\enums\CmsEdition;
+use craft\errors\MutexException;
 use craft\events\ConfigEvent;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig;
@@ -124,7 +125,7 @@ class Subscriptions extends Component
         $lockKey = "stripe-subscription:$subscription->id";
         $mutex = Craft::$app->getMutex();
         if (!$mutex->acquire($lockKey, 15)) {
-            throw new MutexException($lockKey, 'Could not acquire a lock to save the create or update subscription.');
+            throw new MutexException($lockKey, 'Could not acquire a lock to create or update subscription.');
         }
 
         // Find the subscription element or create one
