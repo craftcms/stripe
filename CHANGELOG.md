@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Fixed a bug where duplicate subscriptions could be created. ([#44](https://github.com/craftcms/stripe/issues/44))
+
 ## 1.5.0 - 2025-04-08
 
 - It’s now possible to resume subscriptions that are set to cancel at period end. ([#84](https://github.com/craftcms/stripe/pull/84))
