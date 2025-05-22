@@ -624,7 +624,7 @@ class Plugin extends BasePlugin
                             $event->items[] = [
                                 'action' => 'stripe/sync/customer',
                                 'type' => MenuItemType::Button,
-                                'confirm' => Craft::t('stripe', 'Are you sure you want to sync this user\'s Stripe customer data?'),
+                                'confirm' => Craft::t('stripe', 'Are you sure you want to sync this user’s Stripe customer data?'),
                                 'params' => [
                                     'stripeIds' => $stripeIds->toArray(),
                                 ],
