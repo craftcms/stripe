@@ -49,7 +49,7 @@ class SubscriptionsController extends Controller
 
     /**
      * Resumes subscription by Stripe id.
-     * 
+     *
      * @return Response|null
      * @since 1.5.0
      */
