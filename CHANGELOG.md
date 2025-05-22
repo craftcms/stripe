@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- The User edit page now prompts for confirmation before syncing customer data from Stripe. ([#87](https://github.com/craftcms/stripe/pull/87))
+
 ## 1.5.0 - 2025-04-08
 
 - It’s now possible to resume subscriptions that are set to cancel at period end. ([#84](https://github.com/craftcms/stripe/pull/84))
