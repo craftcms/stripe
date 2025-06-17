@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -8,8 +9,10 @@
 namespace craft\stripe\services;
 
 use Craft;
+use craft\db\Table as CraftTable;
 use craft\events\ConfigEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
@@ -21,6 +24,7 @@ use craft\stripe\Plugin;
 use craft\stripe\records\PriceData as PriceDataRecord;
 use Stripe\Price as StripePrice;
 use yii\base\Component;
+use yii\db\Query;
 
 /**
  * Prices service
@@ -166,6 +170,28 @@ class Prices extends Component
             return false;
         }
 
+        // Ensure the price is properly linked in elements_owners
+        $ownerId = $priceElement->getOwnerId();
+        if ($ownerId) {
+            $exists = (new Query())
+                ->from(CraftTable::ELEMENTS_OWNERS)
+                ->where([
+                    'elementId' => $priceElement->id,
+                    'ownerId' => $ownerId,
+                ])
+                ->exists();
+
+            if (!$exists) {
+                Db::insert(CraftTable::ELEMENTS_OWNERS, [
+                    'elementId' => $priceElement->id,
+                    'ownerId' => $ownerId,
+                    'sortOrder' => 1,
+                ]);
+            }
+        }
+
+        // Remove ownerId and primaryOwnerId from attributes before saving PriceDataRecord
+        unset($attributes['ownerId'], $attributes['primaryOwnerId']);
         $attributes['priceId'] = $priceElement->id;
 
         // Find the price data or create one
