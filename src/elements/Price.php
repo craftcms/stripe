@@ -528,7 +528,7 @@ class Price extends Element implements NestedElementInterface
         }
 
         $record->stripeId = $this->stripeId;
-        $record->primaryOwnerId = $this->getPrimaryOwnerId(); // Commented out to fix the issue with the price not being linked to the product
+        //$record->primaryOwnerId = $this->getPrimaryOwnerId(); // Commented out to fix the issue with the price not being linked to the product
 
         // We want to always have the same date as the element table, based on the logic for updating these in the element service i.e re-saving
         $record->dateUpdated = $this->dateUpdated;
