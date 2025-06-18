@@ -556,6 +556,26 @@ class Product extends Element
         $record->save(false);
 
         parent::afterSave($isNew);
+
+        if ($isNew) {
+            // check if price was created earlier on (webhook for the price creation can come before one for the product creation)
+            // this will happen consistently if you're using e.g. the Stripe Shell/CLI to create a product with a default price
+
+            // check if we already have any prices that match this product's stripeId
+            $prices = Price::find()->stripeProductId($this->stripeId)->all();
+
+            // if we do
+            if (count($prices) > 0) {
+                foreach ($prices as $price) {
+                    // and the price doesn't have ownership data
+                    if ($price->primaryOwnerId === null) {
+                        // create the ownership relation
+                        $price->primaryOwnerId = $this->id;
+                        Craft::$app->getElements()->saveElement($price);
+                    }
+                }
+            }
+        }
     }
 
     /**

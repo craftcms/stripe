@@ -575,20 +575,15 @@ class Price extends Element implements NestedElementInterface
                     ->max('[[eo.sortOrder]]');
                 $this->sortOrder = $max ? $max + 1 : 1;
             }
-            if ($isNew) {
-                Db::insert(CraftTable::ELEMENTS_OWNERS, [
-                    'elementId' => $this->id,
-                    'ownerId' => $ownerId,
-                    'sortOrder' => $this->sortOrder,
-                ]);
-            } else {
-                Db::update(CraftTable::ELEMENTS_OWNERS, [
-                    'sortOrder' => $this->sortOrder,
-                ], [
-                    'elementId' => $this->id,
-                    'ownerId' => $ownerId,
-                ]);
-            }
+
+            Db::upsert(CraftTable::ELEMENTS_OWNERS, [
+                'elementId' => $this->id,
+                'ownerId' => $ownerId,
+                'sortOrder' => $this->sortOrder,
+            ], [
+                'elementId' => $this->id,
+                'ownerId' => $ownerId,
+            ]);
         }
 
         $this->setDirtyAttributes($dirtyAttributes);
