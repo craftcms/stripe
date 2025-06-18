@@ -8,6 +8,7 @@
 namespace craft\stripe\services;
 
 use Craft;
+use craft\errors\MutexException;
 use craft\events\ConfigEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
@@ -106,6 +107,12 @@ class Products extends Component
      */
     public function createOrUpdateProduct(StripeProduct $product): bool
     {
+        $lockKey = "stripe-product:$product->id";
+        $mutex = Craft::$app->getMutex();
+        if (!$mutex->acquire($lockKey, 15)) {
+            throw new MutexException($lockKey, 'Could not acquire a lock to create or update product.');
+        }
+
         // Find the product element or create one
         /** @var ProductElement|null $productElement */
         $productElement = ProductElement::find()
@@ -137,12 +144,14 @@ class Products extends Component
 
         if (!$event->isValid) {
             Craft::warning("Synchronization of Stripe product ID #{$product->id} was stopped by a plugin.", 'stripe');
+            $mutex->release($lockKey);
 
             return false;
         }
 
         if (!Craft::$app->getElements()->saveElement($productElement)) {
             Craft::error("Failed to synchronize Stripe product ID #{$product->id}.", 'stripe');
+            $mutex->release($lockKey);
 
             return false;
         }
@@ -155,6 +164,8 @@ class Products extends Component
         $productDataRecord->setAttributes($attributes, false);
 
         $result = $productDataRecord->save();
+
+        $mutex->release($lockKey);
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_SYNCHRONIZE_PRODUCT)) {
             $event = new StripeProductSyncEvent([
