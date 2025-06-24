@@ -4,6 +4,7 @@
 
 - The User edit page now prompts for confirmation before syncing customer data from Stripe. ([#87](https://github.com/craftcms/stripe/pull/87))
 - Fixed a bug where duplicate subscriptions could be created. ([#44](https://github.com/craftcms/stripe/issues/44))
+- Fixed a bug that could occur when syncing products and prices from Stripe via webhooks. ([#92](https://github.com/craftcms/stripe/pull/92))
 
 ## 1.5.0 - 2025-04-08
 
