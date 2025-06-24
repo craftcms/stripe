@@ -26,14 +26,14 @@ class Webhooks extends Component
      * ---
      *
      * ```php
-     * use craft\stripe\events\StripeWebhookEvent;
+     * use craft\stripe\events\StripeEvent;
      * use craft\stripe\services\Webhooks;
      * use yii\base\Event;
      *
      * Event::on(
      *     Webhooks::class,
      *     Webhooks::EVENT_STRIPE_EVENT,
-     *     function(StripeWebhookEvent $event) {
+     *     function(StripeEvent $event) {
      *         $stripeEvent = $event->stripeEvent;
      *         $eventObject = $stripeEvent->data->object;
      *         // process the event based on its type
