@@ -7,7 +7,9 @@
 
 namespace craft\stripe\services;
 
+use Craft;
 use craft\db\Query;
+use craft\errors\MutexException;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\stripe\db\Table;
@@ -75,6 +77,12 @@ class Customers extends Component
      */
     public function createOrUpdateCustomer(StripeCustomer $customer): bool
     {
+        $lockKey = "stripe-customer:$customer->id";
+        $mutex = Craft::$app->getMutex();
+        if (!$mutex->acquire($lockKey, 15)) {
+            throw new MutexException($lockKey, 'Could not acquire a lock to create or update price.');
+        }
+
         // Build our attribute set from the Stripe payment method data:
         $attributes = [
             'stripeId' => $customer->id,
@@ -88,7 +96,10 @@ class Customers extends Component
         $customerDataRecord = CustomerDataRecord::find()->where(['stripeId' => $customer->id])->one() ?: new CustomerDataRecord();
         $customerDataRecord->setAttributes($attributes, false);
 
-        return $customerDataRecord->save();
+        $result = $customerDataRecord->save();
+        $mutex->release($lockKey);
+
+        return $result;
     }
 
     /**

@@ -10,6 +10,7 @@ namespace craft\stripe\services;
 use Craft;
 use craft\elements\User;
 use craft\enums\CmsEdition;
+use craft\errors\MutexException;
 use craft\events\ConfigEvent;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig;
@@ -140,6 +141,13 @@ class Subscriptions extends Component
      */
     public function createOrUpdateSubscriptionElement(StripeSubscription $subscription, SubscriptionElement $subscriptionElement): bool
     {
+        // Duplicates seem to be possible: https://github.com/craftcms/stripe/issues/44
+        $lockKey = "stripe-subscription:$subscription->id";
+        $mutex = Craft::$app->getMutex();
+        if (!$mutex->acquire($lockKey, 15)) {
+            throw new MutexException($lockKey, 'Could not acquire a lock to create or update subscription.');
+        }
+
         // Build our attribute set from the Stripe subscription data:
         $attributes = [
             'stripeId' => $subscription->id,
@@ -160,6 +168,7 @@ class Subscriptions extends Component
 
         if (!$event->isValid) {
             Craft::warning("Synchronization of Stripe subscription ID #{$subscription->id} was stopped by a plugin.", 'stripe');
+            $mutex->release($lockKey);
 
             return false;
         }
@@ -169,12 +178,14 @@ class Subscriptions extends Component
                 $subscriptionElement = Craft::$app->getDrafts()->applyDraft($subscriptionElement);
             } catch (\Exception $e) {
                 Craft::error("Failed to synchronize Stripe subscription ID #{$subscription->id}. {$e->getMessage()}", 'stripe');
+                $mutex->release($lockKey);
 
                 return false;
             }
         } else {
             if (!Craft::$app->getElements()->saveElement($subscriptionElement)) {
                 Craft::error("Failed to synchronize Stripe subscription ID #{$subscription->id}.", 'stripe');
+                $mutex->release($lockKey);
 
                 return false;
             }
@@ -193,6 +204,8 @@ class Subscriptions extends Component
         $subscriptionDataRecord->setAttributes($attributes, false);
 
         $result = $subscriptionDataRecord->save();
+
+        $mutex->release($lockKey);
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_SYNCHRONIZE_SUBSCRIPTION)) {
             $event = new StripeSubscriptionSyncEvent([

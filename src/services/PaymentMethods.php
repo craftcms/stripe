@@ -10,6 +10,7 @@ namespace craft\stripe\services;
 use Craft;
 use craft\db\Query;
 use craft\elements\User;
+use craft\errors\MutexException;
 use craft\helpers\Json;
 use craft\stripe\db\Table;
 use craft\stripe\models\PaymentMethod;
@@ -76,6 +77,12 @@ class PaymentMethods extends Component
      */
     public function createOrUpdatePaymentMethod(StripePaymentMethod $paymentMethod): bool
     {
+        $lockKey = "stripe-price:$paymentMethod->id";
+        $mutex = Craft::$app->getMutex();
+        if (!$mutex->acquire($lockKey, 15)) {
+            throw new MutexException($lockKey, 'Could not acquire a lock to create or update payment method.');
+        }
+
         // Build our attribute set from the Stripe payment method data:
         $attributes = [
             'stripeId' => $paymentMethod->id,
@@ -88,7 +95,10 @@ class PaymentMethods extends Component
         $paymentMethodDataRecord = PaymentMethodDataRecord::find()->where(['stripeId' => $paymentMethod->id])->one() ?: new PaymentMethodDataRecord();
         $paymentMethodDataRecord->setAttributes($attributes, false);
 
-        return $paymentMethodDataRecord->save();
+        $result = $paymentMethodDataRecord->save();
+        $mutex->release($lockKey);
+
+        return $result;
     }
 
     /**

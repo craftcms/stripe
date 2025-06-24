@@ -10,6 +10,7 @@ namespace craft\stripe\services;
 use Craft;
 use craft\db\Query;
 use craft\elements\User;
+use craft\errors\MutexException;
 use craft\helpers\Json;
 use craft\stripe\db\Table;
 use craft\stripe\models\Invoice;
@@ -76,6 +77,12 @@ class Invoices extends Component
      */
     public function createOrUpdateInvoice(StripeInvoice $invoice): bool
     {
+        $lockKey = "stripe-invoice:$invoice->id";
+        $mutex = Craft::$app->getMutex();
+        if (!$mutex->acquire($lockKey, 15)) {
+            throw new MutexException($lockKey, 'Could not acquire a lock to create or update invoice.');
+        }
+
         // Build our attribute set from the Stripe payment method data:
         $attributes = [
             'stripeId' => $invoice->id,
@@ -88,7 +95,10 @@ class Invoices extends Component
         $invoiceDataRecord = InvoiceDataRecord::find()->where(['stripeId' => $invoice->id])->one() ?: new InvoiceDataRecord();
         $invoiceDataRecord->setAttributes($attributes, false);
 
-        return $invoiceDataRecord->save();
+        $result = $invoiceDataRecord->save();
+        $mutex->release($lockKey);
+
+        return $result;
     }
 
     /**

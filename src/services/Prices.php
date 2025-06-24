@@ -8,6 +8,7 @@
 namespace craft\stripe\services;
 
 use Craft;
+use craft\errors\MutexException;
 use craft\events\ConfigEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
@@ -106,6 +107,12 @@ class Prices extends Component
      */
     public function createOrUpdatePrice(StripePrice $price): bool
     {
+        $lockKey = "stripe-price:$price->id";
+        $mutex = Craft::$app->getMutex();
+        if (!$mutex->acquire($lockKey, 15)) {
+            throw new MutexException($lockKey, 'Could not acquire a lock to create or update price.');
+        }
+
         // Find the price element or create one
         /** @var PriceElement|null $priceElement */
         $priceElement = PriceElement::find()
@@ -156,12 +163,14 @@ class Prices extends Component
 
         if (!$event->isValid) {
             Craft::warning("Synchronization of Stripe price ID #{$price->id} was stopped by a plugin.", 'stripe');
+            $mutex->release($lockKey);
 
             return false;
         }
 
         if (!Craft::$app->getElements()->saveElement($priceElement)) {
             Craft::error("Failed to synchronize Stripe price ID #{$price->id}.", 'stripe');
+            $mutex->release($lockKey);
 
             return false;
         }
@@ -174,6 +183,8 @@ class Prices extends Component
         $priceDataRecord->setAttributes($attributes, false);
 
         $result = $priceDataRecord->save();
+
+        $mutex->release($lockKey);
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_SYNCHRONIZE_PRICE)) {
             $event = new StripePriceSyncEvent([
