@@ -1,6 +1,6 @@
 # Release Notes for Stripe
 
-## Unreleased
+## 1.6.0 - 2025-06-25
 
 - The “Sync from Stripe” user action now shows a confirmation dialog before syncing customer data from Stripe. ([#87](https://github.com/craftcms/stripe/pull/87))
 - Fixed a bug where duplicate subscriptions could be created. ([#44](https://github.com/craftcms/stripe/issues/44))
