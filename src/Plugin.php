@@ -30,7 +30,6 @@ use craft\feedme\events\RegisterFeedMeFieldsEvent;
 use craft\feedme\services\Fields as FeedMeFields;
 use craft\fields\Link;
 use craft\helpers\Html;
-use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\records\User as UserRecord;
@@ -47,7 +46,7 @@ use craft\stripe\feedme\fields\Subscriptions as FeedMeSubscriptions;
 use craft\stripe\fieldlayoutelements\PricesField;
 use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\fields\Subscriptions as SubscriptionsField;
-use craft\stripe\jobs\SyncData;
+use craft\stripe\jobs\SyncSingleCustomerData;
 use craft\stripe\linktypes\Product as ProductLinkType;
 use craft\stripe\models\Settings;
 use craft\stripe\services\Api;
@@ -164,7 +163,7 @@ class Plugin extends BasePlugin
         $this->registerConditionRules();
         $this->registerUserActions();
         $this->registerFeedMeEvents();
-        $this->handleUserElementChanges();
+        $this->registerUserElementChanges();
 
         $request = Craft::$app->getRequest();
         if (!$request->getIsConsoleRequest()) {
@@ -642,8 +641,10 @@ class Plugin extends BasePlugin
      *
      * @return void
      */
-    private function handleUserElementChanges(): void
+    private function registerUserElementChanges(): void
     {
+        $client = $this->getApi()->getClient();
+
         // if email address got changed - update stripe
         Event::on(User::class, User::EVENT_BEFORE_SAVE, function(ModelEvent $event) {
             /** @var User|StripeCustomerBehavior $user */
@@ -670,8 +671,6 @@ class Plugin extends BasePlugin
             }
         });
 
-        // if user is saved, and they have an email address and exist in stripe, but we don't have their stripe customer data
-        // kick off queue job to sync customer-related data
         Event::on(User::class, User::EVENT_AFTER_SAVE, function(ModelEvent $event) {
             /** @var User|StripeCustomerBehavior $user */
             $user = $event->sender;
@@ -686,18 +685,19 @@ class Plugin extends BasePlugin
                 return;
             }
 
-            // Search for customer in Stripe by their email address:
+            // Check Stripe for customers with this email and queue sync jobs for each
             try {
-                // If the plugin isn't configured yet, this may fail:
-                $stripe = $this->getApi()->getClient();
-                $stripeCustomers = $stripe->customers->search(['query' => "email:'{$user->email}'"]);
-
-                // If we found Stripe customers with that email address, kick off the queue job to sync data:
-                if (!$stripeCustomers->isEmpty()) {
-                    Queue::push(new SyncData());
+                $api = $this->getApi();
+                $stripeCustomers = $api->fetchAllCustomers(['email' => $user->email]);
+                
+                foreach ($stripeCustomers as $stripeCustomer) {
+                    // Queue a job to sync this customer's data
+                    Craft::$app->queue->push(new SyncSingleCustomerData([
+                        'stripeCustomerId' => $stripeCustomer->id,
+                    ]));
                 }
-            } catch (\Stripe\Exception\ExceptionInterface $e) {
-                Craft::error("Tried to synchronize user data, but the plugin was not fully configured: {$e->getMessage()}", 'stripe');
+            } catch (\Exception $e) {
+                Craft::error("Unable to fetch Stripe customers for email {$user->email}: {$e->getMessage()}", 'stripe');
             }
         });
     }
