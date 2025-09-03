@@ -16,8 +16,8 @@ use craft\stripe\db\Table;
 use craft\stripe\models\Invoice;
 use craft\stripe\Plugin;
 use craft\stripe\records\InvoiceData as InvoiceDataRecord;
-use Stripe\Invoice as StripeInvoice;
 use Stripe\Customer as StripeCustomer;
+use Stripe\Invoice as StripeInvoice;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
