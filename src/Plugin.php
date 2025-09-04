@@ -30,6 +30,7 @@ use craft\feedme\events\RegisterFeedMeFieldsEvent;
 use craft\feedme\services\Fields as FeedMeFields;
 use craft\fields\Link;
 use craft\helpers\Html;
+use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\records\User as UserRecord;
@@ -643,8 +644,6 @@ class Plugin extends BasePlugin
      */
     private function registerUserElementChanges(): void
     {
-        $client = $this->getApi()->getClient();
-
         // if email address got changed - update stripe
         Event::on(User::class, User::EVENT_BEFORE_SAVE, function(ModelEvent $event) {
             /** @var User|StripeCustomerBehavior $user */
@@ -692,7 +691,7 @@ class Plugin extends BasePlugin
                 
                 foreach ($stripeCustomers as $stripeCustomer) {
                     // Queue a job to sync this customer's data
-                    Craft::$app->queue->push(new SyncSingleCustomerData([
+                    Queue::push(new SyncSingleCustomerData([
                         'stripeCustomerId' => $stripeCustomer->id,
                     ]));
                 }
