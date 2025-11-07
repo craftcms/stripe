@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Fixed a bug where the invoice amount wasn’t formatted correctly for zero-decimal currencies. ([#96](https://github.com/craftcms/stripe/issues/96))
+
 ## 1.6.0 - 2025-06-25
 
 - The “Sync from Stripe” user action now shows a confirmation dialog before syncing customer data from Stripe. ([#87](https://github.com/craftcms/stripe/pull/87))
