@@ -13,6 +13,7 @@ use craft\elements\User;
 use craft\errors\MutexException;
 use craft\helpers\Json;
 use craft\stripe\db\Table;
+use craft\stripe\helpers\Price;
 use craft\stripe\models\Invoice;
 use craft\stripe\Plugin;
 use craft\stripe\records\InvoiceData as InvoiceDataRecord;
@@ -198,10 +199,14 @@ class Invoices extends Component
         $formatter = Craft::$app->getFormatter();
 
         foreach ($invoices as $invoice) {
+            $amount = $invoice->data['total'];
+            if (!in_array(strtolower($invoice->data['currency']), Price::$zeroDecimalCurrencies)) {
+                $amount = $amount / 100;
+            }
             $tableData[] = [
                 'id' => $invoice->stripeId,
                 'title' => $invoice->data['number'] ?? Craft::t('stripe', 'Draft'),
-                'amount' => $formatter->asCurrency($invoice->data['total'] / 100, $invoice->data['currency']),
+                'amount' => $formatter->asCurrency($amount, $invoice->data['currency']),
                 'stripeStatus' => $invoice->data['status'],
                 'frequency' => '',
                 'customerEmail' => $invoice->data['customer_email'],
