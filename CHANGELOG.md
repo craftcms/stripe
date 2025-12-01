@@ -1,13 +1,5 @@
 # Release Notes for Stripe
 
-## Unreleased
-
-- Added the `stripe/sync/customer` command.
-- Added `craft\stripe\jobs\SyncSingleCustomerData`.
-- Added `\craft\stripe\services\Invoices::syncCustomerInvoices()`.
-- Added `\craft\stripe\services\PaymentMethods::syncCustomerPaymentMethods()`.
-- Added `\craft\stripe\services\Subscriptions::syncCustomerSubscriptions()`.
-
 ## 1.6.0 - 2025-06-25
 
 - The “Sync from Stripe” user action now shows a confirmation dialog before syncing customer data from Stripe. ([#87](https://github.com/craftcms/stripe/pull/87))
