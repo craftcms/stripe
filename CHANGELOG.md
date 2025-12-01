@@ -1,8 +1,10 @@
 # Release Notes for Stripe
 
-## Unreleased
+## 1.6.1 - 2025-12-01
 
+- Fixed a bug where the invoice amount wasn’t formatted correctly for zero-decimal currencies. ([#96](https://github.com/craftcms/stripe/issues/96))
 - `craft\stripe\elements\Product::getPrices()` now has an optional `$criteria` argument. ([#97](https://github.com/craftcms/stripe/issues/97))
+
 
 ## 1.6.0 - 2025-06-25
 
