@@ -21,6 +21,7 @@ use craft\stripe\events\StripeSubscriptionSyncEvent;
 use craft\stripe\models\Customer;
 use craft\stripe\Plugin;
 use craft\stripe\records\SubscriptionData as SubscriptionDataRecord;
+use Stripe\Customer as StripeCustomer;
 use Stripe\Stripe;
 use Stripe\Subscription as StripeSubscription;
 use yii\base\Component;
@@ -111,6 +112,37 @@ class Subscriptions extends Component
         foreach ($deletableSubscriptionElements as $element) {
             Craft::$app->elements->deleteElement($element);
         }
+    }
+
+    /**
+     * Sync all subscriptions for a specific customer from Stripe
+     *
+     * @param StripeCustomer $stripeCustomer
+     * @return int
+     * @throws \Throwable
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function syncCustomerSubscriptions(StripeCustomer $stripeCustomer): int
+    {
+        $api = Plugin::getInstance()->getApi();
+
+        $iterator = $api->fetchAllIterator('subscriptions', [
+            'customer' => $stripeCustomer->id,
+            'status' => 'all',
+            'expand' => $api->prepExpandForFetchAll(Subscription::$expandParams),
+        ]);
+
+        $count = 0;
+        foreach ($iterator as $batch) {
+            /** @var \Stripe\Subscription[] $batch */
+            foreach ($batch as $subscription) {
+                if ($this->createOrUpdateSubscription($subscription)) {
+                    $count++;
+                }
+            }
+        }
+
+        return $count;
     }
 
     /**
@@ -386,7 +418,7 @@ class Subscriptions extends Component
             // in this case, we want to ensure the customer data is stored in our database
             $syncCustomerData = true;
         }
-        /** @var Customer|\Stripe\Customer $customer */
+        /** @var Customer|StripeCustomer $customer */
         if ($customer->email) {
             Craft::$app->getUsers()->ensureUserByEmail($customer->email);
 

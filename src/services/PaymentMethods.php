@@ -16,6 +16,7 @@ use craft\stripe\db\Table;
 use craft\stripe\models\PaymentMethod;
 use craft\stripe\Plugin;
 use craft\stripe\records\PaymentMethodData as PaymentMethodDataRecord;
+use Stripe\Customer as StripeCustomer;
 use Stripe\PaymentMethod as StripePaymentMethod;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -63,6 +64,38 @@ class PaymentMethods extends Component
         foreach ($paymentMethods as $paymentMethod) {
             if ($this->createOrUpdatePaymentMethod($paymentMethod)) {
                 $count++;
+            }
+        }
+
+        return $count;
+    }
+
+    /**
+     * Syncs all payment methods for a specific customer from Stripe
+     *
+     * @param StripeCustomer $stripeCustomer
+     * @return int
+     * @throws \Throwable
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function syncCustomerPaymentMethods(StripeCustomer $stripeCustomer): int
+    {
+        $count = 0;
+        
+        // get user for customer's email address
+        $user = $stripeCustomer->email ? \Craft::$app->getUsers()->getUserByUsernameOrEmail($stripeCustomer->email) : null;
+        
+        // only get payment methods if the user exists
+        if ($user) {
+            $api = Plugin::getInstance()->getApi();
+            $paymentMethods = $stripeCustomer->allPaymentMethods($stripeCustomer->id, [
+                'expand' => $api->prepExpandForFetchAll(PaymentMethod::$expandParams),
+            ]);
+            
+            foreach ($paymentMethods as $paymentMethod) {
+                if ($this->createOrUpdatePaymentMethod($paymentMethod)) {
+                    $count++;
+                }
             }
         }
 
