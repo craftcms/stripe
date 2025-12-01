@@ -210,11 +210,11 @@ class DataController extends Controller
             $toDelete = $subscriptions;
 
             // Check if custom field content differs
-            $keeperFieldValues = $this->getCustomFieldValues($keeper);
+            $keeperFieldValues = $keeper->getSerializedFieldValues();
 
             $hasDifferentContent = false;
             foreach ($toDelete as $duplicate) {
-                $duplicateFieldValues = $this->getCustomFieldValues($duplicate);
+                $duplicateFieldValues = $duplicate->getSerializedFieldValues();
                 if ($keeperFieldValues !== $duplicateFieldValues) {
                     $hasDifferentContent = true;
                     break;
@@ -229,7 +229,7 @@ class DataController extends Controller
                 $options = [];
                 $allElements = array_merge([$keeper], $toDelete);
                 foreach ($allElements as $index => $sub) {
-                    $fieldValues = $this->getCustomFieldValues($sub);
+                    $fieldValues = $sub->getSerializedFieldValues();
                     $fieldDisplay = empty($fieldValues) ? '(no custom fields)' : json_encode($fieldValues, JSON_UNESCAPED_SLASHES);
                     $options[$index] = sprintf(
                         'ID: %d | Updated: %s | Fields: %s',
@@ -283,56 +283,5 @@ class DataController extends Controller
         }
 
         return ExitCode::OK;
-    }
-
-    /**
-     * Get custom field values for a subscription element.
-     *
-     * @param Subscription $subscription
-     * @return array
-     */
-    private function getCustomFieldValues(Subscription $subscription): array
-    {
-        $fieldLayout = $subscription->getFieldLayout();
-        if ($fieldLayout === null) {
-            return [];
-        }
-
-        $values = [];
-        foreach ($fieldLayout->getCustomFields() as $field) {
-            $value = $subscription->getFieldValue($field->handle);
-            // Normalize the value for comparison
-            if ($value !== null) {
-                $values[$field->handle] = $this->normalizeFieldValue($value);
-            }
-        }
-
-        return $values;
-    }
-
-    /**
-     * Normalize a field value for comparison.
-     *
-     * @param mixed $value
-     * @return mixed
-     */
-    private function normalizeFieldValue(mixed $value): mixed
-    {
-        if (is_object($value)) {
-            if (method_exists($value, 'ids')) {
-                // Element queries - get IDs
-                return $value->ids();
-            }
-            if (method_exists($value, '__toString')) {
-                return (string)$value;
-            }
-            return serialize($value);
-        }
-
-        if (is_array($value)) {
-            return array_map(fn($v) => $this->normalizeFieldValue($v), $value);
-        }
-
-        return $value;
     }
 }
