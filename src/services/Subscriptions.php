@@ -153,14 +153,26 @@ class Subscriptions extends Component
      */
     public function createOrUpdateSubscription(StripeSubscription $subscription): bool
     {
-        // Find the subscription element or create one
-        /** @var SubscriptionElement|null $subscriptionElement */
-        $subscriptionElement = SubscriptionElement::find()
-            ->stripeId($subscription->id)
-            ->status(null)
-            ->one() ?? new SubscriptionElement();
+        // Acquire lock before lookup to prevent race conditions where two webhooks
+        // both find no existing element and create duplicates
+        $lockKey = "stripe-subscription:$subscription->id";
+        $mutex = Craft::$app->getMutex();
+        if (!$mutex->acquire($lockKey, 15)) {
+            throw new MutexException($lockKey, 'Could not acquire a lock to create or update subscription.');
+        }
 
-        return $this->createOrUpdateSubscriptionElement($subscription, $subscriptionElement);
+        try {
+            // Find the subscription element or create one (now safely inside the lock)
+            /** @var SubscriptionElement|null $subscriptionElement */
+            $subscriptionElement = SubscriptionElement::find()
+                ->stripeId($subscription->id)
+                ->status(null)
+                ->one() ?? new SubscriptionElement();
+
+            return $this->createOrUpdateSubscriptionElement($subscription, $subscriptionElement, false);
+        } finally {
+            $mutex->release($lockKey);
+        }
     }
 
     /**
@@ -168,15 +180,16 @@ class Subscriptions extends Component
      *
      * @param StripeSubscription $subscription
      * @param SubscriptionElement $subscriptionElement
+     * @param bool $acquireLock Whether to acquire a mutex lock (set to false if caller already holds the lock)
      * @return bool Whether the synchronization succeeded.
      * @since 1.2
      */
-    public function createOrUpdateSubscriptionElement(StripeSubscription $subscription, SubscriptionElement $subscriptionElement): bool
+    public function createOrUpdateSubscriptionElement(StripeSubscription $subscription, SubscriptionElement $subscriptionElement, bool $acquireLock = true): bool
     {
         // Duplicates seem to be possible: https://github.com/craftcms/stripe/issues/44
         $lockKey = "stripe-subscription:$subscription->id";
         $mutex = Craft::$app->getMutex();
-        if (!$mutex->acquire($lockKey, 15)) {
+        if ($acquireLock && !$mutex->acquire($lockKey, 15)) {
             throw new MutexException($lockKey, 'Could not acquire a lock to create or update subscription.');
         }
 
@@ -200,7 +213,9 @@ class Subscriptions extends Component
 
         if (!$event->isValid) {
             Craft::warning("Synchronization of Stripe subscription ID #{$subscription->id} was stopped by a plugin.", 'stripe');
-            $mutex->release($lockKey);
+            if ($acquireLock) {
+                $mutex->release($lockKey);
+            }
 
             return false;
         }
@@ -210,14 +225,18 @@ class Subscriptions extends Component
                 $subscriptionElement = Craft::$app->getDrafts()->applyDraft($subscriptionElement);
             } catch (\Exception $e) {
                 Craft::error("Failed to synchronize Stripe subscription ID #{$subscription->id}. {$e->getMessage()}", 'stripe');
-                $mutex->release($lockKey);
+                if ($acquireLock) {
+                    $mutex->release($lockKey);
+                }
 
                 return false;
             }
         } else {
             if (!Craft::$app->getElements()->saveElement($subscriptionElement)) {
                 Craft::error("Failed to synchronize Stripe subscription ID #{$subscription->id}.", 'stripe');
-                $mutex->release($lockKey);
+                if ($acquireLock) {
+                    $mutex->release($lockKey);
+                }
 
                 return false;
             }
@@ -237,7 +256,9 @@ class Subscriptions extends Component
 
         $result = $subscriptionDataRecord->save();
 
-        $mutex->release($lockKey);
+        if ($acquireLock) {
+            $mutex->release($lockKey);
+        }
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_SYNCHRONIZE_SUBSCRIPTION)) {
             $event = new StripeSubscriptionSyncEvent([

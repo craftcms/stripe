@@ -687,9 +687,10 @@ class Product extends Element
     /**
      * Gets the product’s prices.
      *
+     * @param array $criteria
      * @return ElementCollection<Price>
      */
-    public function getPrices(): ElementCollection
+    public function getPrices(array $criteria = []): ElementCollection
     {
         if (!isset($this->_prices)) {
             if (!$this->id) {
@@ -697,8 +698,12 @@ class Product extends Element
                 return ElementCollection::make();
             }
 
+            $query = $this->createPriceQuery();
+            if (!empty($criteria)) {
+                Craft::configure($query, $criteria);
+            }
             /** @var ElementCollection<int|string, Price> $prices */
-            $prices = $this->createPriceQuery()->collect();
+            $prices = $query->collect();
             $this->_prices = $prices;
         }
 
