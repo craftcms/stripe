@@ -769,7 +769,7 @@ class Plugin extends BasePlugin
         $secretKey = $this->getApi()->getApiKey();
 
         if (!str_starts_with($secretKey, 'sk_test_')) {
-            return 'live';
+            return '';
         }
 
         return 'test';
