@@ -66,14 +66,14 @@ class PriceQuery extends ElementQuery
     public mixed $stripeProductId = null;
 
     /**
-     * @var mixed The primary owner element ID(s) that the resulting addresses must belong to.
+     * @var mixed The primary owner element ID(s) that the resulting prices must belong to.
      * @used-by primaryOwner()
      * @used-by primaryOwnerId()
      */
     public mixed $primaryOwnerId = null;
 
     /**
-     * @var mixed The owner element ID(s) that the resulting addresses must belong to.
+     * @var mixed The owner element ID(s) that the resulting prices must belong to.
      * @used-by owner()
      * @used-by ownerId()
      */
