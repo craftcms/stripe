@@ -31,6 +31,25 @@ class DataController extends Controller
     public $defaultAction = 'reset';
 
     /**
+     * @var bool Whether to run in dry-run mode (no deletions)
+     */
+    public bool $dryRun = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function options($actionID): array
+    {
+        $options = parent::options($actionID);
+
+        if ($actionID === 'cleanup-duplicates') {
+            $options[] = 'dryRun';
+        }
+
+        return $options;
+    }
+
+    /**
      * Deletes all Stripe plugin data.
      *
      * @return int
@@ -140,5 +159,180 @@ class DataController extends Controller
         }
 
         $this->stdout(' done' . PHP_EOL, Console::FG_GREEN);
+    }
+
+    /**
+     * Finds and removes duplicate subscription elements.
+     *
+     * When duplicate subscriptions exist for the same Stripe subscription ID,
+     * this command will keep the most recently updated one and delete the others.
+     * If duplicates have different custom field content, it will prompt for confirmation.
+     *
+     * @return int
+     */
+    public function actionCleanupDuplicates(): int
+    {
+        $this->stdout('Scanning for duplicate subscription elements...' . PHP_EOL . PHP_EOL);
+
+        // Find all subscriptions grouped by stripeId
+        $allSubscriptions = Subscription::find()
+            ->status(null)
+            ->orderBy(['stripeId' => SORT_ASC, 'dateUpdated' => SORT_DESC])
+            ->all();
+
+        // Group by stripeId
+        $groupedByStripeId = [];
+        foreach ($allSubscriptions as $subscription) {
+            if ($subscription->stripeId === null) {
+                continue;
+            }
+            $groupedByStripeId[$subscription->stripeId][] = $subscription;
+        }
+
+        // Filter to only duplicates
+        $duplicateGroups = array_filter($groupedByStripeId, fn($group) => count($group) > 1);
+
+        if (empty($duplicateGroups)) {
+            $this->stdout('No duplicate subscriptions found.' . PHP_EOL, Console::FG_GREEN);
+            return ExitCode::OK;
+        }
+
+        $this->stdout('Found ' . count($duplicateGroups) . ' Stripe subscription(s) with duplicate elements.' . PHP_EOL . PHP_EOL);
+
+        $totalDeleted = 0;
+        $elementsService = Craft::$app->getElements();
+
+        foreach ($duplicateGroups as $stripeId => $subscriptions) {
+            $this->stdout("Stripe ID: $stripeId (" . count($subscriptions) . " elements)" . PHP_EOL, Console::FG_YELLOW);
+
+            // The first one is the most recently updated (due to ordering)
+            $keeper = array_shift($subscriptions);
+            $toDelete = $subscriptions;
+
+            // Check if custom field content differs
+            $keeperFieldValues = $this->getCustomFieldValues($keeper);
+
+            $hasDifferentContent = false;
+            foreach ($toDelete as $duplicate) {
+                $duplicateFieldValues = $this->getCustomFieldValues($duplicate);
+                if ($keeperFieldValues !== $duplicateFieldValues) {
+                    $hasDifferentContent = true;
+                    break;
+                }
+            }
+
+            if ($hasDifferentContent) {
+                $this->stdout('  Duplicates have different custom field content!' . PHP_EOL, Console::FG_RED);
+                $this->stdout(PHP_EOL);
+
+                // Display options
+                $options = [];
+                $allElements = array_merge([$keeper], $toDelete);
+                foreach ($allElements as $index => $sub) {
+                    $fieldValues = $this->getCustomFieldValues($sub);
+                    $fieldDisplay = empty($fieldValues) ? '(no custom fields)' : json_encode($fieldValues, JSON_UNESCAPED_SLASHES);
+                    $options[$index] = sprintf(
+                        'ID: %d | Updated: %s | Fields: %s',
+                        $sub->id,
+                        $sub->dateUpdated->format('Y-m-d H:i:s'),
+                        $fieldDisplay
+                    );
+                    $this->stdout("  [$index] {$options[$index]}" . PHP_EOL);
+                }
+                $this->stdout(PHP_EOL);
+
+                if ($this->dryRun) {
+                    $this->stdout('  [DRY RUN] Would prompt for which element to keep.' . PHP_EOL, Console::FG_CYAN);
+                    continue;
+                }
+
+                $choice = $this->select('Which element should be kept?', $options);
+
+                // Rebuild keeper and toDelete based on choice
+                $keeper = $allElements[$choice];
+                $toDelete = array_filter($allElements, fn($_, $idx) => $idx !== (int)$choice, ARRAY_FILTER_USE_BOTH);
+            } else {
+                $this->stdout(sprintf(
+                    '  Keeping: ID %d (updated: %s)' . PHP_EOL,
+                    $keeper->id,
+                    $keeper->dateUpdated->format('Y-m-d H:i:s')
+                ));
+            }
+
+            // Delete duplicates
+            foreach ($toDelete as $duplicate) {
+                $this->stdout(sprintf(
+                    '  Deleting: ID %d (updated: %s)' . PHP_EOL,
+                    $duplicate->id,
+                    $duplicate->dateUpdated->format('Y-m-d H:i:s')
+                ), Console::FG_RED);
+
+                if (!$this->dryRun) {
+                    $elementsService->deleteElement($duplicate, true);
+                }
+                $totalDeleted++;
+            }
+
+            $this->stdout(PHP_EOL);
+        }
+
+        if ($this->dryRun) {
+            $this->stdout("[DRY RUN] Would have deleted $totalDeleted duplicate element(s)." . PHP_EOL, Console::FG_CYAN);
+        } else {
+            $this->stdout("Deleted $totalDeleted duplicate element(s)." . PHP_EOL, Console::FG_GREEN);
+        }
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * Get custom field values for a subscription element.
+     *
+     * @param Subscription $subscription
+     * @return array
+     */
+    private function getCustomFieldValues(Subscription $subscription): array
+    {
+        $fieldLayout = $subscription->getFieldLayout();
+        if ($fieldLayout === null) {
+            return [];
+        }
+
+        $values = [];
+        foreach ($fieldLayout->getCustomFields() as $field) {
+            $value = $subscription->getFieldValue($field->handle);
+            // Normalize the value for comparison
+            if ($value !== null) {
+                $values[$field->handle] = $this->normalizeFieldValue($value);
+            }
+        }
+
+        return $values;
+    }
+
+    /**
+     * Normalize a field value for comparison.
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    private function normalizeFieldValue(mixed $value): mixed
+    {
+        if (is_object($value)) {
+            if (method_exists($value, 'ids')) {
+                // Element queries - get IDs
+                return $value->ids();
+            }
+            if (method_exists($value, '__toString')) {
+                return (string)$value;
+            }
+            return serialize($value);
+        }
+
+        if (is_array($value)) {
+            return array_map(fn($v) => $this->normalizeFieldValue($v), $value);
+        }
+
+        return $value;
     }
 }
