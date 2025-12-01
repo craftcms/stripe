@@ -2,8 +2,6 @@
 
 ## Unreleased
 
-- Added the `stripe/data/cleanup-duplicates` command to find and remove duplicate subscription elements.
-- Fixed a bug where duplicate subscriptions could be created. ([#101](https://github.com/craftcms/stripe/pull/101))
 - `craft\stripe\elements\Product::getPrices()` now has an optional `$criteria` argument. ([#97](https://github.com/craftcms/stripe/issues/97))
 
 ## 1.6.0 - 2025-06-25
