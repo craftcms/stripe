@@ -407,14 +407,14 @@ ddev craft stripe/sync/all
 - **Products _and_ Prices**: `ddev craft stripe/sync/products-and-prices`
 - **Subscriptions**: `ddev craft stripe/sync/subscriptions`
 
-#### Cleanup Duplicate Subscriptions
+#### Remove Duplicate Subscriptions
 
 Before version 1.7, duplicate subscription elements may have been created for the same Stripe subscription ID.
 
-Use the `stripe/data/cleanup-duplicates` command to find and remove these duplicates:
+Use the `stripe/data/remove-duplicates` command to find and remove these duplicates:
 
 ```bash
-ddev craft stripe/data/cleanup-duplicates
+ddev craft stripe/data/remove-duplicates
 ```
 
 The command will:
@@ -426,7 +426,7 @@ The command will:
 To preview what would be deleted without actually removing anything, use the `--dry-run` flag:
 
 ```bash
-ddev craft stripe/data/cleanup-duplicates --dry-run
+ddev craft stripe/data/remove-duplicates --dry-run
 ```
 
 ---

@@ -42,7 +42,7 @@ class DataController extends Controller
     {
         $options = parent::options($actionID);
 
-        if ($actionID === 'cleanup-duplicates') {
+        if ($actionID === 'remove-duplicates') {
             $options[] = 'dryRun';
         }
 
@@ -170,7 +170,7 @@ class DataController extends Controller
      *
      * @return int
      */
-    public function actionCleanupDuplicates(): int
+    public function actionRemoveDuplicates(): int
     {
         $this->stdout('Scanning for duplicate subscription elements...' . PHP_EOL . PHP_EOL);
 

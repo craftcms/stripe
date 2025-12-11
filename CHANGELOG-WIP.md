@@ -1,6 +1,6 @@
 # Release Notes for WIP Stripe 1.7
 
-- Added the `stripe/data/cleanup-duplicates` command.
+- Added the `stripe/data/remove-duplicates` command.
 - Added the `stripe/sync/customer` command.
 - Added `craft\stripe\jobs\SyncSingleCustomerData`.
 - Added `craft\stripe\services\Invoices::syncCustomerInvoices()`.
