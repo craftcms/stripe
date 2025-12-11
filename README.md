@@ -423,10 +423,10 @@ The command will:
 2. Keep the most recently updated element and delete the others
 3. If duplicates have different custom field values, prompt you to choose which element to keep
 
-To preview what would be deleted without actually removing anything, use the `--dry-run` flag:
+To preview what would be deleted without actually removing anything, use the `--dryRun` flag:
 
 ```bash
-ddev craft stripe/data/remove-duplicates --dry-run
+ddev craft stripe/data/remove-duplicates --dryRun
 ```
 
 ---
