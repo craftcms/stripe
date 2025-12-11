@@ -4,6 +4,7 @@
 
 - Fixed a bug where the invoice amount wasn’t formatted correctly for zero-decimal currencies. ([#96](https://github.com/craftcms/stripe/issues/96))
 - `craft\stripe\elements\Product::getPrices()` now has an optional `$criteria` argument. ([#97](https://github.com/craftcms/stripe/issues/97))
+- Fixed a bug where Stripe dashboard links didn't deep-link correctly for some accounts. ([#100](https://github.com/craftcms/stripe/issues/100))
 
 
 ## 1.6.0 - 2025-06-25

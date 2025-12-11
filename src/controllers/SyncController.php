@@ -21,6 +21,8 @@ class SyncController extends Controller
 {
     public function actionAll(): YiiResponse
     {
+        // TODO: This will likely time out if you have a lot of data, maybe we look to move all this into the SyncData job.
+
         Plugin::getInstance()->getProducts()->syncAllProducts();
         Plugin::getInstance()->getPrices()->syncAllPrices();
         Plugin::getInstance()->getSubscriptions()->syncAllSubscriptions();
@@ -38,6 +40,8 @@ class SyncController extends Controller
      */
     public function actionCustomer(): YiiResponse
     {
+        // TODO: Look to allow this to use the new SyncSingleCustomerData job in future?
+
         $stripeIds = Craft::$app->getRequest()->getRequiredParam('stripeIds');
         foreach (explode(',', $stripeIds) as $stripeId) {
             $stripeCustomer = Plugin::getInstance()->getApi()->fetchCustomerById($stripeId);

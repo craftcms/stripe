@@ -17,6 +17,7 @@ use craft\stripe\helpers\Price;
 use craft\stripe\models\Invoice;
 use craft\stripe\Plugin;
 use craft\stripe\records\InvoiceData as InvoiceDataRecord;
+use Stripe\Customer as StripeCustomer;
 use Stripe\Invoice as StripeInvoice;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -59,6 +60,32 @@ class Invoices extends Component
     {
         $api = Plugin::getInstance()->getApi();
         $invoices = $api->fetchAllInvoices();
+
+        $count = 0;
+        foreach ($invoices as $invoice) {
+            if ($this->createOrUpdateInvoice($invoice)) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
+    /**
+     * Syncs all invoices for a specific customer from Stripe
+     *
+     * @param StripeCustomer $stripeCustomer
+     * @return int
+     * @throws \Throwable
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function syncCustomerInvoices(StripeCustomer $stripeCustomer): int
+    {
+        $api = Plugin::getInstance()->getApi();
+        $invoices = $api->fetchAll('invoices', [
+            'customer' => $stripeCustomer->id,
+            'expand' => $api->prepExpandForFetchAll(Invoice::$expandParams),
+        ]);
 
         $count = 0;
         foreach ($invoices as $invoice) {

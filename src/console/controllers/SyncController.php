@@ -90,6 +90,18 @@ class SyncController extends Controller
     }
 
     /**
+     * stripe/sync/customer command - Sync a single customer by Stripe ID
+     *
+     * @param string $customerId The Stripe customer ID
+     */
+    public function actionCustomer(string $customerId): int
+    {
+        $this->syncSingleCustomer($customerId);
+
+        return ExitCode::OK;
+    }
+
+    /**
      * stripe/sync/payment-methods command
      */
     public function actionPaymentMethods(): int
@@ -216,5 +228,56 @@ class SyncController extends Controller
         $time = microtime(true) - $start;
 
         $this->stdout('Finished syncing ' . $count . ' invoice(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+    }
+
+    /**
+     * Sync a single customer and all their related data from Stripe
+     *
+     * @param string $customerId The Stripe customer ID
+     * @return void
+     * @throws \Throwable
+     * @throws \yii\base\InvalidConfigException
+     */
+    private function syncSingleCustomer(string $customerId): void
+    {
+        $this->stdout("Syncing Stripe customer {$customerId} and related data…" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+
+        $start = microtime(true);
+        
+        $plugin = Plugin::getInstance();
+        $api = $plugin->getApi();
+        
+        try {
+            // Fetch the customer from Stripe
+            $stripeCustomer = $api->fetchCustomerById($customerId);
+            
+            // Sync the customer data
+            $this->stdout('Syncing customer data…' . PHP_EOL, Console::FG_YELLOW);
+            $plugin->getCustomers()->createOrUpdateCustomer($stripeCustomer);
+            
+            // Sync customer's subscriptions
+            $this->stdout('Syncing customer subscriptions…' . PHP_EOL, Console::FG_YELLOW);
+            $subscriptionCount = $plugin->getSubscriptions()->syncCustomerSubscriptions($stripeCustomer);
+            
+            // Sync customer's invoices
+            $this->stdout('Syncing customer invoices…' . PHP_EOL, Console::FG_YELLOW);
+            $invoiceCount = $plugin->getInvoices()->syncCustomerInvoices($stripeCustomer);
+            
+            // Sync customer's payment methods
+            $this->stdout('Syncing customer payment methods…' . PHP_EOL, Console::FG_YELLOW);
+            $paymentMethodCount = $plugin->getPaymentMethods()->syncCustomerPaymentMethods($stripeCustomer);
+            
+            $time = microtime(true) - $start;
+            
+            $this->stdout(PHP_EOL . "Finished syncing customer {$customerId}:" . PHP_EOL, Console::FG_GREEN);
+            $this->stdout("  - Customer data synced" . PHP_EOL, Console::FG_GREEN);
+            $this->stdout("  - {$subscriptionCount} subscription(s) synced" . PHP_EOL, Console::FG_GREEN);
+            $this->stdout("  - {$invoiceCount} invoice(s) synced" . PHP_EOL, Console::FG_GREEN);
+            $this->stdout("  - {$paymentMethodCount} payment method(s) synced" . PHP_EOL, Console::FG_GREEN);
+            $this->stdout("  - Time: " . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        } catch (\Exception $e) {
+            $this->stderr("Error syncing customer {$customerId}: " . $e->getMessage() . PHP_EOL, Console::FG_RED);
+            throw $e;
+        }
     }
 }
