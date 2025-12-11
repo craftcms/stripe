@@ -194,7 +194,25 @@ class Plugin extends BasePlugin
 
         // get stripe environment from the secret key
         $this->stripeMode = $this->getStripeMode();
-        $this->stripeBaseUrl = "$this->dashboardUrl/$this->stripeMode";
+        $this->stripeBaseUrl = $this->buildStripeBaseUrl();
+    }
+
+    /**
+     * Build the Stripe dashboard base URL with account ID for proper deep linking.
+     *
+     * @return string
+     */
+    private function buildStripeBaseUrl(): string
+    {
+        $accountId = $this->getApi()->getAccountId();
+
+        if ($accountId) {
+            // Format: https://dashboard.stripe.com/{account_id}/{mode}
+            return "$this->dashboardUrl/$accountId/$this->stripeMode";
+        }
+
+        // Fallback without account ID (will redirect via Stripe)
+        return "$this->dashboardUrl/$this->stripeMode";
     }
 
     /**
@@ -751,7 +769,7 @@ class Plugin extends BasePlugin
         $secretKey = $this->getApi()->getApiKey();
 
         if (!str_starts_with($secretKey, 'sk_test_')) {
-            return 'live';
+            return '';
         }
 
         return 'test';

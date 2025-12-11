@@ -317,6 +317,33 @@ class Api extends Component
     }
 
     /**
+     * Get the Stripe account ID for the current API key.
+     * The result is cached for 24 hours.
+     *
+     * @return string|null
+     */
+    public function getAccountId(): ?string
+    {
+        $apiKey = $this->getApiKey();
+        if (!$apiKey) {
+            return null;
+        }
+
+        // Cache key based on the API key to handle key changes
+        $cacheKey = 'stripe-account-id-' . md5($apiKey);
+
+        return Craft::$app->getCache()->getOrSet($cacheKey, function() {
+            try {
+                $account = $this->getClient()->accounts->retrieve();
+                return $account->id;
+            } catch (\Exception $e) {
+                Craft::warning("Failed to retrieve Stripe account ID: {$e->getMessage()}", 'stripe');
+                return null;
+            }
+        }, 86400); // Cache for 24 hours
+    }
+
+    /**
      * Prepares expand params for use with fetchAll.
      * When fetching lists (all), expand params need to be prepended with 'data.'.
      * https://docs.stripe.com/api/expanding_objects
