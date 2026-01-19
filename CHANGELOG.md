@@ -1,6 +1,11 @@
 # Release Notes for Stripe
 
-## 1.7.0 - 2026-12-11
+## 1.7.1 - 2026-01-19
+
+- Fixed typo in the Readme file. 
+- Fixed XSS vulnerabilities.
+
+## 1.7.0 - 2025-12-11
 
 - Added the `stripe/data/remove-duplicates` command.
 - Added the `stripe/sync/customer` command.
