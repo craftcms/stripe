@@ -30,7 +30,7 @@ class Product
     {
         $formatter = Craft::$app->getFormatter();
 
-        $title = Html::tag('h3', $product->title, [
+        $title = Html::tag('h3', Html::encode($product->title), [
             'class' => 'pec-title',
         ]);
 
@@ -99,8 +99,8 @@ class Product
                                     collect($value)
                                     ->map(function($val, $i) {
                                         return Html::beginTag('div', ['class' => 'fullwidth']) .
-                                            Html::tag('em', $i . ': ') .
-                                            $val .
+                                            Html::tag('em', Html::encode($i) . ': ') .
+                                            Html::encode($val) .
                                             Html::endTag('div');
                                     })
                                     ->join(' ') .

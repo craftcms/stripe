@@ -43,7 +43,7 @@ class Subscription
             'products',
         ];
 
-        $title = Html::tag('h3', $subscription->title, [
+        $title = Html::tag('h3', Html::encode($subscription->title), [
             'class' => 'pec-title',
         ]);
 
@@ -134,8 +134,8 @@ class Subscription
                 collect($stripeSubscription['metadata'])
                 ->map(function($value, $key) {
                     return Html::beginTag('div', ['class' => 'fullwidth']) .
-                        Html::tag('em', $key . ': ') .
-                        $value .
+                        Html::tag('em', Html::encode($key) . ': ') .
+                        Html::encode($value) .
                         Html::endTag('div');
                 })
                 ->join(' ') .

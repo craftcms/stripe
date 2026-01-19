@@ -329,8 +329,8 @@ class Price
                 collect($stripePrice['metadata'])
                 ->map(function($value, $key) {
                     return Html::beginTag('div', ['class' => 'fullwidth']) .
-                        Html::tag('em', $key . ': ') .
-                        $value .
+                        Html::tag('em', Html::encode($key) . ': ') .
+                        Html::encode($value) .
                         Html::endTag('div');
                 })
                 ->join(' ') .
