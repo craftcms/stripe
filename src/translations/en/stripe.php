@@ -140,4 +140,12 @@ return [
     'Which template should be loaded when a product’s URL is requested.' => 'Which template should be loaded when a product’s URL is requested.',
     'Yes' => 'Yes',
     'per unit' => 'per unit',
+    'year' => 'year',
+    'years' => 'years',
+    'month' => 'month',
+    'months' => 'months',
+    'week' => 'week',
+    'weeks' => 'weeks',
+    'day' => 'day',
+    'days' => 'days',
 ];
