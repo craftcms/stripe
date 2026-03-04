@@ -20,6 +20,7 @@ use craft\enums\MenuItemType;
 use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineConsoleActionsEvent;
 use craft\events\DefineEditUserScreensEvent;
+use craft\events\DefineFieldLayoutElementsEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DefineMenuItemsEvent;
 use craft\events\DefineMetadataEvent;
@@ -44,7 +45,9 @@ use craft\stripe\elements\Product;
 use craft\stripe\elements\Subscription;
 use craft\stripe\feedme\fields\Products as FeedMeProducts;
 use craft\stripe\feedme\fields\Subscriptions as FeedMeSubscriptions;
+use craft\stripe\fieldlayoutelements\AssignmentLogs;
 use craft\stripe\fieldlayoutelements\PricesField;
+use craft\stripe\fieldlayoutelements\UserGroupAssignmentsField;
 use craft\stripe\fields\Products as ProductsField;
 use craft\stripe\fields\Subscriptions as SubscriptionsField;
 use craft\stripe\jobs\SyncSingleCustomerData;
@@ -91,7 +94,7 @@ class Plugin extends BasePlugin
     /**
      * @var string
      */
-    public string $schemaVersion = '1.2.0';
+    public string $schemaVersion = '1.3.0';
 
     /**
      * @inheritdoc
@@ -473,7 +476,21 @@ class Plugin extends BasePlugin
                 case Product::class:
                     $event->fields[] = PricesField::class;
                     break;
+                case Price::class:
+                    $event->fields[] = UserGroupAssignmentsField::class;
+                    break;
             }
+        });
+
+        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_UI_ELEMENTS, function(DefineFieldLayoutElementsEvent $event) {
+            /** @var FieldLayout $fieldLayout */
+            $fieldLayout = $event->sender;
+
+            if ($fieldLayout->type !== Subscription::class) {
+                return;
+            }
+
+            $event->elements[] = AssignmentLogs::class;
         });
     }
 
@@ -516,7 +533,7 @@ class Plugin extends BasePlugin
                     return $controller->resaveElements(Product::class);
                 },
                 'options' => ['withFields'],
-                'helpSummary' => 'Re-saves Stripe products.',
+                'helpSummary' => 'Re-saves Stripe Products.',
             ];
 
             $e->actions['stripe-prices'] = [
@@ -535,7 +552,7 @@ class Plugin extends BasePlugin
                     return $controller->resaveElements(Price::class);
                 },
                 'options' => ['withFields'],
-                'helpSummary' => 'Re-saves Stripe prices.',
+                'helpSummary' => 'Re-saves Stripe Prices.',
             ];
 
             $e->actions['stripe-subscriptions'] = [
@@ -554,7 +571,7 @@ class Plugin extends BasePlugin
                     return $controller->resaveElements(Subscription::class);
                 },
                 'options' => ['withFields'],
-                'helpSummary' => 'Re-saves Stripe subscriptions.',
+                'helpSummary' => 'Re-saves Stripe Subscriptions.',
             ];
         });
     }
@@ -573,6 +590,7 @@ class Plugin extends BasePlugin
 
             $event->rules['stripe/products'] = 'stripe/products/index';
             $event->rules['stripe/products/<elementId:\\d+>'] = 'elements/edit';
+            $event->rules['stripe/products/<productId:\\d+>/prices/<elementId:\\d+>'] = 'elements/edit';
 
             $event->rules['stripe/subscriptions'] = 'stripe/subscriptions/index';
             $event->rules['stripe/subscriptions/<elementId:\\d+>'] = 'elements/edit';

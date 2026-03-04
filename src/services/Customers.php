@@ -80,10 +80,10 @@ class Customers extends Component
         $lockKey = "stripe-customer:$customer->id";
         $mutex = Craft::$app->getMutex();
         if (!$mutex->acquire($lockKey, 15)) {
-            throw new MutexException($lockKey, 'Could not acquire a lock to create or update price.');
+            throw new MutexException($lockKey, 'Could not acquire a lock to create or update a customer.');
         }
 
-        // Build our attribute set from the Stripe payment method data:
+        // Build our attribute set from the Stripe customer data:
         $attributes = [
             'stripeId' => $customer->id,
             'email' => $customer->email,
@@ -91,7 +91,7 @@ class Customers extends Component
             'data' => Json::decode($customer->toJSON()),
         ];
 
-        // Find the payment method data or create one
+        // Find the local Customer record or create one
         /** @var CustomerDataRecord $customerDataRecord */
         $customerDataRecord = CustomerDataRecord::find()->where(['stripeId' => $customer->id])->one() ?: new CustomerDataRecord();
         $customerDataRecord->setAttributes($attributes, false);

@@ -8,21 +8,29 @@
 namespace craft\stripe\services;
 
 use Craft;
+use craft\db\Query;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\errors\MutexException;
 use craft\events\ConfigEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig;
+use craft\i18n\Translation;
 use craft\models\FieldLayout;
+use craft\stripe\db\Table;
+use craft\stripe\elements\Price;
 use craft\stripe\elements\Subscription;
-use craft\stripe\elements\Subscription as SubscriptionElement;
+use craft\stripe\events\GrantGroupAssignmentEvent;
+use craft\stripe\events\RevokeGroupAssignmentEvent;
+use craft\stripe\events\StripeSubscriptionStatusChangeEvent;
 use craft\stripe\events\StripeSubscriptionSyncEvent;
 use craft\stripe\models\Customer;
+use craft\stripe\models\Message;
 use craft\stripe\Plugin;
 use craft\stripe\records\SubscriptionData as SubscriptionDataRecord;
 use Stripe\Customer as StripeCustomer;
-use Stripe\Stripe;
 use Stripe\Subscription as StripeSubscription;
 use yii\base\Component;
 
@@ -83,6 +91,53 @@ class Subscriptions extends Component
     public const EVENT_AFTER_SYNCHRONIZE_SUBSCRIPTION = 'afterSynchronizeSubscription';
 
     /**
+     * @event StripeSubscriptionStatusChangeEvent Event triggered when a subscription changes status.
+     * @since 1.7.0
+     *
+     * ---
+     *
+     * ```php
+     * use craft\stripe\events\StripeSubscriptionStatusChangeEvent;
+     * use craft\stripe\services\Subscriptions;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Subscriptions::class,
+     *     Subscriptions::EVENT_SUBSCRIPTION_STATUS_CHANGE,
+     *     function(StripeSubscriptionStatusChangeEvent $event) {
+     *         if ($event->newStatus !== StripeSubscription::STATUS_CANCELED) {
+     *             // We only want to act on cancellations!
+     *             return;
+     *         }
+     *
+     *         $perpetualVipProductIds = Product::find()
+     *             ->grantsPerpetualVipStatus(true)
+     *             ->ids();
+     *         $subscriptionProductIds = ArrayHelper::getColumn($subscription->getProducts(), 'id');
+     *
+     *         // Suppress default cancellation logic for those products:
+     *         $hasVipProducts = count(array_intersect($perpetualVipProductIds, $subscriptionProductIds)) > 0;
+     *
+     *         if ($hasVipProducts) {
+     *             $event->isValid = false;
+     *         }
+     *     }
+     * );
+     * ```
+     */
+    public const EVENT_SUBSCRIPTION_STATUS_CHANGE = 'subscriptionStatusChange';
+
+    /**
+     * @event craft\stripe\events\GrantGroupAssignmentEvent
+     */
+    public const EVENT_BEFORE_GRANT_GROUP = 'beforeGrantGroup';
+
+    /**
+     * @event craft\stripe\events\RevokeGroupAssignmentEvent
+     */
+    public const EVENT_BEFORE_REVOKE_GROUP = 'beforeRevokeGroup';
+
+    /**
      * @return void
      * @throws \Throwable
      * @throws \yii\base\InvalidConfigException
@@ -107,7 +162,7 @@ class Subscriptions extends Component
         }
 
         // Remove any subscriptions that are no longer in Stripe just in case.
-        $deletableSubscriptionElements = SubscriptionElement::find()->stripeId(['not', $stripeIds])->all();
+        $deletableSubscriptionElements = Subscription::find()->stripeId(['not', $stripeIds])->all();
 
         foreach ($deletableSubscriptionElements as $element) {
             Craft::$app->elements->deleteElement($element);
@@ -193,6 +248,11 @@ class Subscriptions extends Component
             throw new MutexException($lockKey, 'Could not acquire a lock to create or update subscription.');
         }
 
+        // Record states before the update:
+        $isNew = !isset($subscriptionElement->id) || $subscriptionElement->getIsDraft();
+        // Subscriptions default to `active` in our system, which is somewhat misleading:
+        $originalStatus = $isNew ? null : $subscriptionElement->stripeStatus;
+
         // Build our attribute set from the Stripe subscription data:
         $attributes = [
             'stripeId' => $subscription->id,
@@ -208,6 +268,7 @@ class Subscriptions extends Component
         $event = new StripeSubscriptionSyncEvent([
             'element' => $subscriptionElement,
             'source' => $subscription,
+            'isNew' => $isNew,
         ]);
         $this->trigger(self::EVENT_BEFORE_SYNCHRONIZE_SUBSCRIPTION, $event);
 
@@ -218,6 +279,12 @@ class Subscriptions extends Component
             }
 
             return false;
+        }
+
+        $settings = Plugin::getInstance()->getSettings();
+        if ($settings->createUserIfMissing && Craft::$app->edition->value >= CmsEdition::Pro->value) {
+            $user = $this->ensureUser($subscription, $subscriptionElement);
+            $subscriptionElement->setUser($user);
         }
 
         if ($subscriptionElement->getIsUnpublishedDraft()) {
@@ -242,11 +309,6 @@ class Subscriptions extends Component
             }
         }
 
-        $settings = Plugin::getInstance()->getSettings();
-        if ($settings->createUserIfMissing && Craft::$app->edition->value >= CmsEdition::Pro->value) {
-            $this->ensureUser($subscription, $subscriptionElement);
-        }
-
         $attributes['subscriptionId'] = $subscriptionElement->id;
 
         // Find the subscription data or create one
@@ -260,10 +322,14 @@ class Subscriptions extends Component
             $mutex->release($lockKey);
         }
 
+        // Handle potential status changes:
+        $this->handleStatusChange($subscriptionElement, $originalStatus);
+
         if ($this->hasEventHandlers(self::EVENT_AFTER_SYNCHRONIZE_SUBSCRIPTION)) {
             $event = new StripeSubscriptionSyncEvent([
                 'element' => $subscriptionElement,
                 'source' => $subscription,
+                'isNew' => $isNew,
             ]);
             $this->trigger(self::EVENT_AFTER_SYNCHRONIZE_SUBSCRIPTION, $event);
         }
@@ -285,20 +351,20 @@ class Subscriptions extends Component
 
         if (empty($data) || empty(reset($data))) {
             // Delete the field layout
-            $fieldsService->deleteLayoutsByType(SubscriptionElement::class);
+            $fieldsService->deleteLayoutsByType(Subscription::class);
             return;
         }
 
         // Save the field layout
         $layout = FieldLayout::createFromConfig(reset($data));
-        $layout->id = $fieldsService->getLayoutByType(SubscriptionElement::class)->id;
-        $layout->type = SubscriptionElement::class;
+        $layout->id = $fieldsService->getLayoutByType(Subscription::class)->id;
+        $layout->type = Subscription::class;
         $layout->uid = key($data);
         $fieldsService->saveLayout($layout, false);
 
 
         // Invalidate subscription caches
-        Craft::$app->getElements()->invalidateCachesForElementType(SubscriptionElement::class);
+        Craft::$app->getElements()->invalidateCachesForElementType(Subscription::class);
     }
 
     /**
@@ -306,7 +372,7 @@ class Subscriptions extends Component
      */
     public function handleDeletedFieldLayout(): void
     {
-        Craft::$app->getFields()->deleteLayoutsByType(SubscriptionElement::class);
+        Craft::$app->getFields()->deleteLayoutsByType(Subscription::class);
     }
 
     /**
@@ -320,7 +386,7 @@ class Subscriptions extends Component
     public function deleteSubscriptionByStripeId(string $stripeId): void
     {
         if ($stripeId) {
-            if ($subscription = SubscriptionElement::find()->stripeId($stripeId)->one()) {
+            if ($subscription = Subscription::find()->stripeId($stripeId)->one()) {
                 Craft::$app->getElements()->deleteElement($subscription, false);
             }
             if ($subscriptionData = SubscriptionDataRecord::find()->where(['stripeId' => $stripeId])->one()) {
@@ -389,17 +455,17 @@ class Subscriptions extends Component
      * Return Subscription element draft by its uid stored in the Stripe's checkout session's metadata.
      *
      * @param StripeSubscription $subscription
-     * @return SubscriptionElement
+     * @return Subscription
      * @since 1.2
      */
-    public function getUnsavedDraftByUid(StripeSubscription $subscription): SubscriptionElement
+    public function getUnsavedDraftByUid(StripeSubscription $subscription): Subscription
     {
         // get checkout session by subscription id
         $stripe = Plugin::getInstance()->getApi()->getClient();
         $sessionsList = $stripe->checkout->sessions->all(['subscription' => $subscription->id]);
 
         if ($sessionsList->isEmpty()) {
-            return new SubscriptionElement();
+            return new Subscription();
         }
 
         // if we found one, get the metadata from the session
@@ -407,27 +473,252 @@ class Subscriptions extends Component
         $uid = $checkoutSession->metadata['craftSubscriptionUid'] ?? null;
 
         if ($uid === null) {
-            return new SubscriptionElement();
+            return new Subscription();
         }
 
         // try to find an unsaved Subscription element by the uid from the session's metadata
-        return SubscriptionElement::find()
+        return Subscription::find()
             ->uid($uid)
             ->status(null)
             ->drafts()
-            ->one() ?? new SubscriptionElement();
+            ->one() ?? new Subscription();
+    }
+
+    /**
+     * Grants permissions for the passed Subscription.
+     *
+     * The `$price` argument is used to override the default behavior, which uses the currently-associated Price(s) to determine which groups are granted. In situations where we need to swap out permissions (i.e. switching “plans”), the Subscription will only have access to the new {@see Price}.
+     *
+     * @param Subscription $subscription
+     * @param Price[]|null $prices
+     * @return bool
+     */
+    public function grantGroupsForSubscription(Subscription $subscription, ?array $prices = null): bool
+    {
+        $prices = $prices ?? $subscription->getPrices();
+        $user = $subscription->getUser();
+
+        if (!$user) {
+            $this->logActivity($subscription->id, Translation::prep('stripe', 'No user exists for this subscription.'));
+
+            return false;
+        }
+
+        foreach ($prices as $price) {
+            $groups = $price->getUserGroupAssignments();
+
+            foreach ($groups as $group) {
+                // They may already be in it:
+                if ($user->isInGroup($group->id)) {
+                    $this->logActivity($subscription->id, Translation::prep('stripe', 'The user already belonged to group ID #{groupId} ({groupName}) when they signed up for {priceName}.', [
+                        'groupId' => $group->id,
+                        'groupName' => $group->name,
+                        'priceName' => $price->title,
+                    ]));
+
+                    continue;
+                }
+
+                // Fire an event to give the system an opportunity to alter the behavior:
+                $event = new GrantGroupAssignmentEvent([
+                    'subscription' => $subscription,
+                    'price' => $price,
+                    'user' => $user,
+                    'group' => $group,
+                ]);
+
+                $this->trigger(self::EVENT_BEFORE_GRANT_GROUP, $event);
+
+                // If it was prevented, log a message and continue:
+                if (!$event->isValid) {
+                    $this->logActivity(
+                        $subscription->id,
+                        Translation::prep('stripe', 'A plugin prevented the user from being added to group ID #{groupId} ({groupName}).', [
+                            'groupId' => $group->id,
+                            'groupName' => $group->name,
+                        ])
+                    );
+
+                    continue;
+                }
+
+                // Get current groups, and append the granted one:
+                $subscriberGroups = $user->getGroups();
+                $subscriberGroups[] = $group;
+
+                // Assign by plucking their IDs:
+                Craft::$app->getUsers()->assignUserToGroups($user->id, ArrayHelper::getColumn($subscriberGroups, 'id'));
+
+                // Set them back on the User, clearing the cached values:
+                $user->setGroups($subscriberGroups);
+
+                $this->logActivity(
+                    $subscription->id,
+                    Translation::prep('stripe', 'Added the user to group ID #{groupId} ({groupName}) when they subscribed to {priceName}.', [
+                        'groupId' => $group->id,
+                        'groupName' => $group->name,
+                        'priceName' => $price->title,
+                    ])
+                );
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Removes subscribers from user groups based on its Price’s configuration.
+     *
+     * As with the sister `grant` method, this one accepts an explicit list of {@see Price}s so that we can appropriately handle moving *away from* or *to* a given “plan.”
+     *
+     * @param Subscription $subscription
+     * @param Price[]|null $prices
+     * @return bool
+     */
+    public function revokeGroupsForSubscription(Subscription $subscription, ?array $prices = null): bool
+    {
+        $prices = $prices ?? $subscription->getPrices();
+        $user = $subscription->getUser();
+
+        // Get the User's *other*, *live* Subscriptions, if any:
+        $subscriptions = Subscription::find()
+            ->user($user)
+            ->id(['not', $subscription->id])
+            ->status('live')
+            ->all();
+
+        // Fetch the Prices for those Subscriptions, and gather the granted user groups...
+        $protectedGroups = array_reduce($subscriptions, function($groups, $sub) {
+            $subGroups = [];
+
+            foreach ($sub->getPrices() as $price) {
+                /** @var Price $price */
+                array_merge($subGroups, $price->getUserGroupAssignments());
+            }
+
+            return array_merge($groups, $subGroups);
+        }, []);
+
+        $protectedGroupIds = array_unique(ArrayHelper::getColumn($protectedGroups, 'id'));
+
+        // Loop over the prices in the Subscription and pull the user out of the designated groups:
+        foreach ($prices as $price) {
+            $groups = $price->getUserGroupAssignments();
+
+            foreach ($groups as $group) {
+                // We also don't want to revoke a permission granted by a different (active) Subscription:
+                if (in_array($group->id, $protectedGroupIds)) {
+                    $this->logActivity(
+                        $subscription->id,
+                        Translation::prep('stripe', 'Another active subscription prevented the user from being removed from group ID #{groupId} ({groupName}).', [
+                            'groupId' => $group->id,
+                            'groupName' => $group->name,
+                        ])
+                    );
+
+                    continue;
+                }
+
+                // They may just not be in it:
+                if (!$user->isInGroup($group->id)) {
+                    $this->logActivity(
+                        $subscription->id,
+                        Translation::prep('stripe', 'The user wasn’t in group ID #{groupId} ({groupName}), so no action was taken.', [
+                            'groupId' => $group->id,
+                            'groupName' => $group->name,
+                        ])
+                    );
+
+                    continue;
+                }
+
+                // Fire an event to give the system an opportunity to alter the behavior:
+                $event = new RevokeGroupAssignmentEvent([
+                    'subscription' => $subscription,
+                    'user' => $user,
+                    'group' => $group,
+                    'price' => $price,
+                ]);
+
+                $this->trigger(self::EVENT_BEFORE_REVOKE_GROUP, $event);
+
+                // If it was prevented, log a message and continue:
+                if (!$event->isValid) {
+                    $this->logActivity(
+                        $subscription->id,
+                        Translation::prep('stripe', 'A plugin prevented the user from being removed from group ID #{groupId} ({groupName}).', [
+                            'groupId' => $group->id,
+                            'groupName' => $group->name
+                        ])
+                    );
+
+                    continue;
+                }
+
+                // Get current groups, and filter out this one:
+                $newGroups = array_filter($user->getGroups(), function ($g) use ($group) {
+                    if ($g->id === $group->id) {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                // Assign the new groups:
+                Craft::$app->getUsers()->assignUserToGroups($user->id, ArrayHelper::getColumn($newGroups, 'id'));
+
+                // Set them back on the User, clearing the cached values:
+                $user->setGroups($newGroups);
+
+                $this->logActivity(
+                    $subscription->id,
+                    Translation::prep('stripe', 'The user was removed from group ID #{groupId} ({groupName}).', [
+                        'groupId' => $group->id,
+                        'groupName' => $group->name
+                    ])
+                );
+            }
+        }
+
+        return true;
+    }
+    /**
+     * Gets user group assignment logs for the provided subscription.
+     *
+     * @param Subscription $subscription
+     * @return Message[]
+     */
+    public function getLogs(Subscription $subscription): array
+    {
+        $rows = (new Query)
+            ->from([Table::SUBSCRIPTIONLOGS])
+            ->select([
+                'id',
+                'message',
+                'subscriptionId',
+                'dateCreated',
+            ])
+            ->where([
+                'subscriptionId' => $subscription->id,
+            ])
+            ->orderBy('dateCreated DESC')
+            ->all();
+
+        return array_map(function($row) {
+            return new Message($row);
+        }, $rows);
     }
 
     /**
      * Ensures that a user with given email address is created if one doesn't already exist.
      *
      * @param StripeSubscription $subscription
-     * @param SubscriptionElement $subscriptionElement
-     * @return void
+     * @param Subscription $subscriptionElement
+     * @return User|null
      * @throws \yii\base\Exception
      * @throws \yii\base\InvalidConfigException
      */
-    private function ensureUser(StripeSubscription $subscription, SubscriptionElement $subscriptionElement): void
+    private function ensureUser(StripeSubscription $subscription, Subscription $subscriptionElement): ?User
     {
         $plugin = Plugin::getInstance();
         $customer = $subscriptionElement->getCustomer();
@@ -441,11 +732,98 @@ class Subscriptions extends Component
         }
         /** @var Customer|StripeCustomer $customer */
         if ($customer->email) {
-            Craft::$app->getUsers()->ensureUserByEmail($customer->email);
+            $user = Craft::$app->getUsers()->ensureUserByEmail($customer->email);
 
             if ($syncCustomerData) {
                 $plugin->getCustomers()->createOrUpdateCustomer($customer);
             }
+
+            return $user;
         }
+
+        return null;
+    }
+
+    /**
+     * Handles a Subscription changing status.
+     *
+     * @param Subscription $subscription
+     * @param string|null $oldStatus
+     */
+    private function handleStatusChange(Subscription $subscription, ?string $oldStatus = null): void
+    {
+        $newStatus = $subscription->stripeStatus;
+
+        // Did the status actually change?
+        if ($newStatus === $oldStatus) {
+            return;
+        }
+
+        // Emit an event to allow plugins to suppress default handlers:
+        if ($this->hasEventHandlers(self::EVENT_SUBSCRIPTION_STATUS_CHANGE)) {
+            $event = new StripeSubscriptionStatusChangeEvent([
+                'subscription' => $subscription,
+                'newStatus' => $newStatus,
+                'oldStatus' => $oldStatus,
+            ]);
+            $this->trigger(self::EVENT_SUBSCRIPTION_STATUS_CHANGE, $event);
+
+            // Bail now if a plugin indicates it has handled the status change:
+            if ($event->isValid) {
+                Craft::warning('A plugin prevented the normal subscription status change handlers from running.', 'stripe');
+                $this->logActivity($subscription->id, Translation::prep('stripe', 'The subscription changed statuses, but handlers were skipped.'));
+
+                return;
+            }
+        }
+
+        // We only care about transitions into some statuses.
+        if ($newStatus === StripeSubscription::STATUS_ACTIVE) {
+            if (in_array($oldStatus, [null, StripeSubscription::STATUS_INCOMPLETE])) {
+                // It just began, possibly after some billing trouble.
+                $this->grantGroupsForSubscription($subscription);
+            } else if ($oldStatus === StripeSubscription::STATUS_TRIALING) {
+                // The trial period is over. Nothing should change!
+            } else if (in_array($oldStatus, [StripeSubscription::STATUS_PAST_DUE, StripeSubscription::STATUS_UNPAID])) {
+                // Billing issues were resolved. This should undo anything
+            }
+        } else if ($newStatus === StripeSubscription::STATUS_TRIALING) {
+            if ($oldStatus === null) {
+                // The customer just started a trial. This is treated the same way as a new, active subscription:
+                $this->grantGroupsForSubscription($subscription);
+            }
+        } else if ($newStatus === StripeSubscription::STATUS_CANCELED) {
+            // Always revoke permissions:
+            $this->revokeGroupsForSubscription($subscription);
+
+            if (in_array($oldStatus, [StripeSubscription::STATUS_ACTIVE, StripeSubscription::STATUS_TRIALING])) {
+                // The subscription ended while in good standing (but potentially before actually starting).
+            } else if (in_array($oldStatus, [StripeSubscription::STATUS_PAST_DUE, StripeSubscription::STATUS_UNPAID])) {
+                // The subscription ended with outstanding invoices.
+            }
+        } else if (in_array($newStatus, [StripeSubscription::STATUS_PAST_DUE, StripeSubscription::STATUS_UNPAID])) {
+            // We’re in a delinquent payment situation!
+            if ($oldStatus === StripeSubscription::STATUS_ACTIVE) {
+                // Should we revoke permissions while they sort out payment?
+            }
+        }
+    }
+
+    /**
+     * Logs a message against the specified subscription.
+     *
+     * Messages should be prepared using {@see Translation::prep()} instead of {@see Craft::t()}, so that they can be displayed in the current user’s language.
+     * @param int $subscriptionId
+     * @param string $message
+     * @return bool
+     */
+    private function logActivity(int $subscriptionId, string $message): bool
+    {
+        $rows = Db::insert(Table::SUBSCRIPTIONLOGS, [
+            'subscriptionId' => $subscriptionId,
+            'message' => $message,
+        ]);
+
+        return $rows > 0;
     }
 }

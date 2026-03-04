@@ -49,7 +49,7 @@ class Customer
         }
 
         // if we found a matching user - return element chip
-        return Cp::elementChipHtml($user, ['size' => Cp::CHIP_SIZE_SMALL]);
+        return Cp::elementChipHtml($user, ['hyperlink' => Craft::$app->getUser()->checkPermission('viewUsers')]);
     }
 
     /**

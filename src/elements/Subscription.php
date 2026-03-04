@@ -9,6 +9,7 @@ namespace craft\stripe\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\User;
 use craft\enums\Color;
 use craft\errors\SiteNotFoundException;
@@ -89,6 +90,11 @@ class Subscription extends Element
     public ?string $customerId = null;
 
     /**
+     * @var int|null ID of the subscriber’s {@see User} element (if one exists)
+     */
+    public ?int $userId = null;
+
+    /**
      * @var string|null
      */
     public ?string $latestInvoiceId = null;
@@ -126,6 +132,13 @@ class Subscription extends Element
     private ?Customer $_customer = null;
 
     /**
+     * @var User|null The subscriber’s User element.
+     * @see getUser()
+     * @see setUser()
+     */
+    private ?User $_user = null;
+
+    /**
      * @var array|string[] Array of params that should be expanded when fetching Subscription from the Stripe API
      */
     public static array $expandParams = [];
@@ -146,7 +159,7 @@ class Subscription extends Element
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('stripe', 'stripe subscription');
+        return Craft::t('stripe', 'Stripe subscription');
     }
 
     /**
@@ -154,7 +167,7 @@ class Subscription extends Element
      */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('stripe', 'Stripe Subscriptions');
+        return Craft::t('stripe', 'Stripe subscriptions');
     }
 
     /**
@@ -162,7 +175,7 @@ class Subscription extends Element
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('stripe', 'stripe subscriptions');
+        return Craft::t('stripe', 'Stripe subscriptions');
     }
 
     /**
@@ -290,6 +303,28 @@ class Subscription extends Element
                 'label' => Craft::t('stripe', 'All subscriptions'),
             ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
+    {
+        if ($handle === 'user') {
+            $map = array_map(function (Subscription $el) {
+                return [
+                    'source' => $el->id,
+                    'target' => $el->userId,
+                ];
+            }, $sourceElements);
+
+            return [
+                'elementType' => User::class,
+                'map' => $map,
+            ];
+        }
+
+        return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
     /**
@@ -589,6 +624,19 @@ class Subscription extends Element
         };
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
+    {
+        switch ($plan->handle) {
+            case 'user':
+                $this->setUser($elements[0]);
+                break;
+            default:
+                parent::setEagerLoadedElements($handle, $elements, $plan);
+        }
+    }
 
     /**
      * Return URL to edit the subscription in Stripe Dashboard
@@ -650,10 +698,25 @@ class Subscription extends Element
     }
 
     /**
+     * Gets the Prices that are part of the subscription.
+     *
+     * @return Price[]
+     */
+    public function getPrices(): array
+    {
+        if (!$this->prices) {
+            return [];
+        }
+
+        return Price::find()
+            ->stripeId($this->prices)
+            ->all();
+    }
+
+    /**
      * Returns customer this subscription is related to.
      *
      * @return Customer|null
-     * @throws \yii\base\InvalidConfigException
      */
     public function getCustomer(): Customer|null
     {
@@ -669,6 +732,49 @@ class Subscription extends Element
     public function setCustomer(Customer $customer): void
     {
         $this->_customer = $customer;
+    }
+
+    /**
+     * Gets the User element corresponding to the subscriber.
+     *
+     * @return User|null
+     * @since 1.7.x
+     */
+    public function getUser(): ?User
+    {
+        if ($this->_user) {
+            return $this->_user;
+        }
+
+        if ($this->userId) {
+            $user = Craft::$app->getUsers()->getUserById($this->_userId);
+
+            $this->setUser($user);
+
+            return $this->_user;
+        }
+
+        // Ok, we don’t have any concrete relationship to a user... let’s go via the customer:
+
+        $customer = $this->getCustomer();
+
+        if (!$customer) {
+            return null;
+        }
+
+        return $customer->getUser();
+    }
+
+    /**
+     * Sets the subscriber’s User element.
+     *
+     * @param User $user
+     * @since 1.7.x
+     */
+    public function setUser(User $user): void
+    {
+        $this->userId = $user->id;
+        $this->_user = $user;
     }
 
     /**

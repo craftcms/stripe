@@ -1,0 +1,29 @@
+<div>
+    {% if logs | length %}
+        <div class="pane">
+            <h2>{{ 'Activity log'|t('stripe') }}</h2>
+            <table class="fullwidth">
+                <thead>
+                    <tr>
+                        <th>{{ 'Message'|t('app') }}</th>
+                        <th>{{ 'Date'|t('app') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                        <tr>
+                            <td>{{ log.getLocalizedMessage() }}</td>
+                            <td>{{ log.dateCreated|date('long') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="pane">
+            <div class="zilch">
+                <p>{{ 'No logs exist for this subscription.' | t('stripe') }}</p>
+            </div>
+        </div>
+    {% endif %}
+</div>

@@ -824,6 +824,7 @@ class SubscriptionQuery extends ElementQuery
 
         $this->query->select([
             'stripe_subscriptions.stripeId',
+            'stripe_subscriptions.userId',
             'stripe_subscriptiondata.stripeStatus',
             'stripe_subscriptiondata.data',
             'stripe_subscriptiondata.prices',
@@ -836,6 +837,7 @@ class SubscriptionQuery extends ElementQuery
             'stripe_subscriptiondata.trialEnd',
             'stripe_customerdata.stripeId AS customerStripeId',
             'stripe_customerdata.email AS customerEmail',
+            // This array is unpacked and removed from the “row” when populating the results:
             'stripe_customerdata.data AS customerData',
         ]);
 
