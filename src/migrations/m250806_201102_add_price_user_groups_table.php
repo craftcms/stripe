@@ -3,8 +3,8 @@
 namespace craft\stripe\migrations;
 
 use craft\db\Migration;
-use craft\stripe\db\Table as StripeTable;
 use craft\db\Table as CraftTable;
+use craft\stripe\db\Table as StripeTable;
 
 /**
  * m250806_201102_add_price_user_groups_table migration.

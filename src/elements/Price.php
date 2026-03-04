@@ -496,7 +496,7 @@ class Price extends Element implements NestedElementInterface
         $rules[] = [['userGroupAssignmentIds'], 'safe'];
         $rules[] = [
             ['userGroupAssignmentIds'],
-            function ($attribute, $params, $validator, $current) {
+            function($attribute, $params, $validator, $current) {
                 $allGroupIds = ArrayHelper::getColumn(Craft::$app->getUserGroups()->getAllGroups(), 'id');
                 $selectedGroupIds = ArrayHelper::getColumn($this->getUserGroupAssignments(), 'id');
 
@@ -859,7 +859,7 @@ class Price extends Element implements NestedElementInterface
             } else {
                 if ($this->id) {
                     // Fetch them, if we have a source ID:
-                    $groupIds = (new Query)
+                    $groupIds = (new Query())
                         ->select(['groupId'])
                         ->from([Table::PRICES_USERGROUPS])
                         ->where(['priceId' => $this->id])
@@ -870,7 +870,7 @@ class Price extends Element implements NestedElementInterface
             }
 
             // Turn those IDs into models, discarding any that didn’t resolve:
-            $groups = array_filter(array_map(function ($id) {
+            $groups = array_filter(array_map(function($id) {
                 return Craft::$app->getUserGroups()->getGroupById((int)$id);
             }, $groupIds));
 

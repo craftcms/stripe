@@ -648,7 +648,7 @@ class Subscriptions extends Component
                         $subscription->id,
                         Translation::prep('stripe', 'A plugin prevented the user from being removed from group ID #{groupId} ({groupName}).', [
                             'groupId' => $group->id,
-                            'groupName' => $group->name
+                            'groupName' => $group->name,
                         ])
                     );
 
@@ -656,7 +656,7 @@ class Subscriptions extends Component
                 }
 
                 // Get current groups, and filter out this one:
-                $newGroups = array_filter($user->getGroups(), function ($g) use ($group) {
+                $newGroups = array_filter($user->getGroups(), function($g) use ($group) {
                     if ($g->id === $group->id) {
                         return false;
                     }
@@ -674,7 +674,7 @@ class Subscriptions extends Component
                     $subscription->id,
                     Translation::prep('stripe', 'The user was removed from group ID #{groupId} ({groupName}).', [
                         'groupId' => $group->id,
-                        'groupName' => $group->name
+                        'groupName' => $group->name,
                     ])
                 );
             }
@@ -690,7 +690,7 @@ class Subscriptions extends Component
      */
     public function getLogs(Subscription $subscription): array
     {
-        $rows = (new Query)
+        $rows = (new Query())
             ->from([Table::SUBSCRIPTIONLOGS])
             ->select([
                 'id',
@@ -782,26 +782,26 @@ class Subscriptions extends Component
             if (in_array($oldStatus, [null, StripeSubscription::STATUS_INCOMPLETE])) {
                 // It just began, possibly after some billing trouble.
                 $this->grantGroupsForSubscription($subscription);
-            } else if ($oldStatus === StripeSubscription::STATUS_TRIALING) {
+            } elseif ($oldStatus === StripeSubscription::STATUS_TRIALING) {
                 // The trial period is over. Nothing should change!
-            } else if (in_array($oldStatus, [StripeSubscription::STATUS_PAST_DUE, StripeSubscription::STATUS_UNPAID])) {
+            } elseif (in_array($oldStatus, [StripeSubscription::STATUS_PAST_DUE, StripeSubscription::STATUS_UNPAID])) {
                 // Billing issues were resolved. This should undo anything
             }
-        } else if ($newStatus === StripeSubscription::STATUS_TRIALING) {
+        } elseif ($newStatus === StripeSubscription::STATUS_TRIALING) {
             if ($oldStatus === null) {
                 // The customer just started a trial. This is treated the same way as a new, active subscription:
                 $this->grantGroupsForSubscription($subscription);
             }
-        } else if ($newStatus === StripeSubscription::STATUS_CANCELED) {
+        } elseif ($newStatus === StripeSubscription::STATUS_CANCELED) {
             // Always revoke permissions:
             $this->revokeGroupsForSubscription($subscription);
 
             if (in_array($oldStatus, [StripeSubscription::STATUS_ACTIVE, StripeSubscription::STATUS_TRIALING])) {
                 // The subscription ended while in good standing (but potentially before actually starting).
-            } else if (in_array($oldStatus, [StripeSubscription::STATUS_PAST_DUE, StripeSubscription::STATUS_UNPAID])) {
+            } elseif (in_array($oldStatus, [StripeSubscription::STATUS_PAST_DUE, StripeSubscription::STATUS_UNPAID])) {
                 // The subscription ended with outstanding invoices.
             }
-        } else if (in_array($newStatus, [StripeSubscription::STATUS_PAST_DUE, StripeSubscription::STATUS_UNPAID])) {
+        } elseif (in_array($newStatus, [StripeSubscription::STATUS_PAST_DUE, StripeSubscription::STATUS_UNPAID])) {
             // We’re in a delinquent payment situation!
             if ($oldStatus === StripeSubscription::STATUS_ACTIVE) {
                 // Should we revoke permissions while they sort out payment?

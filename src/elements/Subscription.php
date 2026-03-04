@@ -311,7 +311,7 @@ class Subscription extends Element
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         if ($handle === 'user') {
-            $map = array_map(function (Subscription $el) {
+            $map = array_map(function(Subscription $el) {
                 return [
                     'source' => $el->id,
                     'target' => $el->userId,
