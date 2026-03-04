@@ -25,4 +25,6 @@ abstract class Table
     public const CUSTOMERDATA = '{{%stripe_customerdata}}';
     public const INVOICEDATA = '{{%stripe_invoicedata}}';
     public const WEBHOOKS = '{{%stripe_webhooks}}';
+    public const PRICES_USERGROUPS = '{{%stripe_prices_usergroups}}';
+    public const SUBSCRIPTIONLOGS = '{{%stripe_subscriptionlogs}}';
 }

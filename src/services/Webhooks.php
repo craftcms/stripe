@@ -80,9 +80,9 @@ class Webhooks extends Component
             case 'customer.subscription.created':
                 // retrieve the subscription again as we need some expandable info too
                 $subscription = $plugin->getApi()->fetchSubscriptionById($eventObject->id);
-                // get the unsaved draft for a subscription when subscription
+                // A draft may have been created at checkout, prior to redirection:
                 $subscriptionElement = $plugin->getSubscriptions()->getUnsavedDraftByUid($subscription);
-                // proceed with creating the element
+                // Create the live/canonical element:
                 $plugin->getSubscriptions()->createOrUpdateSubscriptionElement($subscription, $subscriptionElement);
                 break;
             case 'customer.subscription.updated':

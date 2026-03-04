@@ -1,0 +1,8 @@
+{% include '_includes/forms/componentSelect.twig' with {
+    name: 'userGroupAssignmentIds[]',
+    options: craft.app.userGroups.getAllGroups(),
+    values: plan.getUserGroupAssignments(),
+    showHandles: true,
+    showDescription: true,
+    createAction: currentUser.admin and craft.app.config.general.allowAdminChanges ? 'user-settings/edit-group' : null,
+} %}

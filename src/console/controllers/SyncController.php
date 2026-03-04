@@ -131,13 +131,13 @@ class SyncController extends Controller
      */
     private function syncProducts(): void
     {
-        $this->stdout('Syncing Stripe products and prices…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Syncing Stripe Products and Prices…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
         $start = microtime(true);
         Plugin::getInstance()->getProducts()->syncAllProducts();
         $time = microtime(true) - $start;
 
-        $this->stdout('Finished syncing ' . Product::find()->count() . ' product(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Finished syncing ' . Product::find()->count() . ' Product(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
     }
 
     /**
@@ -149,13 +149,13 @@ class SyncController extends Controller
      */
     private function syncPrices(): void
     {
-        $this->stdout('Syncing Stripe prices…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Syncing Stripe Prices…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
         $start = microtime(true);
         Plugin::getInstance()->getPrices()->syncAllPrices();
         $time = microtime(true) - $start;
 
-        $this->stdout('Finished syncing ' . Price::find()->count() . ' price(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Finished syncing ' . Price::find()->count() . ' Price(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
     }
 
     /**
@@ -167,13 +167,13 @@ class SyncController extends Controller
      */
     private function syncSubscriptions(): void
     {
-        $this->stdout('Syncing Stripe subscriptions…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Syncing Stripe Subscriptions…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
         $start = microtime(true);
         Plugin::getInstance()->getSubscriptions()->syncAllSubscriptions();
         $time = microtime(true) - $start;
 
-        $this->stdout('Finished syncing ' . Subscription::find()->count() . ' subscription(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Finished syncing ' . Subscription::find()->count() . ' Subscription(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
     }
 
     /**
@@ -185,13 +185,13 @@ class SyncController extends Controller
      */
     private function syncCustomers(): void
     {
-        $this->stdout('Syncing Stripe customers…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Syncing Stripe Customers…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
         $start = microtime(true);
         $count = Plugin::getInstance()->getCustomers()->syncAllCustomers();
         $time = microtime(true) - $start;
 
-        $this->stdout('Finished syncing ' . $count . ' customer(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Finished syncing ' . $count . ' Customer(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
     }
 
     /**
@@ -203,13 +203,13 @@ class SyncController extends Controller
      */
     private function syncPaymentMethods(): void
     {
-        $this->stdout('Syncing Stripe payment methods…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Syncing Stripe Payment Methods…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
         $start = microtime(true);
         $count = Plugin::getInstance()->getPaymentMethods()->syncAllPaymentMethods();
         $time = microtime(true) - $start;
 
-        $this->stdout('Finished syncing ' . $count . ' payment method(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Finished syncing ' . $count . ' Payment Method(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
     }
 
     /**
@@ -221,13 +221,13 @@ class SyncController extends Controller
      */
     private function syncInvoices(): void
     {
-        $this->stdout('Syncing Stripe invoices…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Syncing Stripe Invoices…' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
         $start = microtime(true);
         $count = Plugin::getInstance()->getInvoices()->syncAllInvoices();
         $time = microtime(true) - $start;
 
-        $this->stdout('Finished syncing ' . $count . ' invoice(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Finished syncing ' . $count . ' Invoice(s) in ' . round($time, 2) . 's' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
     }
 
     /**
@@ -243,32 +243,32 @@ class SyncController extends Controller
         $this->stdout("Syncing Stripe customer {$customerId} and related data…" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
         $start = microtime(true);
-        
+
         $plugin = Plugin::getInstance();
         $api = $plugin->getApi();
-        
+
         try {
             // Fetch the customer from Stripe
             $stripeCustomer = $api->fetchCustomerById($customerId);
-            
+
             // Sync the customer data
             $this->stdout('Syncing customer data…' . PHP_EOL, Console::FG_YELLOW);
             $plugin->getCustomers()->createOrUpdateCustomer($stripeCustomer);
-            
+
             // Sync customer's subscriptions
             $this->stdout('Syncing customer subscriptions…' . PHP_EOL, Console::FG_YELLOW);
             $subscriptionCount = $plugin->getSubscriptions()->syncCustomerSubscriptions($stripeCustomer);
-            
+
             // Sync customer's invoices
             $this->stdout('Syncing customer invoices…' . PHP_EOL, Console::FG_YELLOW);
             $invoiceCount = $plugin->getInvoices()->syncCustomerInvoices($stripeCustomer);
-            
+
             // Sync customer's payment methods
             $this->stdout('Syncing customer payment methods…' . PHP_EOL, Console::FG_YELLOW);
             $paymentMethodCount = $plugin->getPaymentMethods()->syncCustomerPaymentMethods($stripeCustomer);
-            
+
             $time = microtime(true) - $start;
-            
+
             $this->stdout(PHP_EOL . "Finished syncing customer {$customerId}:" . PHP_EOL, Console::FG_GREEN);
             $this->stdout("  - Customer data synced" . PHP_EOL, Console::FG_GREEN);
             $this->stdout("  - {$subscriptionCount} subscription(s) synced" . PHP_EOL, Console::FG_GREEN);

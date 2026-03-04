@@ -7,6 +7,7 @@
 
 namespace craft\stripe\models;
 
+use craft\elements\User;
 use craft\stripe\base\Model;
 use craft\stripe\Plugin;
 use DateTime;
@@ -41,5 +42,21 @@ class Customer extends Model
     public function getStripeEditUrl(): string
     {
         return Plugin::getInstance()->stripeBaseUrl . "/customers/{$this->stripeId}";
+    }
+
+    /**
+     * Returns the Craft {@see User} element with the matching email.
+     *
+     * @return User|null
+     */
+    public function getUser(): ?User
+    {
+        if (!$this->email) {
+            return null;
+        }
+
+        return User::find()
+            ->email($this->email)
+            ->one();
     }
 }

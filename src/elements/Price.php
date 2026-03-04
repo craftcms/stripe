@@ -15,6 +15,7 @@ use craft\db\Query;
 use craft\db\Table as CraftTable;
 use craft\elements\User;
 use craft\enums\Color;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
@@ -22,6 +23,7 @@ use craft\helpers\Json;
 use craft\helpers\MoneyHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
+use craft\models\UserGroup;
 use craft\stripe\db\Table;
 use craft\stripe\elements\conditions\prices\PriceCondition;
 use craft\stripe\elements\db\PriceQuery;
@@ -32,6 +34,7 @@ use craft\stripe\web\assets\stripecp\StripeCpAsset;
 use Money\Currency;
 use Money\Money;
 use Stripe\Price as StripePrice;
+use Throwable;
 use yii\base\InvalidConfigException;
 
 /**
@@ -111,6 +114,16 @@ class Price extends Element implements NestedElementInterface
     private ?Product $_product = null;
 
     /**
+     * @var UserGroup[]|null
+     */
+    private ?array $_userGroupAssignments = null;
+
+    /**
+     * @var int[]|null
+     */
+    private ?array $_userGroupAssignmentIds = null;
+
+    /**
      * @var array|string[] Array of params that should be expanded when fetching Price from the Stripe API
      */
     public static array $expandParams = [
@@ -135,7 +148,7 @@ class Price extends Element implements NestedElementInterface
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('stripe', 'stripe price');
+        return Craft::t('stripe', 'Stripe Price');
     }
 
     /**
@@ -151,7 +164,7 @@ class Price extends Element implements NestedElementInterface
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('stripe', 'stripe prices');
+        return Craft::t('stripe', 'Stripe Prices');
     }
 
     /**
@@ -264,6 +277,14 @@ class Price extends Element implements NestedElementInterface
         Craft::$app->getView()->registerAssetBundle(StripeCpAsset::class);
         $priceCard = PriceHelper::renderCardHtml($this);
         return parent::getSidebarHtml($static) . $priceCard;
+    }
+
+    /**
+     * Returns whether the price is configured as recurring.
+     */
+    public function isRecurring(): bool
+    {
+        return $this->type === StripePrice::TYPE_RECURRING;
     }
 
     /**
@@ -468,6 +489,29 @@ class Price extends Element implements NestedElementInterface
     /**
      * @inheritdoc
      */
+    public function defineRules(): array
+    {
+        $rules = parent::defineRules();
+
+        $rules[] = [['userGroupAssignmentIds'], 'safe'];
+        $rules[] = [
+            ['userGroupAssignmentIds'],
+            function($attribute, $params, $validator, $current) {
+                $allGroupIds = ArrayHelper::getColumn(Craft::$app->getUserGroups()->getAllGroups(), 'id');
+                $selectedGroupIds = ArrayHelper::getColumn($this->getUserGroupAssignments(), 'id');
+
+                if (count(array_diff($selectedGroupIds, $allGroupIds)) > 0) {
+                    $this->addError($attribute, Craft::t('stripe', 'One or more of the selected user groups are invalid.'));
+                }
+            },
+        ];
+
+        return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function canView(User $user): bool
     {
         return true;
@@ -507,7 +551,18 @@ class Price extends Element implements NestedElementInterface
      */
     protected function cpEditUrl(): ?string
     {
-        return null;
+        return sprintf('stripe/products/%s/prices/%s', $this->getOwnerId(), $this->getCanonicalId());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function extraFields(): array
+    {
+        $names = parent::extraFields();
+        $names[] = 'userGroupAssignments';
+        $names[] = 'userGroupAssignmentIds';
+        return $names;
     }
 
     /**
@@ -588,7 +643,77 @@ class Price extends Element implements NestedElementInterface
 
         $this->setDirtyAttributes($dirtyAttributes);
 
+        // Update join records with new groups:
+        $this->saveUserGroupAssignments();
+
         parent::afterSave($isNew);
+    }
+
+    /**
+     * Updates user group assignment records after a save.
+     *
+     * This method lifts most of its logic from {@see craft\services\Users::assignUserToGroups()}.
+     */
+    protected function saveUserGroupAssignments(): void
+    {
+        $db = Craft::$app->getDb();
+
+        $oldGroupIds = (new Query())
+            ->select(['groupId'])
+            ->from([Table::PRICES_USERGROUPS])
+            ->where(['priceId' => $this->id])
+            ->column($db);
+
+        // Build an array of new user groups, so we can unset them easily:
+        $newGroupIds = array_flip(array_unique(ArrayHelper::getColumn($this->getUserGroupAssignments(), 'id')));
+
+        $removedGroupIds = [];
+
+        foreach ($oldGroupIds as $oldGroupId) {
+            // Is this group still present in the new data?
+            if (isset($newGroupIds[$oldGroupId])) {
+                // Ok, let’s avoid deleting + re-creating the record unnecessarily:
+                unset($newGroupIds[$oldGroupId]);
+            } else {
+                $removedGroupIds[] = $oldGroupId;
+            }
+        }
+
+        if (empty($removedGroupIds) && empty($newGroupIds)) {
+            // There was no change to the selected groups; we don’t have to touch the database!
+            return;
+        }
+
+        // Whichever keys are left here (after culling with `unset()`) are our “real” new values:
+        $newGroupIds = array_keys($newGroupIds);
+
+        // Wrap all our group updates in a transaction:
+        $transaction = $db->beginTransaction();
+
+        try {
+            if (!empty($newGroupIds)) {
+                $values = [];
+                foreach ($newGroupIds as $groupId) {
+                    $values[] = [$this->id, $groupId];
+                }
+                Db::batchInsert(Table::PRICES_USERGROUPS, ['priceId', 'groupId'], $values, $db);
+            }
+
+            if (!empty($removedGroupIds)) {
+                Db::delete(Table::PRICES_USERGROUPS, [
+                    'priceId' => $this->id,
+                    'groupId' => $removedGroupIds,
+                ], [], $db);
+            }
+
+            $transaction->commit();
+        } catch (Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        // The Users service invalidates element index caches, at this point.
+        // We have the luxury of being in a private method, which will always be invoked within a typical element save!
     }
 
     /**
@@ -700,5 +825,70 @@ class Price extends Element implements NestedElementInterface
             $cancelUrl,
             $params
         );
+    }
+
+    /**
+     * Sets a list of user group IDs.
+     *
+     * @param array $ids
+     */
+    public function setUserGroupAssignmentIds(array $ids): void
+    {
+        $this->_userGroupAssignmentIds = $ids;
+    }
+
+    /**
+     * Gets the list of user group IDs.
+     */
+    public function getUserGroupAssignmentIds(): array
+    {
+        return $this->_userGroupAssignmentIds ?? [];
+    }
+
+    /**
+     * Returns a list of currently-configured user groups subscribers should be added to.
+     *
+     * @return UserGroup[]
+     */
+    public function getUserGroupAssignments(): array
+    {
+        if (!isset($this->_userGroupAssignments)) {
+            // Do we have a list of IDs already?
+            if (isset($this->_userGroupAssignmentIds)) {
+                $groupIds = $this->_userGroupAssignmentIds;
+            } else {
+                if ($this->id) {
+                    // Fetch them, if we have a source ID:
+                    $groupIds = (new Query())
+                        ->select(['groupId'])
+                        ->from([Table::PRICES_USERGROUPS])
+                        ->where(['priceId' => $this->id])
+                        ->column();
+                } else {
+                    $groupIds = [];
+                }
+            }
+
+            // Turn those IDs into models, discarding any that didn’t resolve:
+            $groups = array_filter(array_map(function($id) {
+                return Craft::$app->getUserGroups()->getGroupById((int)$id);
+            }, $groupIds));
+
+            // Memoize the results:
+            $this->setUserGroupAssignments($groups);
+        }
+
+        return $this->_userGroupAssignments;
+    }
+
+    /**
+     * Sets an array of user groups.
+     *
+     * @param UserGroup[] $groups
+     */
+    public function setUserGroupAssignments(array $groups): void
+    {
+        $this->_userGroupAssignments = $groups;
+        $this->_userGroupAssignmentIds = array_map(fn(UserGroup $userGroup) => $userGroup->id, $groups);
     }
 }

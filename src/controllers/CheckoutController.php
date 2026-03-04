@@ -68,21 +68,20 @@ class CheckoutController extends Controller
         }
 
         $params = [];
-        $fields = $request->getBodyParam('fields');
-        if (!empty($fields)) {
-            // check the checkout mode - if it's subscription, proceed with creating a draft
-            $mode = $checkoutService->getCheckoutMode($lineItems);
-            if ($mode === StripeCheckoutSession::MODE_SUBSCRIPTION) {
-                // create an unpublished & unsaved draft subscription in Craft;
-                $subscription = Craft::createObject([
-                    'class' => Subscription::class,
-                    'attributes' => ['title' => DateTimeHelper::now()->format('Y-m-d H:i:s')],
-                ]);
-                $subscription->setFieldValuesFromRequest('fields');
-                if (Craft::$app->getDrafts()->saveElementAsDraft($subscription, markAsSaved: false)) {
-                    // send the uid of it to Stripe to be stored as metadata on the Session(!)
-                    $params['metadata']['craftSubscriptionUid'] = $subscription->uid;
-                }
+
+        // Customers can save custom field values to subscriptions during checkout:
+        $mode = $checkoutService->getCheckoutMode($lineItems);
+        if ($mode === StripeCheckoutSession::MODE_SUBSCRIPTION) {
+            // Create a provisional draft element in Craft:
+            $subscription = new Subscription();
+            // Temporary title (because we don’t have a subscription ID yet):
+            $subscription->title = DateTimeHelper::now()->format('Y-m-d H:i:s');
+
+            $subscription->setFieldValuesFromRequest('fields');
+
+            if (Craft::$app->getDrafts()->saveElementAsDraft($subscription, markAsSaved: false)) {
+                // Attach the element’s UUID to the Stripe request as metadata on the Checkout Session:
+                $params['metadata']['craftSubscriptionUid'] = $subscription->uid;
             }
         }
 

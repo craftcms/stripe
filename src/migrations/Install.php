@@ -109,6 +109,26 @@ class Install extends Migration
             'prices' => $this->text()->defaultValue(null),
         ]);
 
+        $this->archiveTableIfExists(Table::SUBSCRIPTIONLOGS);
+        $this->createTable(Table::SUBSCRIPTIONLOGS, [
+            'id' => $this->primaryKey(),
+            'subscriptionId' => $this->integer()->notNull(),
+            'message' => $this->text()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->string(),
+        ]);
+
+        $this->archiveTableIfExists(Table::PRICES_USERGROUPS);
+        $this->createTable(Table::PRICES_USERGROUPS, [
+            'id' => $this->primaryKey(),
+            'priceId' => $this->integer()->notNull(),
+            'groupId' => $this->integer()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->string(),
+        ]);
+
         $this->archiveTableIfExists(Table::PAYMENTMETHODDATA);
         $this->createTable(Table::PAYMENTMETHODDATA, [
             'id' => $this->primaryKey(),
@@ -270,6 +290,11 @@ class Install extends Migration
 
         $this->addForeignKey(null, Table::SUBSCRIPTIONDATA, ['subscriptionId'],Table::SUBSCRIPTIONS, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::SUBSCRIPTIONS, ['id'], CraftTable::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
+
+        $this->addForeignKey(null, Table::PRICES_USERGROUPS, ['groupId'], CraftTable::USERGROUPS, ['id'], 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, Table::PRICES_USERGROUPS, ['priceId'], Table::PRICES, ['id'], 'CASCADE', 'CASCADE');
+
+        $this->addForeignKey(null, Table::SUBSCRIPTIONLOGS, ['subscriptionId'], Table::SUBSCRIPTIONS, ['id'], 'CASCADE');
     }
 
     /**

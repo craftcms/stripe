@@ -115,7 +115,7 @@ class Product extends Element
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('stripe', 'Stripe product');
+        return Craft::t('stripe', 'Stripe Product');
     }
 
     /**
@@ -131,7 +131,7 @@ class Product extends Element
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('stripe', 'stripe products');
+        return Craft::t('stripe', 'Stripe Products');
     }
 
     /**

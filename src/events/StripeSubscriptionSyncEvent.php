@@ -27,4 +27,10 @@ class StripeSubscriptionSyncEvent extends CancelableEvent
      * @var StripeSubscription Stripe API Subscription object.
      */
     public StripeSubscription $source;
+
+    /**
+     * @var bool Is this subscription just being created?
+     * @since 1.7.x
+     */
+    public bool $isNew = false;
 }
