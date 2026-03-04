@@ -10,6 +10,7 @@ namespace craft\stripe\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\fieldlayoutelements\BaseUiElement;
+use craft\stripe\elements\Subscription;
 use craft\stripe\Plugin;
 
 /**
@@ -43,6 +44,7 @@ class AssignmentLogs extends BaseUiElement
      */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
+        /** @var Subscription $element */
         return Craft::$app->getView()->renderTemplate('stripe/fieldlayoutelements/assignmentlogs', [
             'logs' => Plugin::getInstance()->getSubscriptions()->getLogs($element),
             'canManagePrices' => Craft::$app->getUser()->getIdentity()->can('accessPlugin-stripe'),

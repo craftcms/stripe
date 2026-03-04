@@ -162,9 +162,9 @@ class Subscriptions extends Component
         }
 
         // Remove any subscriptions that are no longer in Stripe just in case.
-        $deletableSubscriptionElements = Subscription::find()->stripeId(['not', $stripeIds])->all();
+        $deletableSubscriptions = Subscription::find()->stripeId(['not', $stripeIds])->all();
 
-        foreach ($deletableSubscriptionElements as $element) {
+        foreach ($deletableSubscriptions as $element) {
             Craft::$app->elements->deleteElement($element);
         }
     }
@@ -218,11 +218,11 @@ class Subscriptions extends Component
 
         try {
             // Find the subscription element or create one (now safely inside the lock)
-            /** @var SubscriptionElement|null $subscriptionElement */
-            $subscriptionElement = SubscriptionElement::find()
+            /** @var Subscription|null $subscriptionElement */
+            $subscriptionElement = Subscription::find()
                 ->stripeId($subscription->id)
                 ->status(null)
-                ->one() ?? new SubscriptionElement();
+                ->one() ?? new Subscription();
 
             return $this->createOrUpdateSubscriptionElement($subscription, $subscriptionElement, false);
         } finally {
@@ -234,12 +234,12 @@ class Subscriptions extends Component
      * Takes the Stripe subscription data from the API a Subscription element and updates the element with the data.
      *
      * @param StripeSubscription $subscription
-     * @param SubscriptionElement $subscriptionElement
+     * @param Subscription $subscriptionElement
      * @param bool $acquireLock Whether to acquire a mutex lock (set to false if caller already holds the lock)
      * @return bool Whether the synchronization succeeded.
      * @since 1.2
      */
-    public function createOrUpdateSubscriptionElement(StripeSubscription $subscription, SubscriptionElement $subscriptionElement, bool $acquireLock = true): bool
+    public function createOrUpdateSubscriptionElement(StripeSubscription $subscription, Subscription $subscriptionElement, bool $acquireLock = true): bool
     {
         // Duplicates seem to be possible: https://github.com/craftcms/stripe/issues/44
         $lockKey = "stripe-subscription:$subscription->id";
@@ -593,7 +593,7 @@ class Subscriptions extends Component
 
             foreach ($sub->getPrices() as $price) {
                 /** @var Price $price */
-                array_merge($subGroups, $price->getUserGroupAssignments());
+                $subGroups = array_merge($subGroups, $price->getUserGroupAssignments());
             }
 
             return array_merge($groups, $subGroups);

@@ -9,6 +9,7 @@ namespace craft\stripe\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\User;
 use craft\enums\Color;
@@ -311,7 +312,8 @@ class Subscription extends Element
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         if ($handle === 'user') {
-            $map = array_map(function(Subscription $el) {
+            $map = array_map(function(ElementInterface $el) {
+                /** @var Subscription $el */
                 return [
                     'source' => $el->id,
                     'target' => $el->userId,
@@ -631,6 +633,7 @@ class Subscription extends Element
     {
         switch ($plan->handle) {
             case 'user':
+                /** @var User[] $elements */
                 $this->setUser($elements[0]);
                 break;
             default:
@@ -747,7 +750,7 @@ class Subscription extends Element
         }
 
         if ($this->userId) {
-            $user = Craft::$app->getUsers()->getUserById($this->_userId);
+            $user = Craft::$app->getUsers()->getUserById($this->userId);
 
             $this->setUser($user);
 

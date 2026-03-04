@@ -119,7 +119,7 @@ class Price extends Element implements NestedElementInterface
     private ?array $_userGroupAssignments = null;
 
     /**
-     * @var int
+     * @var int[]|null
      */
     private ?array $_userGroupAssignmentIds = null;
 
