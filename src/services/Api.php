@@ -38,7 +38,7 @@ class Api extends Component
     /**
      * @var string
      */
-    public const STRIPE_API_VERSION = '2024-04-10';
+    public const STRIPE_API_VERSION = '2026-01-28.clover';
 
     /**
      * @var StripeClient|null

@@ -85,6 +85,16 @@ You have two options for doing an initial import of Stripe data:
 - Small product catalogs can usually get away with using the control panel utility: visit **Utilities** &rarr; **Stripe Sync All** and click **Sync all data**.
 - Large catalogs should perform synchronizations via the command line: Run `ddev craft stripe/sync/all` if you’re just getting started, or use one of the finer-grained [CLI tools](#cli) to import specific types of records.
 
+### Stripe API Version
+
+This plugin uses Stripe API version `2026-01-28.clover`. Upgrading from 1.x will require your Stripe account to be compatible with this API version.
+
+> [!IMPORTANT]
+> If you have custom code that interacts with Stripe API data (e.g. event listeners, custom webhook handlers, or code that reads stored Stripe response data), review the [Stripe API changelog](https://docs.stripe.com/changelog) for breaking changes between your previous API version and `2026-01-28.clover`.
+
+> [!TIP]
+> If you are running both the `stripe` and `commerce-stripe` plugins, both now use the same API version (`2026-01-28.clover`).
+
 ### Content + Fields
 
 Stripe [products](https://docs.stripe.com/products-prices/overview), [prices](https://docs.stripe.com/products-prices/how-products-and-prices-work#what-is-a-price), and [subscriptions](https://docs.stripe.com/subscriptions) are all stored as _elements_ in Craft. This means that they have access to the full suite of content modeling tools you would expect!
