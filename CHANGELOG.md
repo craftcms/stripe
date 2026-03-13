@@ -2,7 +2,7 @@
 
 ## 1.7.1 - 2026-01-19
 
-- Fixed typo in the Readme file. 
+- Fixed typo in the Readme file.
 - Fixed XSS vulnerabilities.
 
 ## 1.7.0 - 2025-12-11
