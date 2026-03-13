@@ -199,7 +199,7 @@ class Subscriptions extends Component
                 ->stripeId($subscription->id)
                 ->status(null)
                 ->one();
-            if ($existing) {
+            if ($existing instanceof SubscriptionElement) {
                 $subscriptionElement = $existing;
             }
         }
