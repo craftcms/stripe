@@ -193,6 +193,17 @@ class Subscriptions extends Component
             throw new MutexException($lockKey, 'Could not acquire a lock to create or update subscription.');
         }
 
+        // If this is a new element, check if one was created by another process while we waited for the lock
+        if ($acquireLock && !$subscriptionElement->id) {
+            $existing = SubscriptionElement::find()
+                ->stripeId($subscription->id)
+                ->status(null)
+                ->one();
+            if ($existing) {
+                $subscriptionElement = $existing;
+            }
+        }
+
         // Build our attribute set from the Stripe subscription data:
         $attributes = [
             'stripeId' => $subscription->id,

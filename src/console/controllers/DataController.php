@@ -17,6 +17,7 @@ use craft\stripe\elements\Subscription;
 use craft\stripe\records\CustomerData;
 use craft\stripe\records\InvoiceData;
 use craft\stripe\records\PaymentMethodData;
+use craft\stripe\records\SubscriptionData;
 use Exception;
 use yii\console\ExitCode;
 
@@ -268,6 +269,13 @@ class DataController extends Controller
                 ), Console::FG_RED);
 
                 if (!$this->dryRun) {
+                    // Re-point any SubscriptionData records to the keeper before deleting,
+                    // so the CASCADE delete doesn't wipe the stripe data
+                    SubscriptionData::updateAll(
+                        ['subscriptionId' => $keeper->id],
+                        ['subscriptionId' => $duplicate->id],
+                    );
+
                     $elementsService->deleteElement($duplicate, true);
                 }
                 $totalDeleted++;
