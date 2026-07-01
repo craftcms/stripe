@@ -10,6 +10,7 @@ namespace craft\stripe\controllers;
 use Craft;
 use craft\db\Query;
 use craft\helpers\AdminTable;
+use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\stripe\db\Table;
 use craft\stripe\Plugin;
@@ -125,7 +126,7 @@ class InvoicesController extends Controller
                 }
 
                 $field = Craft::$app->getDb()->getQueryBuilder()->jsonExtract('data', [$fieldName]);
-                if ($cast) {
+                if ($cast && $cast = Db::parseColumnType($cast)) {
                     $field = 'CAST(' . $field . ' AS ' . $cast . ')';
                 }
             }
