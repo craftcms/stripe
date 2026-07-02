@@ -66,10 +66,11 @@ class InvoicesController extends Controller
 
         // searching
         if ($search) {
+            $isPgsql = Craft::$app->getDb()->getIsPgsql();
             $sqlQuery->andWhere([
                 'or',
-                ['like', "stripe_invoicedata.number", $search],
-                ['like', "stripe_invoicedata.customerEmail", $search],
+                [$isPgsql ? 'ilike' : 'like', "stripe_invoicedata.number", $search],
+                [$isPgsql ? 'ilike' : 'like', "stripe_invoicedata.customerEmail", $search],
             ]);
         }
 
