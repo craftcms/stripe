@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## 1.7.2 - 2026-07-02
+
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (HCKRT-1509)
+
 ## 1.7.1 - 2026-01-19
 
 - Fixed typo in the Readme file.
