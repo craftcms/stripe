@@ -375,19 +375,20 @@ class Subscriptions extends Component
      * Resumes subscription by Stripe id.
      *
      * @param string $stripeId
+     * @param array|null $params Additional parameters to send to the Stripe API when resuming the subscription
      * @return bool
      * @throws \Throwable
      * @throws \yii\db\StaleObjectException
      * @since 1.5.0
      */
-    public function resumeSubscriptionByStripeId(string $stripeId): bool
+    public function resumeSubscriptionByStripeId(string $stripeId, ?array $params = null): bool
     {
         $stripe = Plugin::getInstance()->getApi()->getClient();
 
         try {
-            $subscription = $stripe->subscriptions->update($stripeId, [
+            $subscription = $stripe->subscriptions->update($stripeId, array_merge($params ?? [], [
                 'cancel_at_period_end' => false,
-            ]);
+            ]));
             Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription($subscription);
         } catch (\Exception $exception) {
             Craft::error($exception->getMessage(), 'stripe');
