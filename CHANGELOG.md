@@ -1,6 +1,6 @@
 # Release Notes for Stripe
 
-## Unreleased
+## 1.7.3 - 2026-07-15
 
 - `craft\stripe\services\Subscriptions::cancelSubscriptionByStripeId()` now has an optional `$params` argument, which can be used to pass additional parameters to the Stripe API.
 - `craft\stripe\services\Subscriptions::resumeSubscriptionByStripeId()` now has an optional `$params` argument, which can be used to pass additional parameters to the Stripe API.
