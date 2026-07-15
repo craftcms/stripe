@@ -1,5 +1,10 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- `craft\stripe\services\Subscriptions::cancelSubscriptionByStripeId()` now has an optional `$params` argument, which can be used to pass additional parameters to the Stripe API.
+- `craft\stripe\services\Subscriptions::resumeSubscriptionByStripeId()` now has an optional `$params` argument, which can be used to pass additional parameters to the Stripe API.
+
 ## 1.7.2 - 2026-07-02
 
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (HCKRT-1509)
