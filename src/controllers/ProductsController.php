@@ -22,6 +22,20 @@ use yii\web\Response;
 class ProductsController extends Controller
 {
     /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requirePermission('accessPlugin-stripe');
+
+        return true;
+    }
+
+    /**
      * Displays the product index page.
      *
      * @return Response
@@ -40,8 +54,6 @@ class ProductsController extends Controller
      */
     public function actionRenderMetaCardHtml(): string
     {
-        $this->requirePermission('accessPlugin-stripe');
-
         $id = (int)Craft::$app->request->getParam('id');
         /** @var Product $product */
         $product = Product::find()->id($id)->status(null)->one();
