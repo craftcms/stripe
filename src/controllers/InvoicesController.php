@@ -26,6 +26,20 @@ use yii\web\Response;
 class InvoicesController extends Controller
 {
     /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requirePermission('accessPlugin-stripe');
+
+        return true;
+    }
+
+    /**
      * Displays the invoices index page.
      *
      * @return Response
@@ -49,7 +63,6 @@ class InvoicesController extends Controller
     public function actionTableData(): Response
     {
         $this->requireAcceptsJson();
-        $this->requirePermission('accessPlugin-stripe');
 
         $page = $this->request->getParam('page', 1);
         $limit = $this->request->getParam('per_page', 100);
