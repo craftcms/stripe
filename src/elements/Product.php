@@ -460,7 +460,7 @@ class Product extends Element
      */
     public function canView(User $user): bool
     {
-        return true;
+        return Craft::$app->getUser()->checkPermission('accessPlugin-stripe');
     }
 
     /**
@@ -468,7 +468,7 @@ class Product extends Element
      */
     public function canSave(User $user): bool
     {
-        return true;
+        return Craft::$app->getUser()->checkPermission('accessPlugin-stripe');
     }
 
     /**
@@ -477,7 +477,7 @@ class Product extends Element
     public function canDelete(User $user): bool
     {
         // We normally cant delete stripe elements, but we can if we are in a draft state.
-        if ($this->getIsDraft()) {
+        if (Craft::$app->getUser()->checkPermission('accessPlugin-stripe') && $this->getIsDraft()) {
             return true;
         }
 
@@ -489,7 +489,7 @@ class Product extends Element
      */
     public function canCreateDrafts(User $user): bool
     {
-        return true;
+        return Craft::$app->getUser()->checkPermission('accessPlugin-stripe');
     }
 
     /**
