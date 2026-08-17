@@ -49,6 +49,7 @@ class InvoicesController extends Controller
     public function actionTableData(): Response
     {
         $this->requireAcceptsJson();
+        $this->requirePermission('accessPlugin-stripe');
 
         $page = $this->request->getParam('page', 1);
         $limit = $this->request->getParam('per_page', 100);
