@@ -44,7 +44,8 @@ return [
     'Draft' => 'Draft',
     'Due' => 'Due',
     'Ended at' => 'Ended at',
-    'Every {intervalCount} {interval}' => 'Every {intervalCount} {interval}',
+    'Every {intervalCount} {interval}' => 'Every {intervalCount, number} {interval, select, day{{intervalCount, plural, =1{day} other{days}}} week{{intervalCount, plural, =1{week} other{weeks}}}
+ month{{intervalCount, plural, =1{month} other{months}}} year{{intervalCount, plural, =1{year} other{years}}} other{{interval}}}',
     'Frequency' => 'Frequency',
     'General' => 'General',
     'Has Stripe Customer' => 'Has Stripe Customer',
