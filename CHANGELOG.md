@@ -7,7 +7,7 @@
 
 ## 1.7.2 - 2026-07-02
 
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-c658-9gq4-994r)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. ([GHSA-c658-9gq4-994r](https://github.com/craftcms/stripe/security/advisories/GHSA-c658-9gq4-994r))
 
 ## 1.7.1 - 2026-01-19
 
