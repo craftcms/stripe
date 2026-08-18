@@ -140,5 +140,9 @@ return [
     'What product URIs should look like.' => 'What product URIs should look like.',
     'Which template should be loaded when a product’s URL is requested.' => 'Which template should be loaded when a product’s URL is requested.',
     'Yes' => 'Yes',
+    'day' => 'day',
+    'month' => 'month',
     'per unit' => 'per unit',
+    'week' => 'week',
+    'year' => 'year',
 ];

@@ -131,7 +131,7 @@ class Price
 
         if ($stripePrice['recurring'] !== null) {
             if ($stripePrice['recurring']['interval_count'] == 1) {
-                $unitPrice = "$pricePerUnit/{$stripePrice['recurring']['interval']}";
+                $unitPrice = "$pricePerUnit/" . Craft::t('stripe', $stripePrice['recurring']['interval']);
             } else {
                 $unitPrice = $pricePerUnit . ' ' . lcfirst($interval);
             }
