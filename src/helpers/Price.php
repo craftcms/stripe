@@ -284,7 +284,7 @@ class Price
             foreach ($properties as $property) {
                 switch ($property) {
                     case 'unitPrice':
-                        $meta[Craft::t('stripe', 'Unit price')] = self::asUnitPrice($stripePrice);
+                        $meta[Craft::t('stripe', 'Unit Price')] = self::asUnitPrice($stripePrice);
                         break;
                     case 'currency':
                         $meta[Craft::t('stripe', 'Currency')] = strtoupper($stripePrice['currency']);
@@ -348,7 +348,7 @@ class Price
                 Html::beginTag('thead') .
                     Html::beginTag('tr') .
                         Html::tag('th', Craft::t('stripe', 'Currency')) .
-                        Html::tag('th', Craft::t('stripe', 'Unit price')) .
+                        Html::tag('th', Craft::t('stripe', 'Unit Price')) .
                     Html::endTag('tr') .
                 Html::endTag('thead') .
                 Html::beginTag('tbody');
