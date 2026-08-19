@@ -1,5 +1,14 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Added Spanish translations. ([#117](https://github.com/craftcms/stripe/pull/117))
+- Added Polish translations. ([#117](https://github.com/craftcms/stripe/pull/117))
+- Fixed a bug where interval labels (e.g. “day”, “week”) in unit prices weren’t translatable or properly pluralized. ([#117](https://github.com/craftcms/stripe/pull/117))
+- Fixed inconsistent casing of several translatable strings (e.g. “stripe price” → “Stripe price”, “Product URI format” → “Product URI Format”, “Payment Method Id” → “Payment Method ID”). ([#117](https://github.com/craftcms/stripe/pull/117))
+- Added missing translatable strings, and registered translations used in JavaScript so they’re included for translation. ([#117](https://github.com/craftcms/stripe/pull/117))
+
+
 ## 1.7.3 - 2026-07-15
 
 - `craft\stripe\services\Subscriptions::cancelSubscriptionByStripeId()` now has an optional `$params` argument, which can be used to pass additional parameters to the Stripe API.
