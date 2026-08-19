@@ -12,6 +12,7 @@
  */
 return [
     '{type} Title' => 'Título de {type}',
+    '{pricePerUnit}/{interval}' => '{pricePerUnit}/{interval}',
     '{unitPrice} per group of {divideBy}' => '{unitPrice} por grupo de {divideBy}',
     'Add a product' => 'Añadir un producto',
     'Add a subscription' => 'Añadir una suscripción',
