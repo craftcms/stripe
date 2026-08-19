@@ -1,6 +1,17 @@
 {% extends "_layouts/cp" %}
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
+{% do view.registerTranslations('stripe', [
+    "Amount",
+    "Created",
+    "Customer Email",
+    "Due",
+    "Frequency",
+    "Invoice No",
+    "No invoices exist yet.",
+    "Status",
+]) %}
+
 {% set title = "Stripe Invoices"|t('stripe') %}
 {% set selectedSubnavItem = 'stripeInvoices' %}
 
