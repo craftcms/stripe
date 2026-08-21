@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
@@ -402,6 +403,23 @@ class Product extends Element
         }
 
         return parent::eagerLoadingMap($sourceElements, $handle);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
+    {
+        switch ($plan->handle) {
+            case 'prices':
+                /** @var Price[] $elements */
+                $prices = ElementCollection::make($elements);
+                $cacheKey = md5(serialize($plan->criteria));
+                $this->_prices[$cacheKey] = $prices;
+                break;
+        }
+
+        parent::setEagerLoadedElements($handle, $elements, $plan);
     }
 
     /**
