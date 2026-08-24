@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Added Spanish translations. ([#117](https://github.com/craftcms/stripe/pull/117))
+- Added Polish translations. ([#117](https://github.com/craftcms/stripe/pull/117))
+- Added missing translatable strings, and registered translations used in JavaScript so they’re included for translation. ([#117](https://github.com/craftcms/stripe/pull/117))
+- Fixed a bug where interval labels (e.g. “day”, “week”) in unit prices weren’t translatable or properly pluralized. ([#117](https://github.com/craftcms/stripe/pull/117))
+- Fixed inconsistent casing of several translatable strings (e.g. “stripe price” → “Stripe price”, “Product URI format” → “Product URI Format”, “Payment Method Id” → “Payment Method ID”). ([#117](https://github.com/craftcms/stripe/pull/117))
 - Fixed a bug where `craft\stripe\elements\Product::getPrices()` could ignore custom criteria. ([#115](https://github.com/craftcms/stripe/issues/115))
 
 ## 1.7.3 - 2026-07-15
@@ -11,7 +16,7 @@
 
 ## 1.7.2 - 2026-07-02
 
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-c658-9gq4-994r)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. ([GHSA-c658-9gq4-994r](https://github.com/craftcms/stripe/security/advisories/GHSA-c658-9gq4-994r))
 
 ## 1.7.1 - 2026-01-19
 

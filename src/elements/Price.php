@@ -135,7 +135,7 @@ class Price extends Element implements NestedElementInterface
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('stripe', 'stripe price');
+        return Craft::t('stripe', 'Stripe price');
     }
 
     /**
@@ -151,7 +151,7 @@ class Price extends Element implements NestedElementInterface
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('stripe', 'stripe prices');
+        return Craft::t('stripe', 'Stripe prices');
     }
 
     /**

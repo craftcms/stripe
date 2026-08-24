@@ -146,7 +146,7 @@ class Subscription extends Element
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('stripe', 'stripe subscription');
+        return Craft::t('stripe', 'Stripe subscription');
     }
 
     /**
@@ -162,7 +162,7 @@ class Subscription extends Element
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('stripe', 'stripe subscriptions');
+        return Craft::t('stripe', 'Stripe subscriptions');
     }
 
     /**
