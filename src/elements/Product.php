@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
@@ -80,10 +81,10 @@ class Product extends Element
     private NestedElementManager $_priceManager;
 
     /**
-     * @var ElementCollection<Price> Prices
+     * @var array<string, ElementCollection<Price>> Prices, indexed by a hash of the criteria used to fetch them
      * @see getPrices()
      */
-    private ElementCollection $_prices;
+    private array $_prices = [];
 
     /**
      * @var Price|null Price
@@ -407,6 +408,23 @@ class Product extends Element
     /**
      * @inheritdoc
      */
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
+    {
+        switch ($plan->handle) {
+            case 'prices':
+                /** @var Price[] $elements */
+                $prices = ElementCollection::make($elements);
+                $cacheKey = md5(serialize($plan->criteria));
+                $this->_prices[$cacheKey] = $prices;
+                break;
+        }
+
+        parent::setEagerLoadedElements($handle, $elements, $plan);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getUriFormat(): ?string
     {
         return Plugin::getInstance()->getSettings()->productUriFormat;
@@ -692,22 +710,24 @@ class Product extends Element
      */
     public function getPrices(array $criteria = []): ElementCollection
     {
-        if (!isset($this->_prices)) {
-            if (!$this->id) {
-                /** @var ElementCollection<Price> */
-                return ElementCollection::make();
-            }
+        if (!$this->id) {
+            /** @var ElementCollection<Price> */
+            return ElementCollection::make();
+        }
 
+        $cacheKey = md5(serialize($criteria));
+
+        if (!isset($this->_prices[$cacheKey])) {
             $query = $this->createPriceQuery();
             if (!empty($criteria)) {
                 Craft::configure($query, $criteria);
             }
             /** @var ElementCollection<int|string, Price> $prices */
             $prices = $query->collect();
-            $this->_prices = $prices;
+            $this->_prices[$cacheKey] = $prices;
         }
 
-        return $this->_prices;
+        return $this->_prices[$cacheKey];
     }
 
     /**
