@@ -4,12 +4,12 @@
 
 - Added Spanish translations. ([#117](https://github.com/craftcms/stripe/pull/117))
 - Added Polish translations. ([#117](https://github.com/craftcms/stripe/pull/117))
+- Added missing translatable strings, and registered translations used in JavaScript so they’re included for translation. ([#117](https://github.com/craftcms/stripe/pull/117))
 - Fixed a bug where interval labels (e.g. “day”, “week”) in unit prices weren’t translatable or properly pluralized. ([#117](https://github.com/craftcms/stripe/pull/117))
 - Fixed inconsistent casing of several translatable strings (e.g. “stripe price” → “Stripe price”, “Product URI format” → “Product URI Format”, “Payment Method Id” → “Payment Method ID”). ([#117](https://github.com/craftcms/stripe/pull/117))
-- Added missing translatable strings, and registered translations used in JavaScript so they’re included for translation. ([#117](https://github.com/craftcms/stripe/pull/117))
+- Fixed a bug where `craft\stripe\elements\Product::getPrices()` could ignore custom criteria. ([#115](https://github.com/craftcms/stripe/issues/115))
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) CSRF vulnerability. (GHSA-rg42-24m4-xjr8)
 - Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) missing authorization vulnerabilities. (GHSA-jwc7-hcf8-gvqp, GHSA-c8rf-84x4-9fwv, GHSA-c79r-fq48-5vhf, GHSA-5429-943q-9499)
-
 
 ## 1.7.3 - 2026-07-15
 
