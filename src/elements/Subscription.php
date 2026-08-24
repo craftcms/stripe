@@ -332,6 +332,7 @@ class Subscription extends Element
         return [
             'stripeId' => ['label' => Craft::t('stripe', 'Stripe ID')],
             'stripeEdit' => ['label' => Craft::t('stripe', 'Stripe Edit')],
+            'stripeStatus' => ['label' => Craft::t('stripe', 'Stripe Status')],
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
