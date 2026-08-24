@@ -26,6 +26,20 @@ use yii\web\Response;
 class InvoicesController extends Controller
 {
     /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requirePermission('accessPlugin-stripe');
+
+        return true;
+    }
+
+    /**
      * Displays the invoices index page.
      *
      * @return Response
