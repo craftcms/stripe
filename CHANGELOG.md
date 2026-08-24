@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) CSRF vulnerability. (GHSA-rg42-24m4-xjr8)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) missing authorization vulnerability. (GHSA-jwc7-hcf8-gvqp)
 
 ## 1.7.3 - 2026-07-15
 
