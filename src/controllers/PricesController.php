@@ -26,6 +26,8 @@ class PricesController extends Controller
      */
     public function actionRenderMetaCardHtml(): string
     {
+        $this->requirePermission('accessPlugin-stripe');
+
         $id = (int)Craft::$app->request->getParam('id');
         /** @var Price $price */
         $price = Price::find()->id($id)->status(null)->one();
