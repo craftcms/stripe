@@ -194,6 +194,9 @@ class SubscriptionQuery extends ElementQuery
     public function status(array|string|null $value): static
     {
         parent::status($value);
+        if ($value === null) {
+            unset($this->isSuspended, $this->hasStarted);
+        }
 
         return $this;
     }
@@ -950,15 +953,26 @@ class SubscriptionQuery extends ElementQuery
 
         if (isset($this->isSuspended)) {
             if ($this->isSuspended) {
+                // subscription is considered suspended if it's not active, trialing or canceled
                 $this->subQuery->andWhere(Db::parseParam(
                     'stripe_subscriptiondata.stripeStatus',
-                    \Stripe\Subscription::STATUS_PAST_DUE,
+                    [
+                        'and',
+                        Subscription::STRIPE_STATUS_ACTIVE,
+                        Subscription::STRIPE_STATUS_TRIALING,
+                        Subscription::STRIPE_STATUS_CANCELED,
+                    ],
+                    'not'
                 ));
             } else {
+                // subscription is considered NOT suspended if it's active, trialing or canceled
                 $this->subQuery->andWhere(Db::parseParam(
                     'stripe_subscriptiondata.stripeStatus',
-                    \Stripe\Subscription::STATUS_PAST_DUE,
-                    'not'
+                    [
+                        Subscription::STRIPE_STATUS_ACTIVE,
+                        Subscription::STRIPE_STATUS_TRIALING,
+                        Subscription::STRIPE_STATUS_CANCELED,
+                    ],
                 ));
             }
         }
@@ -1015,19 +1029,34 @@ class SubscriptionQuery extends ElementQuery
     {
         $res = match ($status) {
             strtolower(Subscription::STATUS_LIVE) => [
-                'elements.enabled' => true,
-                'elements_sites.enabled' => true,
-                'stripe_subscriptiondata.stripeStatus' => 'active',
+                'and',
+                ['elements.enabled' => true],
+                ['elements_sites.enabled' => true],
+                ['or', ['stripe_subscriptiondata.stripeStatus' => [
+                    Subscription::STRIPE_STATUS_ACTIVE,
+                    Subscription::STRIPE_STATUS_TRIALING,
+                ]]],
             ],
             strtolower(Subscription::STATUS_STRIPE_SCHEDULED) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripe_subscriptiondata.stripeStatus' => 'scheduled',
+                'stripe_subscriptiondata.stripeStatus' => Subscription::STRIPE_STATUS_SCHEDULED,
             ],
             strtolower(Subscription::STATUS_STRIPE_CANCELED) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripe_subscriptiondata.stripeStatus' => 'canceled',
+                'stripe_subscriptiondata.stripeStatus' => Subscription::STRIPE_STATUS_CANCELED,
+            ],
+            strtolower(Subscription::STATUS_STRIPE_SUSPENDED) => [
+                'and',
+                ['elements.enabled' => true],
+                ['elements_sites.enabled' => true],
+                ['not', ['stripe_subscriptiondata.stripeStatus' => [
+                    Subscription::STRIPE_STATUS_ACTIVE,
+                    Subscription::STRIPE_STATUS_TRIALING,
+                    Subscription::STRIPE_STATUS_SCHEDULED,
+                    Subscription::STRIPE_STATUS_CANCELED,
+                ]]],
             ],
             default => parent::statusCondition($status),
         };
