@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) CSRF vulnerability. (GHSA-rg42-24m4-xjr8)
+
 ## 1.7.1 - 2026-01-19
 
 - Fixed typo in the Readme file.
