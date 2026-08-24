@@ -1015,19 +1015,23 @@ class SubscriptionQuery extends ElementQuery
     {
         $res = match ($status) {
             strtolower(Subscription::STATUS_LIVE) => [
-                'elements.enabled' => true,
-                'elements_sites.enabled' => true,
-                'stripe_subscriptiondata.stripeStatus' => 'active',
+                'and',
+                ['elements.enabled' => true],
+                ['elements_sites.enabled' => true],
+                ['or', ['stripe_subscriptiondata.stripeStatus' => [
+                    Subscription::STRIPE_STATUS_ACTIVE,
+                    Subscription::STRIPE_STATUS_TRIALING,
+                ]]],
             ],
             strtolower(Subscription::STATUS_STRIPE_SCHEDULED) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripe_subscriptiondata.stripeStatus' => 'scheduled',
+                'stripe_subscriptiondata.stripeStatus' => Subscription::STRIPE_STATUS_SCHEDULED,
             ],
             strtolower(Subscription::STATUS_STRIPE_CANCELED) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripe_subscriptiondata.stripeStatus' => 'canceled',
+                'stripe_subscriptiondata.stripeStatus' => Subscription::STRIPE_STATUS_CANCELED,
             ],
             default => parent::statusCondition($status),
         };

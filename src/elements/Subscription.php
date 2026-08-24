@@ -52,6 +52,7 @@ class Subscription extends Element
      * Stripe Statuses
      */
     public const STRIPE_STATUS_ACTIVE = 'active';
+    public const STRIPE_STATUS_TRIALING = 'trialing';
     public const STRIPE_STATUS_SCHEDULED = 'scheduled';
     public const STRIPE_STATUS_CANCELED = 'canceled';
 
@@ -61,7 +62,7 @@ class Subscription extends Element
     /**
      * @var string
      */
-    public string $stripeStatus = 'active';
+    public string $stripeStatus = self::STRIPE_STATUS_ACTIVE;
 
     /**
      * @var string|null
