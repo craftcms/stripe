@@ -611,9 +611,10 @@ class Subscription extends Element
     public function getStripeStatusHtml(): string
     {
         $color = match ($this->stripeStatus) {
-            'active' => 'green',
-            'scheduled' => 'orange',
-            'canceled' => 'red',
+            self::STRIPE_STATUS_ACTIVE => 'green',
+            self::STRIPE_STATUS_SCHEDULED => 'orange',
+            self::STATUS_STRIPE_CANCELED => 'red',
+            self::STRIPE_STATUS_TRIALING => 'yellow',
             default => 'blue',
         };
         return "<span class='status $color'></span>" . StringHelper::titleize($this->stripeStatus);
