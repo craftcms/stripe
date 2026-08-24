@@ -131,7 +131,10 @@ class Price
 
         if ($stripePrice['recurring'] !== null) {
             if ($stripePrice['recurring']['interval_count'] == 1) {
-                $unitPrice = "$pricePerUnit/{$stripePrice['recurring']['interval']}";
+                $unitPrice = Craft::t('stripe', "{pricePerUnit}/{interval}", [
+                    'pricePerUnit' => $pricePerUnit,
+                    'interval' => Craft::t('stripe', $stripePrice['recurring']['interval']),
+                ]);
             } else {
                 $unitPrice = $pricePerUnit . ' ' . lcfirst($interval);
             }
@@ -284,7 +287,7 @@ class Price
             foreach ($properties as $property) {
                 switch ($property) {
                     case 'unitPrice':
-                        $meta[Craft::t('stripe', 'Unit price')] = self::asUnitPrice($stripePrice);
+                        $meta[Craft::t('stripe', 'Unit Price')] = self::asUnitPrice($stripePrice);
                         break;
                     case 'currency':
                         $meta[Craft::t('stripe', 'Currency')] = strtoupper($stripePrice['currency']);
@@ -348,7 +351,7 @@ class Price
                 Html::beginTag('thead') .
                     Html::beginTag('tr') .
                         Html::tag('th', Craft::t('stripe', 'Currency')) .
-                        Html::tag('th', Craft::t('stripe', 'Unit price')) .
+                        Html::tag('th', Craft::t('stripe', 'Unit Price')) .
                     Html::endTag('tr') .
                 Html::endTag('thead') .
                 Html::beginTag('tbody');

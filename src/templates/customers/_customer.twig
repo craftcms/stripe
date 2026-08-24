@@ -1,6 +1,20 @@
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 {% do view.registerAssetBundle('craft\\stripe\\web\\assets\\stripecp\\StripeCpAsset') -%}
 
+{% do view.registerTranslations('stripe', [
+    "Amount",
+    "Created",
+    "Due",
+    "Frequency",
+    "Invoice No",
+    "Last 4 digits",
+    "No invoices exist yet.",
+    "No payment methods exist yet.",
+    "Payment Method ID",
+    "Status",
+    "Type",
+]) %}
+
 {% if customers is empty %}
     <p class="zilch">{{ 'This user isn’t a Stripe customer'|t('stripe') }}</p>
 {% else %}
@@ -37,7 +51,7 @@
     });
 
     var paymentMethodColumns = [
-        { name: '__slot:title', title: Craft.t('stripe', 'Payment Method Id') },
+        { name: '__slot:title', title: Craft.t('stripe', 'Payment Method ID') },
         { name: 'type', title: Craft.t('stripe', 'Type') },
         { name: 'last4', title: Craft.t('stripe', 'Last 4 digits') },
         { name: 'created', title: Craft.t('stripe', 'Created') },

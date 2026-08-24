@@ -109,7 +109,7 @@ class Settings extends Model
             'secretKey' => Craft::t('stripe', 'Stripe Secret Key'),
             'publishableKey' => Craft::t('stripe', 'Stripe Publishable Key'),
             'webhookSigningSecret' => Craft::t('stripe', 'Stripe Webhook Signing Secret'),
-            'productUriFormat' => Craft::t('stripe', 'Product URI format'),
+            'productUriFormat' => Craft::t('stripe', 'Product URI Format'),
             'productTemplate' => Craft::t('stripe', 'Product Template'),
         ];
     }
