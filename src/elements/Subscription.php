@@ -613,7 +613,7 @@ class Subscription extends Element
         $color = match ($this->stripeStatus) {
             self::STRIPE_STATUS_ACTIVE => 'green',
             self::STRIPE_STATUS_SCHEDULED => 'orange',
-            self::STATUS_STRIPE_CANCELED => 'red',
+            self::STRIPE_STATUS_CANCELED => 'red',
             self::STRIPE_STATUS_TRIALING => 'yellow',
             default => 'blue',
         };
