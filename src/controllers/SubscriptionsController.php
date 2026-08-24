@@ -23,6 +23,20 @@ use yii\web\Response;
 class SubscriptionsController extends Controller
 {
     /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requirePermission('accessPlugin-stripe');
+
+        return true;
+    }
+
+    /**
      * Displays the product index page.
      *
      * @return Response
