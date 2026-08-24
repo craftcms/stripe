@@ -47,11 +47,13 @@ class Subscription extends Element
     public const STATUS_LIVE = 'live';
     public const STATUS_STRIPE_SCHEDULED = 'stripeScheduled';
     public const STATUS_STRIPE_CANCELED = 'stripeCanceled';
+    public const STATUS_STRIPE_SUSPENDED = 'stripeSuspended';
 
     /**
      * Stripe Statuses
      */
     public const STRIPE_STATUS_ACTIVE = 'active';
+    public const STRIPE_STATUS_TRIALING = 'trialing';
     public const STRIPE_STATUS_SCHEDULED = 'scheduled';
     public const STRIPE_STATUS_CANCELED = 'canceled';
 
@@ -61,7 +63,7 @@ class Subscription extends Element
     /**
      * @var string
      */
-    public string $stripeStatus = 'active';
+    public string $stripeStatus = self::STRIPE_STATUS_ACTIVE;
 
     /**
      * @var string|null
@@ -230,6 +232,7 @@ class Subscription extends Element
             self::STATUS_LIVE => Craft::t('app', 'Live'),
             self::STATUS_STRIPE_SCHEDULED => ['label' => Craft::t('stripe', 'Scheduled in Stripe'), 'color' => Color::Orange],
             self::STATUS_STRIPE_CANCELED => ['label' => Craft::t('stripe', 'Canceled in Stripe'), 'color' => Color::Red],
+            self::STATUS_STRIPE_SUSPENDED => ['label' => Craft::t('stripe', 'Suspended in Stripe'), 'color' => Color::Blue],
             self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
         ];
     }
@@ -245,7 +248,8 @@ class Subscription extends Element
             return match ($this->stripeStatus) {
                 self::STRIPE_STATUS_SCHEDULED => self::STATUS_STRIPE_SCHEDULED,
                 self::STRIPE_STATUS_CANCELED => self::STATUS_STRIPE_CANCELED,
-                default => self::STATUS_LIVE,
+                self::STRIPE_STATUS_ACTIVE, self::STRIPE_STATUS_TRIALING => self::STATUS_LIVE,
+                default => self::STATUS_STRIPE_SUSPENDED,
             };
         }
 
@@ -332,6 +336,7 @@ class Subscription extends Element
         return [
             'stripeId' => ['label' => Craft::t('stripe', 'Stripe ID')],
             'stripeEdit' => ['label' => Craft::t('stripe', 'Stripe Edit')],
+            'stripeStatus' => ['label' => Craft::t('stripe', 'Stripe Status')],
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
@@ -606,9 +611,10 @@ class Subscription extends Element
     public function getStripeStatusHtml(): string
     {
         $color = match ($this->stripeStatus) {
-            'active' => 'green',
-            'scheduled' => 'orange',
-            'canceled' => 'red',
+            self::STRIPE_STATUS_ACTIVE => 'green',
+            self::STRIPE_STATUS_SCHEDULED => 'orange',
+            self::STRIPE_STATUS_CANCELED => 'red',
+            self::STRIPE_STATUS_TRIALING => 'yellow',
             default => 'blue',
         };
         return "<span class='status $color'></span>" . StringHelper::titleize($this->stripeStatus);
