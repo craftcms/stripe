@@ -1,6 +1,6 @@
 # Release Notes for Stripe
 
-## Unreleased
+## ## 1.8.1 - 2026-08-25
 
 - Added the ability to include Stripe Status in the Subscription element’s card. ([#119](https://github.com/craftcms/stripe/pull/119))
 - Added `stripeStatus` to the Subscription element’s query criteria, so you can now query by it. ([#119](https://github.com/craftcms/stripe/pull/119))
