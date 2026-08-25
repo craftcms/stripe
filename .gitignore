@@ -5,3 +5,7 @@
 .env
 /node_modules
 /vendor
+
+## TESTS
+/tests/_craft/storage
+/tests/_craft/.env
