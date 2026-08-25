@@ -2,7 +2,11 @@
 
 .status.stripe-status {
   margin-inline-start: 0.25em;
-  margin-inline-end: 0.25em;
+  margin-inline-end: calc(9em / 16);
+
+  .card-attribute-preview & {
+    margin-inline-end: calc(5em / 16);
+  }
 }
 
 .user-customers {
