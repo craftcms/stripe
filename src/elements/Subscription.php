@@ -238,7 +238,7 @@ class Subscription extends Element
     }
 
     /**
-     * Returns an array of Stripe Statuses that
+     * Returns an array of Stripe Statuses
      *
      * @return array[]
      * @since 1.8.1
@@ -644,6 +644,8 @@ class Subscription extends Element
     }
 
     /**
+     * Return HTML for showing the element’s Stripe status
+     *
      * @return string
      */
     public function getStripeStatusHtml(): string
