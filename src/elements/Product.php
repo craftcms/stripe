@@ -643,7 +643,10 @@ class Product extends Element
             'archived' => 'red',
             default => 'orange',
         };
-        return "<span class='status $color'></span>" . StringHelper::titleize($this->stripeStatus);
+        $stripeStatus = StringHelper::titleize(
+            implode(' ', StringHelper::toWords($this->stripeStatus, false, true))
+        );
+        return "<span class='status $color'></span>" . $stripeStatus;
     }
 
     /**

@@ -1,5 +1,10 @@
 @import "node_modules/craftcms-sass/_mixins";
 
+.status.stripe-status {
+  margin-inline-start: 0.25em;
+  margin-inline-end: 0.25em;
+}
+
 .user-customers {
   li {
     padding: 0.5em 0;
