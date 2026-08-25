@@ -122,12 +122,12 @@ class ProductQuery extends ElementQuery
             strtolower(Product::STATUS_LIVE) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripe_productdata.stripeStatus' => 'active',
+                'stripe_productdata.stripeStatus' => Product::STRIPE_STATUS_ACTIVE,
             ],
             strtolower(Product::STATUS_STRIPE_ARCHIVED) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripe_productdata.stripeStatus' => 'archived',
+                'stripe_productdata.stripeStatus' => Product::STRIPE_STATUS_ARCHIVED,
             ],
             default => parent::statusCondition($status),
         };

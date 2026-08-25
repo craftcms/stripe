@@ -52,10 +52,10 @@ class Subscription extends Element
     /**
      * Stripe Statuses
      */
-    public const STRIPE_STATUS_ACTIVE = 'active';
-    public const STRIPE_STATUS_TRIALING = 'trialing';
+    public const STRIPE_STATUS_ACTIVE = \Stripe\Subscription::STATUS_ACTIVE;
+    public const STRIPE_STATUS_TRIALING = \Stripe\Subscription::STATUS_TRIALING;
     public const STRIPE_STATUS_SCHEDULED = 'scheduled';
-    public const STRIPE_STATUS_CANCELED = 'canceled';
+    public const STRIPE_STATUS_CANCELED = \Stripe\Subscription::STATUS_CANCELED;
 
     // Properties
     // -------------------------------------------------------------------------

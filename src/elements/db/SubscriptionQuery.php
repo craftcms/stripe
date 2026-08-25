@@ -215,14 +215,14 @@ class SubscriptionQuery extends ElementQuery
      * | Value | Fetches {elements}…
      * | - | -
      * | `*` or `null` | any Stripe Status.
-     * | `'trialing'` | that are Trialing in Stripe.
-     * | `'active'` | that are Active in Stripe.
-     * | `'incomplete'` | that are Incomplete in Stripe.
-     * | `'incomplete_expired'` | that are Incomplete Expired in Stripe.
-     * | `'past_due'` | that are Past Due in Stripe.
-     * | `'canceled'` | that are Canceled in Stripe.
-     * | `'unpaid'` | that are Unpaid in Stripe.
-     * | `'paused'` | that are Paused in Stripe.
+     * | `'trialing'` or `\Stripe\Subscription::STATUS_TRIALING` | that are Trialing in Stripe.
+     * | `'active'` or `\Stripe\Subscription::STATUS_ACTIVE` | that are Active in Stripe.
+     * | `'incomplete'` or `\Stripe\Subscription::STATUS_INCOMPLETE` | that are Incomplete in Stripe.
+     * | `'incomplete_expired'` or `\Stripe\Subscription::STATUS_INCOMPLETE_EXPIRED` | that are Incomplete Expired in Stripe.
+     * | `'past_due'` or `\Stripe\Subscription::STATUS_PAST_DUE` | that are Past Due in Stripe.
+     * | `'canceled'` or `\Stripe\Subscription::STATUS_CANCELED` | that are Canceled in Stripe.
+     * | `'unpaid'` or `\Stripe\Subscription::STATUS_UNPAID` | that are Unpaid in Stripe.
+     * | `'paused'` or `\Stripe\Subscription::STATUS_PAUSED` | that are Paused in Stripe.
      * | `['trialing', 'active']` | that are Trialing or Active in Stripe.
      *
      * ---
@@ -237,7 +237,7 @@ class SubscriptionQuery extends ElementQuery
      * ```php
      * // Fetch trialing {elements}
      * ${elements-var} = {element-class}::find()
-     *     ->stripeStatus('trialing')
+     *     ->stripeStatus(\Stripe\Subscription::STATUS_TRIALING)
      *     ->all();
      * ```
      * @since 1.8.1

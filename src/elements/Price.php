@@ -72,7 +72,7 @@ class Price extends Element implements NestedElementInterface
     /**
      * @var string
      */
-    public string $stripeStatus = 'active';
+    public string $stripeStatus = self::STRIPE_STATUS_ACTIVE;
 
     /**
      * @var array|null
@@ -624,8 +624,8 @@ class Price extends Element implements NestedElementInterface
     public function getStripeStatusHtml(): string
     {
         $color = match ($this->stripeStatus) {
-            'active' => 'green',
-            'archived' => 'red',
+            self::STRIPE_STATUS_ACTIVE => 'green',
+            self::STRIPE_STATUS_ARCHIVED => 'red',
             default => 'orange',
         };
         $stripeStatus = StringHelper::titleize(

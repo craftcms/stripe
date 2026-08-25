@@ -307,12 +307,12 @@ class PriceQuery extends ElementQuery
             strtolower(Product::STATUS_LIVE) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripe_pricedata.stripeStatus' => 'active',
+                'stripe_pricedata.stripeStatus' => Product::STRIPE_STATUS_ACTIVE,
             ],
             strtolower(Product::STATUS_STRIPE_ARCHIVED) => [
                 'elements.enabled' => true,
                 'elements_sites.enabled' => true,
-                'stripe_pricedata.stripeStatus' => 'archived',
+                'stripe_pricedata.stripeStatus' => Product::STRIPE_STATUS_ARCHIVED,
             ],
             default => parent::statusCondition($status),
         };
