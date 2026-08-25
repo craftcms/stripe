@@ -1,6 +1,6 @@
 # Release Notes for Stripe
 
-## Unreleased
+## 1.8.0 - 2026-08-24
 
 - Added Spanish translations. ([#117](https://github.com/craftcms/stripe/pull/117))
 - Added Polish translations. ([#117](https://github.com/craftcms/stripe/pull/117))
