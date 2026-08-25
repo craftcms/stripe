@@ -39,6 +39,12 @@ class SubscriptionQuery extends ElementQuery
     public mixed $stripeId = null;
 
     /**
+     * @var mixed The status of the subscription in Stripe.
+     * @since 1.8.1
+     */
+    public mixed $stripeStatus = null;
+
+    /**
      * @var mixed The user id of the subscriber
      */
     public mixed $userId = null;
@@ -196,6 +202,52 @@ class SubscriptionQuery extends ElementQuery
         parent::status($value);
         if ($value === null) {
             unset($this->isSuspended, $this->hasStarted);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the {elements}’ Stripe statuses.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `*` or `null` | any Stripe Status.
+     * | `'trialing'` or `\Stripe\Subscription::STATUS_TRIALING` | that are Trialing in Stripe.
+     * | `'active'` or `\Stripe\Subscription::STATUS_ACTIVE` | that are Active in Stripe.
+     * | `'incomplete'` or `\Stripe\Subscription::STATUS_INCOMPLETE` | that are Incomplete in Stripe.
+     * | `'incomplete_expired'` or `\Stripe\Subscription::STATUS_INCOMPLETE_EXPIRED` | that are Incomplete Expired in Stripe.
+     * | `'past_due'` or `\Stripe\Subscription::STATUS_PAST_DUE` | that are Past Due in Stripe.
+     * | `'canceled'` or `\Stripe\Subscription::STATUS_CANCELED` | that are Canceled in Stripe.
+     * | `'unpaid'` or `\Stripe\Subscription::STATUS_UNPAID` | that are Unpaid in Stripe.
+     * | `'paused'` or `\Stripe\Subscription::STATUS_PAUSED` | that are Paused in Stripe.
+     * | `['trialing', 'active']` | that are Trialing or Active in Stripe.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch trialing {elements} #}
+     * {% set {elements-var} = {twig-method}
+     *   .stripeStatus('trialing')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch trialing {elements}
+     * ${elements-var} = {element-class}::find()
+     *     ->stripeStatus(\Stripe\Subscription::STATUS_TRIALING)
+     *     ->all();
+     * ```
+     * @since 1.8.1
+     */
+    public function stripeStatus(array|string|null $value): static
+    {
+        if ($value === null || $value === '*') {
+            $this->stripeStatus = null;
+        } else {
+            $this->stripeStatus = $value;
         }
 
         return $this;
@@ -939,6 +991,13 @@ class SubscriptionQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam(
                 "stripe_subscriptiondata.canceledAt",
                 $this->dateCanceled,
+            ));
+        }
+
+        if (isset($this->stripeStatus)) {
+            $this->subQuery->andWhere(Db::parseParam(
+                "stripe_subscriptiondata.stripeStatus",
+                $this->stripeStatus,
             ));
         }
 

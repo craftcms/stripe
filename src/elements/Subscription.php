@@ -52,10 +52,10 @@ class Subscription extends Element
     /**
      * Stripe Statuses
      */
-    public const STRIPE_STATUS_ACTIVE = 'active';
-    public const STRIPE_STATUS_TRIALING = 'trialing';
+    public const STRIPE_STATUS_ACTIVE = \Stripe\Subscription::STATUS_ACTIVE;
+    public const STRIPE_STATUS_TRIALING = \Stripe\Subscription::STATUS_TRIALING;
     public const STRIPE_STATUS_SCHEDULED = 'scheduled';
-    public const STRIPE_STATUS_CANCELED = 'canceled';
+    public const STRIPE_STATUS_CANCELED = \Stripe\Subscription::STATUS_CANCELED;
 
     // Properties
     // -------------------------------------------------------------------------
@@ -238,6 +238,34 @@ class Subscription extends Element
     }
 
     /**
+     * Returns an array of Stripe Statuses
+     *
+     * @return array[]
+     * @since 1.8.1
+     */
+    public static function stripeStatuses(): array
+    {
+        return [
+            self::STRIPE_STATUS_ACTIVE => [
+                'label' => self::STRIPE_STATUS_ACTIVE,
+                'color' => Color::Green,
+            ],
+            self::STRIPE_STATUS_SCHEDULED => [
+                'label' => self::STRIPE_STATUS_SCHEDULED,
+                'color' => Color::Orange,
+            ],
+            self::STRIPE_STATUS_CANCELED => [
+                'label' => self::STRIPE_STATUS_CANCELED,
+                'color' => Color::Red,
+            ],
+            self::STRIPE_STATUS_TRIALING => [
+                'label' => self::STRIPE_STATUS_TRIALING,
+                'color' => Color::Yellow,
+            ],
+        ];
+    }
+
+    /**
      * @inheritdoc
      */
     public function getStatus(): ?string
@@ -372,6 +400,16 @@ class Subscription extends Element
                 'label' => Craft::t('stripe', 'Stripe Edit'),
                 'placeholder' => Html::a('', "#", ['target' => '_blank', 'data' => ['icon' => 'external']]),
             ],
+            'stripeStatus' => [
+                'label' => Craft::t('stripe', 'Stripe Status'),
+                'placeholder' => function() {
+                    $mockup = new Subscription();
+                    return Html::ul([$mockup->getStripeStatusHtml()], [
+                        'class' => ['flex', 'gap-xs'],
+                        'encode' => false,
+                    ]);
+                },
+            ],
             'customerEmail' => [
                 'label' => Craft::t('stripe', 'Customer Email'),
                 'placeholder' => 'test@example.com',
@@ -395,7 +433,7 @@ class Subscription extends Element
     {
         return match ($attribute['value']) {
             'stripeEdit', 'link' => $attribute['placeholder'],
-            'products' => call_user_func($attribute['placeholder']),
+            'products', 'stripeStatus' => call_user_func($attribute['placeholder']),
             default => ElementHelper::attributeHtml($attribute['placeholder'] ?? $attribute['label']),
         };
     }
@@ -606,18 +644,30 @@ class Subscription extends Element
     }
 
     /**
+     * Return HTML for showing the element’s Stripe status
+     *
      * @return string
      */
     public function getStripeStatusHtml(): string
     {
-        $color = match ($this->stripeStatus) {
-            self::STRIPE_STATUS_ACTIVE => 'green',
-            self::STRIPE_STATUS_SCHEDULED => 'orange',
-            self::STRIPE_STATUS_CANCELED => 'red',
-            self::STRIPE_STATUS_TRIALING => 'yellow',
-            default => 'blue',
-        };
-        return "<span class='status $color'></span>" . StringHelper::titleize($this->stripeStatus);
+        $status = $this->stripeStatus ?? self::STRIPE_STATUS_ACTIVE;
+        $config = self::stripeStatuses()[$status] ?? [];
+
+        // if we couldn't get the Stripe status by key, then use the default value coming from Stripe and the blue colour
+        if (empty($config)) {
+            $config = [
+                'label' => $status,
+                'color' => Color::Blue,
+            ];
+        }
+
+        $config['label'] = Craft::t('stripe', StringHelper::titleize(
+            implode(' ', StringHelper::toWords($config['label'], false, true))
+        ));
+        $config['color'] ??= Color::Blue;
+        $config['indicatorClass'] = $config['color']->value;
+
+        return "<span class='status stripe-status {$config['indicatorClass']}'></span>" . $config['label'];
     }
 
     /**
