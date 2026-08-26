@@ -8,7 +8,6 @@
 namespace craft\stripe\tests\Unit\Elements;
 
 use craft\stripe\elements\Price;
-use craft\stripe\helpers\Price as PriceHelper;
 use craft\stripe\Plugin;
 use craft\stripe\tests\UnitTestCase;
 
@@ -92,48 +91,44 @@ class PriceTest extends UnitTestCase
 
     public function testUnitAmountDelegatesToPriceHelper(): void
     {
-        $stripePrice = ['unit_amount' => 1050, 'currency' => 'usd'];
         $price = new Price();
-        $price->setData($stripePrice);
+        $price->setData(['unit_amount' => 1050, 'currency' => 'usd']);
 
-        $this->assertSame(PriceHelper::asUnitAmount($stripePrice), $price->unitAmount());
+        $this->assertSame('$10.50', $price->unitAmount());
     }
 
     public function testUnitPriceDelegatesToPriceHelper(): void
     {
-        $stripePrice = [
+        $price = new Price();
+        $price->setData([
             'unit_amount' => 1050,
             'currency' => 'usd',
             'custom_unit_amount' => null,
             'transform_quantity' => null,
-            'recurring' => null,
-        ];
-        $price = new Price();
-        $price->setData($stripePrice);
+            'recurring' => ['interval_count' => 1, 'interval' => 'month'],
+        ]);
 
-        $this->assertSame(PriceHelper::asUnitPrice($stripePrice), $price->unitPrice());
+        $this->assertSame('$10.50/month', $price->unitPrice());
     }
 
     public function testPricePerUnitDelegatesToPriceHelper(): void
     {
-        $stripePrice = [
+        $price = new Price();
+        $price->setData([
             'unit_amount' => 1050,
             'currency' => 'usd',
             'custom_unit_amount' => null,
             'transform_quantity' => null,
-        ];
-        $price = new Price();
-        $price->setData($stripePrice);
+        ]);
 
-        $this->assertSame(PriceHelper::asPricePerUnit($stripePrice), $price->pricePerUnit());
+        $this->assertSame('$10.50', $price->pricePerUnit());
     }
 
     public function testIntervalDelegatesToPriceHelper(): void
     {
-        $stripePrice = ['recurring' => ['interval_count' => 1, 'interval' => 'month']];
         $price = new Price();
-        $price->setData($stripePrice);
+        $price->setData(['recurring' => ['interval_count' => 3, 'interval' => 'month']]);
 
-        $this->assertSame(PriceHelper::getInterval($stripePrice), $price->interval());
+        $this->assertSame('Every 3 months', $price->interval());
     }
 }

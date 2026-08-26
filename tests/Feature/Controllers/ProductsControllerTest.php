@@ -11,8 +11,8 @@ use Craft;
 use craft\stripe\controllers\ProductsController;
 use craft\stripe\elements\Product;
 use craft\stripe\Plugin;
+use craft\stripe\tests\Helpers\StripeApiObjectFactory;
 use craft\stripe\tests\TestCase;
-use Stripe\Product as StripeProduct;
 use yii\web\ForbiddenHttpException;
 
 class ProductsControllerTest extends TestCase
@@ -21,13 +21,9 @@ class ProductsControllerTest extends TestCase
     {
         $this->loginAsAdmin();
 
-        Plugin::getInstance()->getProducts()->createOrUpdateProduct(StripeProduct::constructFrom([
-            'id' => 'prod_controller_test',
-            'name' => 'Controller Test Product',
-            'active' => true,
-            'created' => 1700000000,
-            'updated' => 1700000000,
-        ]));
+        Plugin::getInstance()->getProducts()->createOrUpdateProduct(
+            StripeApiObjectFactory::product('prod_controller_test', ['name' => 'Controller Test Product'])
+        );
         $product = Product::find()->stripeId('prod_controller_test')->one();
 
         Craft::$app->getRequest()->setQueryParams(['id' => $product->id]);

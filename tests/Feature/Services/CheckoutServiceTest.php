@@ -8,10 +8,9 @@
 namespace craft\stripe\tests\Feature\Services;
 
 use craft\stripe\Plugin;
+use craft\stripe\tests\Helpers\StripeApiObjectFactory;
 use craft\stripe\tests\TestCase;
 use Stripe\Checkout\Session as StripeCheckoutSession;
-use Stripe\Price as StripePrice;
-use Stripe\Product as StripeProduct;
 
 class CheckoutServiceTest extends TestCase
 {
@@ -19,11 +18,9 @@ class CheckoutServiceTest extends TestCase
     {
         parent::setUp();
 
-        Plugin::getInstance()->getProducts()->createOrUpdateProduct(StripeProduct::constructFrom([
-            'id' => 'prod_for_checkout',
-            'name' => 'Product for checkout',
-            'active' => true,
-        ]));
+        Plugin::getInstance()->getProducts()->createOrUpdateProduct(
+            StripeApiObjectFactory::product('prod_for_checkout', ['name' => 'Product for checkout'])
+        );
     }
 
     public function testGetCheckoutModeReturnsPaymentForOnlyOneTimePrices(): void
@@ -52,16 +49,11 @@ class CheckoutServiceTest extends TestCase
 
     private function seedPrice(string $stripeId, string $type): void
     {
-        $stripePrice = StripePrice::constructFrom([
-            'id' => $stripeId,
-            'active' => true,
-            'currency' => 'usd',
-            'unit_amount' => 1000,
-            'type' => $type,
-            'product' => 'prod_for_checkout',
-            'recurring' => $type === 'recurring' ? ['interval' => 'month', 'interval_count' => 1] : null,
-        ]);
-
-        Plugin::getInstance()->getPrices()->createOrUpdatePrice($stripePrice);
+        Plugin::getInstance()->getPrices()->createOrUpdatePrice(
+            StripeApiObjectFactory::price($stripeId, 'prod_for_checkout', [
+                'type' => $type,
+                'recurring' => $type === 'recurring' ? ['interval' => 'month', 'interval_count' => 1] : null,
+            ])
+        );
     }
 }

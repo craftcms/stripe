@@ -9,8 +9,8 @@ namespace craft\stripe\tests\Feature\Elements\Db;
 
 use craft\stripe\elements\Subscription;
 use craft\stripe\Plugin;
+use craft\stripe\tests\Helpers\StripeApiObjectFactory;
 use craft\stripe\tests\TestCase;
-use Stripe\Subscription as StripeSubscription;
 
 class SubscriptionQueryTest extends TestCase
 {
@@ -56,13 +56,9 @@ class SubscriptionQueryTest extends TestCase
 
     private function seedSubscription(string $stripeId, string $status): void
     {
-        $stripeSubscription = StripeSubscription::constructFrom([
-            'id' => $stripeId,
+        $stripeSubscription = StripeApiObjectFactory::subscription($stripeId, [
             'status' => $status,
             'description' => "Test subscription $stripeId",
-            'items' => [
-                'data' => [],
-            ],
         ]);
 
         $this->assertTrue(Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription($stripeSubscription));

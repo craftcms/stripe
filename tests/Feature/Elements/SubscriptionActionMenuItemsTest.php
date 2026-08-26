@@ -9,9 +9,9 @@ namespace craft\stripe\tests\Feature\Elements;
 
 use craft\stripe\elements\Subscription;
 use craft\stripe\Plugin;
+use craft\stripe\tests\Helpers\StripeApiObjectFactory;
 use craft\stripe\tests\TestCase;
 use ReflectionMethod;
-use Stripe\Subscription as StripeSubscription;
 
 class SubscriptionActionMenuItemsTest extends TestCase
 {
@@ -54,11 +54,9 @@ class SubscriptionActionMenuItemsTest extends TestCase
 
     private function seedSubscription(string $stripeId, string $status, bool $cancelAtPeriodEnd): Subscription
     {
-        $stripeSubscription = StripeSubscription::constructFrom([
-            'id' => $stripeId,
+        $stripeSubscription = StripeApiObjectFactory::subscription($stripeId, [
             'status' => $status,
             'cancel_at_period_end' => $cancelAtPeriodEnd,
-            'items' => ['data' => []],
         ]);
 
         $this->assertTrue(Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription($stripeSubscription));

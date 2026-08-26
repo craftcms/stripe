@@ -9,18 +9,11 @@ namespace craft\stripe\tests\Feature\Services;
 
 use craft\stripe\Plugin;
 use craft\stripe\services\Api;
+use craft\stripe\tests\Helpers\StripeApiObjectFactory;
 use craft\stripe\tests\TestCase;
-use Stripe\Customer as StripeCustomer;
 
 class CustomersServiceTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        Plugin::getInstance()->set('api', Api::class);
-
-        parent::tearDown();
-    }
-
     public function testCreateOrUpdateCustomerCreatesAndUpdatesRecord(): void
     {
         $this->syncCustomer('cus_update', 'first@example.com');
@@ -63,15 +56,10 @@ class CustomersServiceTest extends TestCase
 
     public function testSyncAllCustomersCreatesFromMockedApi(): void
     {
-        $api = $this->createMock(Api::class);
+        $api = $this->mockComponent('api', Api::class);
         $api->method('fetchAllCustomers')->willReturn([
-            StripeCustomer::constructFrom([
-                'id' => 'cus_from_stripe',
-                'email' => 'from-stripe@example.com',
-                'created' => 1700000000,
-            ]),
+            StripeApiObjectFactory::customer('cus_from_stripe', 'from-stripe@example.com'),
         ]);
-        Plugin::getInstance()->set('api', $api);
 
         $count = Plugin::getInstance()->getCustomers()->syncAllCustomers();
 
@@ -81,12 +69,8 @@ class CustomersServiceTest extends TestCase
 
     private function syncCustomer(string $stripeId, string $email): bool
     {
-        $stripeCustomer = StripeCustomer::constructFrom([
-            'id' => $stripeId,
-            'email' => $email,
-            'created' => 1700000000,
-        ]);
-
-        return Plugin::getInstance()->getCustomers()->createOrUpdateCustomer($stripeCustomer);
+        return Plugin::getInstance()->getCustomers()->createOrUpdateCustomer(
+            StripeApiObjectFactory::customer($stripeId, $email)
+        );
     }
 }

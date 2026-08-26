@@ -11,9 +11,8 @@ use Craft;
 use craft\stripe\controllers\PricesController;
 use craft\stripe\elements\Price;
 use craft\stripe\Plugin;
+use craft\stripe\tests\Helpers\StripeApiObjectFactory;
 use craft\stripe\tests\TestCase;
-use Stripe\Price as StripePrice;
-use Stripe\Product as StripeProduct;
 use yii\web\ForbiddenHttpException;
 
 class PricesControllerTest extends TestCase
@@ -22,24 +21,12 @@ class PricesControllerTest extends TestCase
     {
         $this->loginAsAdmin();
 
-        Plugin::getInstance()->getProducts()->createOrUpdateProduct(StripeProduct::constructFrom([
-            'id' => 'prod_for_price_controller_test',
-            'name' => 'Product for price controller test',
-            'active' => true,
-        ]));
-        Plugin::getInstance()->getPrices()->createOrUpdatePrice(StripePrice::constructFrom([
-            'id' => 'price_controller_test',
-            'active' => true,
-            'currency' => 'usd',
-            'unit_amount' => 1000,
-            'product' => 'prod_for_price_controller_test',
-            'created' => 1700000000,
-            'currency_options' => [],
-            'recurring' => null,
-            'custom_unit_amount' => null,
-            'transform_quantity' => null,
-            'metadata' => [],
-        ]));
+        Plugin::getInstance()->getProducts()->createOrUpdateProduct(
+            StripeApiObjectFactory::product('prod_for_price_controller_test', ['name' => 'Product for price controller test'])
+        );
+        Plugin::getInstance()->getPrices()->createOrUpdatePrice(
+            StripeApiObjectFactory::price('price_controller_test', 'prod_for_price_controller_test')
+        );
         $price = Price::find()->stripeId('price_controller_test')->one();
 
         Craft::$app->getRequest()->setQueryParams(['id' => $price->id]);

@@ -15,22 +15,15 @@ use craft\stripe\Plugin;
 use craft\stripe\services\Api;
 use craft\stripe\services\Subscriptions;
 use craft\stripe\services\Webhooks;
+use craft\stripe\tests\Helpers\StripeApiObjectFactory;
 use craft\stripe\tests\TestCase;
-use Stripe\Customer as StripeCustomer;
 use Stripe\Event as StripeEventObject;
-use Stripe\Invoice as StripeInvoice;
-use Stripe\PaymentMethod as StripePaymentMethod;
-use Stripe\Price as StripePrice;
-use Stripe\Product as StripeProduct;
-use Stripe\Subscription as StripeSubscription;
 use yii\base\Event;
 
 class WebhooksServiceTest extends TestCase
 {
     protected function tearDown(): void
     {
-        Plugin::getInstance()->set('api', Api::class);
-        Plugin::getInstance()->set('subscriptions', Subscriptions::class);
         Event::off(Webhooks::class, Webhooks::EVENT_STRIPE_EVENT);
 
         parent::tearDown();
@@ -38,13 +31,10 @@ class WebhooksServiceTest extends TestCase
 
     public function testProductUpdatedFetchesAndSyncsProduct(): void
     {
-        $api = $this->createMock(Api::class);
-        $api->method('fetchProductById')->willReturn(StripeProduct::constructFrom([
-            'id' => 'prod_webhook',
-            'name' => 'Webhook Product',
-            'active' => true,
-        ]));
-        Plugin::getInstance()->set('api', $api);
+        $api = $this->mockComponent('api', Api::class);
+        $api->method('fetchProductById')->willReturn(
+            StripeApiObjectFactory::product('prod_webhook', ['name' => 'Webhook Product'])
+        );
 
         $this->processEvent('product.updated', ['id' => 'prod_webhook']);
 
@@ -53,11 +43,9 @@ class WebhooksServiceTest extends TestCase
 
     public function testProductDeletedRemovesProduct(): void
     {
-        Plugin::getInstance()->getProducts()->createOrUpdateProduct(StripeProduct::constructFrom([
-            'id' => 'prod_webhook_delete',
-            'name' => 'To Delete',
-            'active' => true,
-        ]));
+        Plugin::getInstance()->getProducts()->createOrUpdateProduct(
+            StripeApiObjectFactory::product('prod_webhook_delete', ['name' => 'To Delete'])
+        );
 
         $this->processEvent('product.deleted', ['id' => 'prod_webhook_delete']);
 
@@ -66,21 +54,14 @@ class WebhooksServiceTest extends TestCase
 
     public function testPriceUpdatedFetchesAndSyncsPrice(): void
     {
-        Plugin::getInstance()->getProducts()->createOrUpdateProduct(StripeProduct::constructFrom([
-            'id' => 'prod_for_price_webhook',
-            'name' => 'Product',
-            'active' => true,
-        ]));
+        Plugin::getInstance()->getProducts()->createOrUpdateProduct(
+            StripeApiObjectFactory::product('prod_for_price_webhook')
+        );
 
-        $api = $this->createMock(Api::class);
-        $api->method('fetchPriceById')->willReturn(StripePrice::constructFrom([
-            'id' => 'price_webhook',
-            'active' => true,
-            'currency' => 'usd',
-            'unit_amount' => 1000,
-            'product' => 'prod_for_price_webhook',
-        ]));
-        Plugin::getInstance()->set('api', $api);
+        $api = $this->mockComponent('api', Api::class);
+        $api->method('fetchPriceById')->willReturn(
+            StripeApiObjectFactory::price('price_webhook', 'prod_for_price_webhook')
+        );
 
         $this->processEvent('price.updated', ['id' => 'price_webhook']);
 
@@ -89,18 +70,12 @@ class WebhooksServiceTest extends TestCase
 
     public function testPriceDeletedRemovesPrice(): void
     {
-        Plugin::getInstance()->getProducts()->createOrUpdateProduct(StripeProduct::constructFrom([
-            'id' => 'prod_for_price_webhook_delete',
-            'name' => 'Product',
-            'active' => true,
-        ]));
-        Plugin::getInstance()->getPrices()->createOrUpdatePrice(StripePrice::constructFrom([
-            'id' => 'price_webhook_delete',
-            'active' => true,
-            'currency' => 'usd',
-            'unit_amount' => 1000,
-            'product' => 'prod_for_price_webhook_delete',
-        ]));
+        Plugin::getInstance()->getProducts()->createOrUpdateProduct(
+            StripeApiObjectFactory::product('prod_for_price_webhook_delete')
+        );
+        Plugin::getInstance()->getPrices()->createOrUpdatePrice(
+            StripeApiObjectFactory::price('price_webhook_delete', 'prod_for_price_webhook_delete')
+        );
 
         $this->processEvent('price.deleted', ['id' => 'price_webhook_delete']);
 
@@ -109,22 +84,16 @@ class WebhooksServiceTest extends TestCase
 
     public function testCustomerSubscriptionCreatedFetchesAndCreatesSubscription(): void
     {
-        $api = $this->createMock(Api::class);
-        $api->method('fetchSubscriptionById')->willReturn(StripeSubscription::constructFrom([
-            'id' => 'sub_webhook_created',
-            'status' => 'active',
-            'items' => ['data' => []],
-        ]));
-        Plugin::getInstance()->set('api', $api);
+        $api = $this->mockComponent('api', Api::class);
+        $api->method('fetchSubscriptionById')->willReturn(
+            StripeApiObjectFactory::subscription('sub_webhook_created')
+        );
 
         // `getUnsavedDraftByUid()` looks up the originating checkout session via the real Stripe
         // client to find a matching draft — not reachable in tests, so stub only that one method
         // and let `createOrUpdateSubscriptionElement()` run for real via a partial mock.
-        $subscriptions = $this->getMockBuilder(Subscriptions::class)
-            ->onlyMethods(['getUnsavedDraftByUid'])
-            ->getMock();
+        $subscriptions = $this->partialMockComponent('subscriptions', Subscriptions::class, ['getUnsavedDraftByUid']);
         $subscriptions->method('getUnsavedDraftByUid')->willReturn(new Subscription());
-        Plugin::getInstance()->set('subscriptions', $subscriptions);
 
         $this->processEvent('customer.subscription.created', ['id' => 'sub_webhook_created']);
 
@@ -133,13 +102,10 @@ class WebhooksServiceTest extends TestCase
 
     public function testCustomerSubscriptionUpdatedFetchesAndSyncsSubscription(): void
     {
-        $api = $this->createMock(Api::class);
-        $api->method('fetchSubscriptionById')->willReturn(StripeSubscription::constructFrom([
-            'id' => 'sub_webhook_updated',
-            'status' => 'canceled',
-            'items' => ['data' => []],
-        ]));
-        Plugin::getInstance()->set('api', $api);
+        $api = $this->mockComponent('api', Api::class);
+        $api->method('fetchSubscriptionById')->willReturn(
+            StripeApiObjectFactory::subscription('sub_webhook_updated', ['status' => 'canceled'])
+        );
 
         $this->processEvent('customer.subscription.updated', ['id' => 'sub_webhook_updated']);
 
@@ -150,13 +116,10 @@ class WebhooksServiceTest extends TestCase
 
     public function testCustomerUpdatedFetchesAndSyncsCustomer(): void
     {
-        $api = $this->createMock(Api::class);
-        $api->method('fetchCustomerById')->willReturn(StripeCustomer::constructFrom([
-            'id' => 'cus_webhook',
-            'email' => 'webhook@example.com',
-            'created' => 1700000000,
-        ]));
-        Plugin::getInstance()->set('api', $api);
+        $api = $this->mockComponent('api', Api::class);
+        $api->method('fetchCustomerById')->willReturn(
+            StripeApiObjectFactory::customer('cus_webhook', 'webhook@example.com')
+        );
 
         $this->processEvent('customer.updated', ['id' => 'cus_webhook']);
 
@@ -165,16 +128,12 @@ class WebhooksServiceTest extends TestCase
 
     public function testCustomerDeletedRemovesCustomerAndPaymentMethods(): void
     {
-        Plugin::getInstance()->getCustomers()->createOrUpdateCustomer(StripeCustomer::constructFrom([
-            'id' => 'cus_webhook_delete',
-            'email' => 'webhook-delete@example.com',
-            'created' => 1700000000,
-        ]));
-        Plugin::getInstance()->getPaymentMethods()->createOrUpdatePaymentMethod(StripePaymentMethod::constructFrom([
-            'id' => 'pm_webhook_delete',
-            'customer' => 'cus_webhook_delete',
-            'type' => 'card',
-        ]));
+        Plugin::getInstance()->getCustomers()->createOrUpdateCustomer(
+            StripeApiObjectFactory::customer('cus_webhook_delete', 'webhook-delete@example.com')
+        );
+        Plugin::getInstance()->getPaymentMethods()->createOrUpdatePaymentMethod(
+            StripeApiObjectFactory::paymentMethod('pm_webhook_delete', 'cus_webhook_delete')
+        );
 
         $this->processEvent('customer.deleted', ['id' => 'cus_webhook_delete']);
 
@@ -184,13 +143,10 @@ class WebhooksServiceTest extends TestCase
 
     public function testPaymentMethodAttachedFetchesAndSyncsPaymentMethod(): void
     {
-        $api = $this->createMock(Api::class);
-        $api->method('fetchPaymentMethodByIds')->willReturn(StripePaymentMethod::constructFrom([
-            'id' => 'pm_webhook_attached',
-            'customer' => 'cus_webhook_attached',
-            'type' => 'card',
-        ]));
-        Plugin::getInstance()->set('api', $api);
+        $api = $this->mockComponent('api', Api::class);
+        $api->method('fetchPaymentMethodByIds')->willReturn(
+            StripeApiObjectFactory::paymentMethod('pm_webhook_attached', 'cus_webhook_attached')
+        );
 
         $this->processEvent('payment_method.attached', ['id' => 'pm_webhook_attached', 'customer' => 'cus_webhook_attached']);
 
@@ -199,11 +155,9 @@ class WebhooksServiceTest extends TestCase
 
     public function testPaymentMethodDetachedRemovesPaymentMethod(): void
     {
-        Plugin::getInstance()->getPaymentMethods()->createOrUpdatePaymentMethod(StripePaymentMethod::constructFrom([
-            'id' => 'pm_webhook_detached',
-            'customer' => 'cus_x',
-            'type' => 'card',
-        ]));
+        Plugin::getInstance()->getPaymentMethods()->createOrUpdatePaymentMethod(
+            StripeApiObjectFactory::paymentMethod('pm_webhook_detached', 'cus_x')
+        );
 
         $this->processEvent('payment_method.detached', ['id' => 'pm_webhook_detached']);
 
@@ -212,17 +166,10 @@ class WebhooksServiceTest extends TestCase
 
     public function testInvoiceCreatedFetchesAndSyncsInvoice(): void
     {
-        $api = $this->createMock(Api::class);
-        $api->method('fetchInvoiceById')->willReturn(StripeInvoice::constructFrom([
-            'id' => 'in_webhook',
-            'number' => 'INV-WEBHOOK',
-            'status' => 'open',
-            'currency' => 'usd',
-            'total' => 1000,
-            'customer_email' => 'invoice@example.com',
-            'created' => 1700000000,
-        ]));
-        Plugin::getInstance()->set('api', $api);
+        $api = $this->mockComponent('api', Api::class);
+        $api->method('fetchInvoiceById')->willReturn(
+            StripeApiObjectFactory::invoice('in_webhook', ['number' => 'INV-WEBHOOK', 'customer_email' => 'invoice@example.com'])
+        );
 
         $this->processEvent('invoice.created', ['id' => 'in_webhook']);
 
@@ -231,13 +178,9 @@ class WebhooksServiceTest extends TestCase
 
     public function testInvoiceDeletedRemovesInvoice(): void
     {
-        Plugin::getInstance()->getInvoices()->createOrUpdateInvoice(StripeInvoice::constructFrom([
-            'id' => 'in_webhook_delete',
-            'status' => 'draft',
-            'currency' => 'usd',
-            'total' => 1000,
-            'created' => 1700000000,
-        ]));
+        Plugin::getInstance()->getInvoices()->createOrUpdateInvoice(
+            StripeApiObjectFactory::invoice('in_webhook_delete', ['status' => 'draft'])
+        );
 
         $this->processEvent('invoice.deleted', ['id' => 'in_webhook_delete']);
 
@@ -263,11 +206,9 @@ class WebhooksServiceTest extends TestCase
             $received = $event->stripeEvent;
         });
 
-        Plugin::getInstance()->getProducts()->createOrUpdateProduct(StripeProduct::constructFrom([
-            'id' => 'prod_for_event_check',
-            'name' => 'Product',
-            'active' => true,
-        ]));
+        Plugin::getInstance()->getProducts()->createOrUpdateProduct(
+            StripeApiObjectFactory::product('prod_for_event_check')
+        );
 
         $this->processEvent('product.deleted', ['id' => 'prod_for_event_check']);
 

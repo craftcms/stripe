@@ -9,8 +9,8 @@ namespace craft\stripe\tests\Feature\Elements\Db;
 
 use craft\stripe\elements\Product;
 use craft\stripe\Plugin;
+use craft\stripe\tests\Helpers\StripeApiObjectFactory;
 use craft\stripe\tests\TestCase;
-use Stripe\Product as StripeProduct;
 
 class ProductQueryTest extends TestCase
 {
@@ -50,11 +50,7 @@ class ProductQueryTest extends TestCase
 
     private function seedProduct(string $stripeId, bool $active): void
     {
-        $stripeProduct = StripeProduct::constructFrom([
-            'id' => $stripeId,
-            'name' => "Test Product $stripeId",
-            'active' => $active,
-        ]);
+        $stripeProduct = StripeApiObjectFactory::product($stripeId, ['active' => $active]);
 
         $this->assertTrue(Plugin::getInstance()->getProducts()->createOrUpdateProduct($stripeProduct));
     }

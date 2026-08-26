@@ -11,9 +11,8 @@ use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
 use craft\stripe\enums\PriceType;
 use craft\stripe\Plugin;
+use craft\stripe\tests\Helpers\StripeApiObjectFactory;
 use craft\stripe\tests\TestCase;
-use Stripe\Price as StripePrice;
-use Stripe\Product as StripeProduct;
 
 class PriceQueryTest extends TestCase
 {
@@ -23,12 +22,9 @@ class PriceQueryTest extends TestCase
     {
         parent::setUp();
 
-        $stripeProduct = StripeProduct::constructFrom([
-            'id' => 'prod_for_prices',
-            'name' => 'Product for prices',
-            'active' => true,
-        ]);
-        Plugin::getInstance()->getProducts()->createOrUpdateProduct($stripeProduct);
+        Plugin::getInstance()->getProducts()->createOrUpdateProduct(
+            StripeApiObjectFactory::product('prod_for_prices', ['name' => 'Product for prices'])
+        );
         $this->product = Product::find()->stripeId('prod_for_prices')->one();
     }
 
@@ -102,13 +98,10 @@ class PriceQueryTest extends TestCase
 
     private function seedPrice(string $stripeId, bool $active, string $currency, string $type): void
     {
-        $stripePrice = StripePrice::constructFrom([
-            'id' => $stripeId,
+        $stripePrice = StripeApiObjectFactory::price($stripeId, $this->product->stripeId, [
             'active' => $active,
             'currency' => $currency,
             'type' => $type,
-            'unit_amount' => 1000,
-            'product' => $this->product->stripeId,
             'recurring' => $type === 'recurring' ? ['interval' => 'month', 'interval_count' => 1] : null,
         ]);
 

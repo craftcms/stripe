@@ -13,16 +13,13 @@ use craft\enums\CmsEdition;
 use craft\stripe\elements\Subscription;
 use craft\stripe\Plugin;
 use craft\stripe\services\Api;
-use craft\stripe\services\Subscriptions;
+use craft\stripe\tests\Helpers\StripeApiObjectFactory;
 use craft\stripe\tests\TestCase;
-use Stripe\Customer as StripeCustomer;
-use Stripe\Subscription as StripeSubscription;
 
 class SubscriptionsServiceTest extends TestCase
 {
     protected function tearDown(): void
     {
-        Plugin::getInstance()->set('api', Api::class);
         Plugin::getInstance()->getSettings()->createUserIfMissing = false;
 
         parent::tearDown();
@@ -30,7 +27,7 @@ class SubscriptionsServiceTest extends TestCase
 
     public function testCreateOrUpdateSubscriptionCreatesNewElement(): void
     {
-        $this->assertTrue($this->syncSubscription('sub_new', 'active'));
+        $this->assertTrue($this->syncSubscription('sub_new', ['status' => 'active']));
 
         $subscription = Subscription::find()->stripeId('sub_new')->one();
 
@@ -40,8 +37,8 @@ class SubscriptionsServiceTest extends TestCase
 
     public function testCreateOrUpdateSubscriptionUpdatesExistingElementInsteadOfDuplicating(): void
     {
-        $this->syncSubscription('sub_update', 'active');
-        $this->syncSubscription('sub_update', 'canceled');
+        $this->syncSubscription('sub_update', ['status' => 'active']);
+        $this->syncSubscription('sub_update', ['status' => 'canceled']);
 
         $subscriptions = Subscription::find()->stripeId('sub_update')->status(null)->all();
 
@@ -51,7 +48,7 @@ class SubscriptionsServiceTest extends TestCase
 
     public function testDeleteSubscriptionByStripeIdRemovesElement(): void
     {
-        $this->syncSubscription('sub_delete', 'active');
+        $this->syncSubscription('sub_delete');
         $this->assertNotNull(Subscription::find()->stripeId('sub_delete')->status(null)->one());
 
         Plugin::getInstance()->getSubscriptions()->deleteSubscriptionByStripeId('sub_delete');
@@ -66,15 +63,12 @@ class SubscriptionsServiceTest extends TestCase
 
         // `Subscription::getCustomer()` is never populated during a plain sync, so `ensureUser()`
         // always falls back to `Api::fetchCustomerById()` — mock that instead of pre-seeding a Customer.
-        $api = $this->createMock(Api::class);
-        $api->method('fetchCustomerById')->willReturn(StripeCustomer::constructFrom([
-            'id' => 'cus_ensure_user',
-            'email' => 'ensure-user-test@example.com',
-            'created' => 1700000000,
-        ]));
-        Plugin::getInstance()->set('api', $api);
+        $api = $this->mockComponent('api', Api::class);
+        $api->method('fetchCustomerById')->willReturn(
+            StripeApiObjectFactory::customer('cus_ensure_user', 'ensure-user-test@example.com')
+        );
 
-        $this->syncSubscription('sub_ensure_user', 'active', 'cus_ensure_user');
+        $this->syncSubscription('sub_ensure_user', ['customer' => 'cus_ensure_user']);
 
         $user = User::find()->email('ensure-user-test@example.com')->status(null)->one();
         $this->assertNotNull($user);
@@ -84,15 +78,12 @@ class SubscriptionsServiceTest extends TestCase
     {
         Plugin::getInstance()->getSettings()->createUserIfMissing = false;
 
-        $api = $this->createMock(Api::class);
-        $api->method('fetchCustomerById')->willReturn(StripeCustomer::constructFrom([
-            'id' => 'cus_no_ensure_user',
-            'email' => 'no-ensure-user-test@example.com',
-            'created' => 1700000000,
-        ]));
-        Plugin::getInstance()->set('api', $api);
+        $api = $this->mockComponent('api', Api::class);
+        $api->method('fetchCustomerById')->willReturn(
+            StripeApiObjectFactory::customer('cus_no_ensure_user', 'no-ensure-user-test@example.com')
+        );
 
-        $this->syncSubscription('sub_no_ensure_user', 'active', 'cus_no_ensure_user');
+        $this->syncSubscription('sub_no_ensure_user', ['customer' => 'cus_no_ensure_user']);
 
         $user = User::find()->email('no-ensure-user-test@example.com')->status(null)->one();
         $this->assertNull($user);
@@ -100,20 +91,13 @@ class SubscriptionsServiceTest extends TestCase
 
     public function testSyncAllSubscriptionsCreatesAndRemovesOrphans(): void
     {
-        $this->syncSubscription('sub_orphan', 'active');
+        $this->syncSubscription('sub_orphan');
 
-        $api = $this->createMock(Api::class);
+        $api = $this->mockComponent('api', Api::class);
         $api->method('prepExpandForFetchAll')->willReturn([]);
         $api->method('fetchAllIterator')->willReturn((function() {
-            yield [
-                StripeSubscription::constructFrom([
-                    'id' => 'sub_from_stripe',
-                    'status' => 'active',
-                    'items' => ['data' => []],
-                ]),
-            ];
+            yield [StripeApiObjectFactory::subscription('sub_from_stripe')];
         })());
-        Plugin::getInstance()->set('api', $api);
 
         Plugin::getInstance()->getSubscriptions()->syncAllSubscriptions();
 
@@ -121,15 +105,10 @@ class SubscriptionsServiceTest extends TestCase
         $this->assertNull(Subscription::find()->stripeId('sub_orphan')->status(null)->one());
     }
 
-    private function syncSubscription(string $stripeId, string $status, ?string $customerId = null): bool
+    private function syncSubscription(string $stripeId, array $overrides = []): bool
     {
-        $stripeSubscription = StripeSubscription::constructFrom([
-            'id' => $stripeId,
-            'status' => $status,
-            'customer' => $customerId,
-            'items' => ['data' => []],
-        ]);
-
-        return Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription($stripeSubscription);
+        return Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription(
+            StripeApiObjectFactory::subscription($stripeId, $overrides)
+        );
     }
 }

@@ -12,38 +12,19 @@ use craft\stripe\controllers\SubscriptionsController;
 use craft\stripe\elements\Subscription;
 use craft\stripe\Plugin;
 use craft\stripe\services\Subscriptions;
+use craft\stripe\tests\Helpers\StripeApiObjectFactory;
 use craft\stripe\tests\TestCase;
-use Stripe\Subscription as StripeSubscription;
 use yii\web\ForbiddenHttpException;
 
 class SubscriptionsControllerTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        Plugin::getInstance()->set('subscriptions', Subscriptions::class);
-
-        parent::tearDown();
-    }
-
     public function testRenderMetaCardHtmlReturnsSubscriptionCard(): void
     {
         $this->loginAsAdmin();
 
-        Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription(StripeSubscription::constructFrom([
-            'id' => 'sub_controller_test',
-            'status' => 'active',
-            'customer' => 'cus_unresolvable',
-            'items' => ['data' => []],
-            'current_period_start' => 1700000000,
-            'current_period_end' => 1702592000,
-            'cancel_at_period_end' => false,
-            'cancel_at' => null,
-            'canceled_at' => null,
-            'ended_at' => null,
-            'discounts' => [],
-            'metadata' => [],
-            'created' => 1700000000,
-        ]));
+        Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription(
+            StripeApiObjectFactory::subscription('sub_controller_test', ['customer' => 'cus_unresolvable'])
+        );
         $subscription = Subscription::find()->stripeId('sub_controller_test')->one();
 
         Craft::$app->getRequest()->setQueryParams(['id' => $subscription->id]);
@@ -79,17 +60,12 @@ class SubscriptionsControllerTest extends TestCase
     {
         $this->loginAsAdmin();
 
-        Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription(StripeSubscription::constructFrom([
-            'id' => 'sub_to_resume',
-            'status' => 'active',
-            'items' => ['data' => []],
-        ]));
+        Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription(
+            StripeApiObjectFactory::subscription('sub_to_resume')
+        );
 
-        $subscriptions = $this->getMockBuilder(Subscriptions::class)
-            ->onlyMethods(['resumeSubscriptionByStripeId'])
-            ->getMock();
+        $subscriptions = $this->partialMockComponent('subscriptions', Subscriptions::class, ['resumeSubscriptionByStripeId']);
         $subscriptions->method('resumeSubscriptionByStripeId')->willReturn(true);
-        Plugin::getInstance()->set('subscriptions', $subscriptions);
 
         $this->asPost(['stripeId' => 'sub_to_resume']);
 
@@ -116,17 +92,12 @@ class SubscriptionsControllerTest extends TestCase
     {
         $this->loginAsAdmin();
 
-        Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription(StripeSubscription::constructFrom([
-            'id' => 'sub_to_cancel',
-            'status' => 'active',
-            'items' => ['data' => []],
-        ]));
+        Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription(
+            StripeApiObjectFactory::subscription('sub_to_cancel')
+        );
 
-        $subscriptions = $this->getMockBuilder(Subscriptions::class)
-            ->onlyMethods(['cancelSubscriptionByStripeId'])
-            ->getMock();
+        $subscriptions = $this->partialMockComponent('subscriptions', Subscriptions::class, ['cancelSubscriptionByStripeId']);
         $subscriptions->method('cancelSubscriptionByStripeId')->willReturn(true);
-        Plugin::getInstance()->set('subscriptions', $subscriptions);
 
         $this->asPost(['stripeId' => 'sub_to_cancel', 'immediately' => true]);
 

@@ -9,7 +9,9 @@ namespace craft\stripe\tests;
 
 use Craft;
 use craft\elements\User;
+use craft\stripe\Plugin;
 use craft\web\Application;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use yii\db\Transaction;
 
@@ -25,6 +27,9 @@ class TestCase extends BaseTestCase
     private static bool $craftBooted = false;
 
     private Transaction $transaction;
+
+    /** @var array<string, string> Component ID => original class, for restoring in tearDown() */
+    private array $mockedComponents = [];
 
     public static function setUpBeforeClass(): void
     {
@@ -58,6 +63,12 @@ class TestCase extends BaseTestCase
     {
         $this->transaction->rollBack();
 
+        // Restore any plugin components swapped out via mockComponent()/partialMockComponent().
+        foreach ($this->mockedComponents as $id => $class) {
+            Plugin::getInstance()->set($id, $class);
+        }
+        $this->mockedComponents = [];
+
         // Craft::$app persists across tests in the same run, so a logged-in identity, or query/body
         // params/method set for a controller test, would otherwise leak into the next test.
         Craft::$app->getUser()->setIdentity(null);
@@ -88,5 +99,42 @@ class TestCase extends BaseTestCase
         Craft::$app->getUser()->setIdentity($admin);
 
         return $admin;
+    }
+
+    /**
+     * Swaps a plugin component (e.g. `'api'`) for a full mock, automatically restored in tearDown().
+     *
+     * @param string $id Component ID as registered in `Plugin::config()`
+     * @param class-string $class
+     * @return MockObject
+     */
+    protected function mockComponent(string $id, string $class): MockObject
+    {
+        $mock = $this->createMock($class);
+        Plugin::getInstance()->set($id, $mock);
+        $this->mockedComponents[$id] = $class;
+
+        return $mock;
+    }
+
+    /**
+     * Swaps a plugin component for a partial mock that only stubs the given methods, leaving
+     * everything else calling through to the real implementation. Automatically restored in
+     * tearDown(). Useful when a method under test calls other real methods on the same service.
+     *
+     * @param string $id Component ID as registered in `Plugin::config()`
+     * @param class-string $class
+     * @param string[] $onlyMethods
+     * @return MockObject
+     */
+    protected function partialMockComponent(string $id, string $class, array $onlyMethods): MockObject
+    {
+        $mock = $this->getMockBuilder($class)
+            ->onlyMethods($onlyMethods)
+            ->getMock();
+        Plugin::getInstance()->set($id, $mock);
+        $this->mockedComponents[$id] = $class;
+
+        return $mock;
     }
 }

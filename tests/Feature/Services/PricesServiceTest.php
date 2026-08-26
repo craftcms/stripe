@@ -13,9 +13,8 @@ use craft\stripe\events\StripePriceSyncEvent;
 use craft\stripe\Plugin;
 use craft\stripe\services\Api;
 use craft\stripe\services\Prices;
+use craft\stripe\tests\Helpers\StripeApiObjectFactory;
 use craft\stripe\tests\TestCase;
-use Stripe\Price as StripePrice;
-use Stripe\Product as StripeProduct;
 use yii\base\Event;
 
 class PricesServiceTest extends TestCase
@@ -24,16 +23,13 @@ class PricesServiceTest extends TestCase
     {
         parent::setUp();
 
-        Plugin::getInstance()->getProducts()->createOrUpdateProduct(StripeProduct::constructFrom([
-            'id' => 'prod_for_price_tests',
-            'name' => 'Product for price tests',
-            'active' => true,
-        ]));
+        Plugin::getInstance()->getProducts()->createOrUpdateProduct(
+            StripeApiObjectFactory::product('prod_for_price_tests', ['name' => 'Product for price tests'])
+        );
     }
 
     protected function tearDown(): void
     {
-        Plugin::getInstance()->set('api', Api::class);
         Event::off(Prices::class, Prices::EVENT_BEFORE_SYNCHRONIZE_PRICE);
 
         parent::tearDown();
@@ -41,7 +37,7 @@ class PricesServiceTest extends TestCase
 
     public function testCreateOrUpdatePriceCreatesNewElement(): void
     {
-        $this->assertTrue($this->syncPrice('price_new', true, 1000));
+        $this->assertTrue($this->syncPrice('price_new', ['active' => true]));
 
         $price = Price::find()->stripeId('price_new')->one();
 
@@ -51,8 +47,8 @@ class PricesServiceTest extends TestCase
 
     public function testCreateOrUpdatePriceUpdatesExistingElementInsteadOfDuplicating(): void
     {
-        $this->syncPrice('price_update', true, 1000);
-        $this->syncPrice('price_update', false, 2000);
+        $this->syncPrice('price_update', ['active' => true]);
+        $this->syncPrice('price_update', ['active' => false, 'unit_amount' => 2000]);
 
         $prices = Price::find()->stripeId('price_update')->status(null)->all();
 
@@ -62,7 +58,7 @@ class PricesServiceTest extends TestCase
 
     public function testCreateOrUpdatePriceLinksToOwningProduct(): void
     {
-        $this->syncPrice('price_owned', true, 1000);
+        $this->syncPrice('price_owned');
 
         $product = Product::find()->stripeId('prod_for_price_tests')->one();
         $price = Price::find()->stripeId('price_owned')->one();
@@ -81,7 +77,7 @@ class PricesServiceTest extends TestCase
             }
         );
 
-        $result = $this->syncPrice('price_cancelled', true, 1000);
+        $result = $this->syncPrice('price_cancelled');
 
         $this->assertFalse($result);
         $this->assertNull(Price::find()->stripeId('price_cancelled')->status(null)->one());
@@ -89,7 +85,7 @@ class PricesServiceTest extends TestCase
 
     public function testDeletePriceByStripeIdRemovesElement(): void
     {
-        $this->syncPrice('price_delete', true, 1000);
+        $this->syncPrice('price_delete');
         $this->assertNotNull(Price::find()->stripeId('price_delete')->status(null)->one());
 
         Plugin::getInstance()->getPrices()->deletePriceByStripeId('price_delete');
@@ -99,19 +95,12 @@ class PricesServiceTest extends TestCase
 
     public function testSyncAllPricesCreatesAndRemovesOrphans(): void
     {
-        $this->syncPrice('price_orphan', true, 1000);
+        $this->syncPrice('price_orphan');
 
-        $api = $this->createMock(Api::class);
+        $api = $this->mockComponent('api', Api::class);
         $api->method('fetchAllPrices')->willReturn([
-            StripePrice::constructFrom([
-                'id' => 'price_from_stripe',
-                'active' => true,
-                'currency' => 'usd',
-                'unit_amount' => 500,
-                'product' => 'prod_for_price_tests',
-            ]),
+            StripeApiObjectFactory::price('price_from_stripe', 'prod_for_price_tests', ['unit_amount' => 500]),
         ]);
-        Plugin::getInstance()->set('api', $api);
 
         Plugin::getInstance()->getPrices()->syncAllPrices();
 
@@ -119,16 +108,10 @@ class PricesServiceTest extends TestCase
         $this->assertNull(Price::find()->stripeId('price_orphan')->status(null)->one());
     }
 
-    private function syncPrice(string $stripeId, bool $active, int $unitAmount): bool
+    private function syncPrice(string $stripeId, array $overrides = []): bool
     {
-        $stripePrice = StripePrice::constructFrom([
-            'id' => $stripeId,
-            'active' => $active,
-            'currency' => 'usd',
-            'unit_amount' => $unitAmount,
-            'product' => 'prod_for_price_tests',
-        ]);
-
-        return Plugin::getInstance()->getPrices()->createOrUpdatePrice($stripePrice);
+        return Plugin::getInstance()->getPrices()->createOrUpdatePrice(
+            StripeApiObjectFactory::price($stripeId, 'prod_for_price_tests', $overrides)
+        );
     }
 }

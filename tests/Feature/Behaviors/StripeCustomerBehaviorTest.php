@@ -12,10 +12,8 @@ use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\stripe\behaviors\StripeCustomerBehavior;
 use craft\stripe\Plugin;
+use craft\stripe\tests\Helpers\StripeApiObjectFactory;
 use craft\stripe\tests\TestCase;
-use Stripe\Customer as StripeCustomer;
-use Stripe\PaymentMethod as StripePaymentMethod;
-use Stripe\Subscription as StripeSubscription;
 
 class StripeCustomerBehaviorTest extends TestCase
 {
@@ -32,11 +30,9 @@ class StripeCustomerBehaviorTest extends TestCase
 
     public function testGetStripeCustomerReturnsMatchByEmail(): void
     {
-        Plugin::getInstance()->getCustomers()->createOrUpdateCustomer(StripeCustomer::constructFrom([
-            'id' => 'cus_match',
-            'email' => self::EMAIL,
-            'created' => 1700000000,
-        ]));
+        Plugin::getInstance()->getCustomers()->createOrUpdateCustomer(
+            StripeApiObjectFactory::customer('cus_match', self::EMAIL)
+        );
 
         $user = $this->createUser(self::EMAIL);
 
@@ -57,18 +53,13 @@ class StripeCustomerBehaviorTest extends TestCase
 
     public function testGetStripeSubscriptionsReturnsMatchByUserEmail(): void
     {
-        Plugin::getInstance()->getCustomers()->createOrUpdateCustomer(StripeCustomer::constructFrom([
-            'id' => 'cus_with_sub',
-            'email' => self::EMAIL,
-            'created' => 1700000000,
-        ]));
+        Plugin::getInstance()->getCustomers()->createOrUpdateCustomer(
+            StripeApiObjectFactory::customer('cus_with_sub', self::EMAIL)
+        );
 
-        Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription(StripeSubscription::constructFrom([
-            'id' => 'sub_for_customer',
-            'status' => 'active',
-            'customer' => 'cus_with_sub',
-            'items' => ['data' => []],
-        ]));
+        Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription(
+            StripeApiObjectFactory::subscription('sub_for_customer', ['customer' => 'cus_with_sub'])
+        );
 
         $user = $this->createUser(self::EMAIL);
 
@@ -80,17 +71,13 @@ class StripeCustomerBehaviorTest extends TestCase
 
     public function testGetStripePaymentMethodsReturnsMatchByCustomerId(): void
     {
-        Plugin::getInstance()->getCustomers()->createOrUpdateCustomer(StripeCustomer::constructFrom([
-            'id' => 'cus_with_pm',
-            'email' => self::EMAIL,
-            'created' => 1700000000,
-        ]));
+        Plugin::getInstance()->getCustomers()->createOrUpdateCustomer(
+            StripeApiObjectFactory::customer('cus_with_pm', self::EMAIL)
+        );
 
-        Plugin::getInstance()->getPaymentMethods()->createOrUpdatePaymentMethod(StripePaymentMethod::constructFrom([
-            'id' => 'pm_for_customer',
-            'customer' => 'cus_with_pm',
-            'type' => 'card',
-        ]));
+        Plugin::getInstance()->getPaymentMethods()->createOrUpdatePaymentMethod(
+            StripeApiObjectFactory::paymentMethod('pm_for_customer', 'cus_with_pm')
+        );
 
         $user = $this->createUser(self::EMAIL);
 

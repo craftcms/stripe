@@ -9,18 +9,11 @@ namespace craft\stripe\tests\Feature\Services;
 
 use craft\stripe\Plugin;
 use craft\stripe\services\Api;
+use craft\stripe\tests\Helpers\StripeApiObjectFactory;
 use craft\stripe\tests\TestCase;
-use Stripe\Invoice as StripeInvoice;
 
 class InvoicesServiceTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        Plugin::getInstance()->set('api', Api::class);
-
-        parent::tearDown();
-    }
-
     public function testCreateOrUpdateInvoiceCreatesAndUpdatesRecord(): void
     {
         $this->syncInvoice('in_update', ['status' => 'draft']);
@@ -54,11 +47,10 @@ class InvoicesServiceTest extends TestCase
 
     public function testSyncAllInvoicesCreatesFromMockedApi(): void
     {
-        $api = $this->createMock(Api::class);
+        $api = $this->mockComponent('api', Api::class);
         $api->method('fetchAllInvoices')->willReturn([
-            StripeInvoice::constructFrom($this->invoiceData('in_from_stripe')),
+            StripeApiObjectFactory::invoice('in_from_stripe'),
         ]);
-        Plugin::getInstance()->set('api', $api);
 
         $count = Plugin::getInstance()->getInvoices()->syncAllInvoices();
 
@@ -68,12 +60,7 @@ class InvoicesServiceTest extends TestCase
 
     public function testGetTableDataFormatsInvoiceWithNumber(): void
     {
-        $this->syncInvoice('in_table', [
-            'number' => 'INV-001',
-            'currency' => 'usd',
-            'total' => 1000,
-            'due_date' => 1700000000,
-        ]);
+        $this->syncInvoice('in_table', ['number' => 'INV-001', 'due_date' => 1700000000]);
 
         $invoice = Plugin::getInstance()->getInvoices()->getInvoiceById('in_table');
         $tableData = Plugin::getInstance()->getInvoices()->getTableData([$invoice]);
@@ -110,22 +97,8 @@ class InvoicesServiceTest extends TestCase
 
     private function syncInvoice(string $stripeId, array $overrides = []): void
     {
-        $stripeInvoice = StripeInvoice::constructFrom(array_merge($this->invoiceData($stripeId), $overrides));
-
-        Plugin::getInstance()->getInvoices()->createOrUpdateInvoice($stripeInvoice);
-    }
-
-    private function invoiceData(string $stripeId): array
-    {
-        return [
-            'id' => $stripeId,
-            'number' => 'INV-' . $stripeId,
-            'status' => 'open',
-            'currency' => 'usd',
-            'total' => 1000,
-            'customer_email' => 'customer@example.com',
-            'due_date' => null,
-            'created' => 1700000000,
-        ];
+        Plugin::getInstance()->getInvoices()->createOrUpdateInvoice(
+            StripeApiObjectFactory::invoice($stripeId, $overrides)
+        );
     }
 }

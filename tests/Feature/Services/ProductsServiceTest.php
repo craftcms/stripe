@@ -12,15 +12,14 @@ use craft\stripe\events\StripeProductSyncEvent;
 use craft\stripe\Plugin;
 use craft\stripe\services\Api;
 use craft\stripe\services\Products;
+use craft\stripe\tests\Helpers\StripeApiObjectFactory;
 use craft\stripe\tests\TestCase;
-use Stripe\Product as StripeProduct;
 use yii\base\Event;
 
 class ProductsServiceTest extends TestCase
 {
     protected function tearDown(): void
     {
-        Plugin::getInstance()->set('api', Api::class);
         Event::off(Products::class, Products::EVENT_BEFORE_SYNCHRONIZE_PRODUCT);
 
         parent::tearDown();
@@ -28,7 +27,7 @@ class ProductsServiceTest extends TestCase
 
     public function testCreateOrUpdateProductCreatesNewElement(): void
     {
-        $this->assertTrue($this->syncProduct('prod_new', 'New Product', true));
+        $this->assertTrue($this->syncProduct('prod_new', ['name' => 'New Product', 'active' => true]));
 
         $product = Product::find()->stripeId('prod_new')->one();
 
@@ -39,8 +38,8 @@ class ProductsServiceTest extends TestCase
 
     public function testCreateOrUpdateProductUpdatesExistingElementInsteadOfDuplicating(): void
     {
-        $this->syncProduct('prod_update', 'Original Name', true);
-        $this->syncProduct('prod_update', 'Updated Name', false);
+        $this->syncProduct('prod_update', ['name' => 'Original Name', 'active' => true]);
+        $this->syncProduct('prod_update', ['name' => 'Updated Name', 'active' => false]);
 
         $products = Product::find()->stripeId('prod_update')->status(null)->all();
 
@@ -59,7 +58,7 @@ class ProductsServiceTest extends TestCase
             }
         );
 
-        $result = $this->syncProduct('prod_cancelled', 'Should Not Save', true);
+        $result = $this->syncProduct('prod_cancelled', ['name' => 'Should Not Save']);
 
         $this->assertFalse($result);
         $this->assertNull(Product::find()->stripeId('prod_cancelled')->status(null)->one());
@@ -67,7 +66,7 @@ class ProductsServiceTest extends TestCase
 
     public function testDeleteProductByStripeIdRemovesElement(): void
     {
-        $this->syncProduct('prod_delete', 'To Delete', true);
+        $this->syncProduct('prod_delete');
         $this->assertNotNull(Product::find()->stripeId('prod_delete')->status(null)->one());
 
         Plugin::getInstance()->getProducts()->deleteProductByStripeId('prod_delete');
@@ -77,17 +76,12 @@ class ProductsServiceTest extends TestCase
 
     public function testSyncAllProductsCreatesAndRemovesOrphans(): void
     {
-        $this->syncProduct('prod_orphan', 'Orphaned Product', true);
+        $this->syncProduct('prod_orphan', ['name' => 'Orphaned Product']);
 
-        $api = $this->createMock(Api::class);
+        $api = $this->mockComponent('api', Api::class);
         $api->method('fetchAllProducts')->willReturn([
-            StripeProduct::constructFrom([
-                'id' => 'prod_from_stripe',
-                'name' => 'Fetched Product',
-                'active' => true,
-            ]),
+            StripeApiObjectFactory::product('prod_from_stripe', ['name' => 'Fetched Product']),
         ]);
-        Plugin::getInstance()->set('api', $api);
 
         Plugin::getInstance()->getProducts()->syncAllProducts();
 
@@ -95,14 +89,10 @@ class ProductsServiceTest extends TestCase
         $this->assertNull(Product::find()->stripeId('prod_orphan')->status(null)->one());
     }
 
-    private function syncProduct(string $stripeId, string $name, bool $active): bool
+    private function syncProduct(string $stripeId, array $overrides = []): bool
     {
-        $stripeProduct = StripeProduct::constructFrom([
-            'id' => $stripeId,
-            'name' => $name,
-            'active' => $active,
-        ]);
-
-        return Plugin::getInstance()->getProducts()->createOrUpdateProduct($stripeProduct);
+        return Plugin::getInstance()->getProducts()->createOrUpdateProduct(
+            StripeApiObjectFactory::product($stripeId, $overrides)
+        );
     }
 }
