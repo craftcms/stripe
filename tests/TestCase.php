@@ -8,6 +8,7 @@
 namespace craft\stripe\tests;
 
 use Craft;
+use craft\elements\User;
 use craft\web\Application;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use yii\db\Transaction;
@@ -57,6 +58,35 @@ class TestCase extends BaseTestCase
     {
         $this->transaction->rollBack();
 
+        // Craft::$app persists across tests in the same run, so a logged-in identity, or query/body
+        // params/method set for a controller test, would otherwise leak into the next test.
+        Craft::$app->getUser()->setIdentity(null);
+        Craft::$app->getRequest()->setQueryParams([]);
+        Craft::$app->getRequest()->setBodyParams([]);
+        Craft::$app->getRequest()->setAcceptableContentTypes([]);
+        unset($_SERVER['REQUEST_METHOD']);
+
+        // Craft::$app->getResponse() is also a shared singleton — a controller action that set a
+        // status code/format/data (e.g. asFailure()'s setStatusCode(400)) would otherwise leak too.
+        $response = Craft::$app->getResponse();
+        $response->setStatusCode(200);
+        $response->format = \yii\web\Response::FORMAT_HTML;
+        $response->data = null;
+        $response->content = null;
+
         parent::tearDown();
+    }
+
+    /**
+     * Logs in as the environment's real admin user, so controller tests can pass permission checks
+     * without needing to create a new user (Solo edition caps the install at one user).
+     */
+    protected function loginAsAdmin(): User
+    {
+        /** @var User $admin */
+        $admin = User::find()->admin()->status(null)->one();
+        Craft::$app->getUser()->setIdentity($admin);
+
+        return $admin;
     }
 }
