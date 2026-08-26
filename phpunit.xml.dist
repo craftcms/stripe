@@ -2,7 +2,10 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
-         colors="true">
+         colors="true"
+         cacheDirectory=".phpunit.cache"
+         backupStaticProperties="false"
+>
     <testsuites>
         <testsuite name="Unit">
             <directory suffix="Test.php">./tests/Unit</directory>
@@ -11,4 +14,18 @@
             <directory suffix="Test.php">./tests/Feature</directory>
         </testsuite>
     </testsuites>
+    <php>
+        <ini name="memory_limit" value="2048M" />
+
+        <env name="DB_DSN" value="mysql:host=db;port=3306;dbname=test"/>
+        <env name="DB_USER" value="db"/>
+        <env name="DB_PASSWORD" value="db"/>
+        <env name="DB_SCHEMA" value="public"/>
+        <env name="DB_TABLE_PREFIX" value=""/>
+    </php>
+    <source>
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+    </source>
 </phpunit>

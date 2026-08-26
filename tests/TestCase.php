@@ -8,8 +8,11 @@
 namespace craft\stripe\tests;
 
 use Craft;
+use craft\config\DbConfig;
 use craft\elements\User;
+use craft\helpers\App;
 use craft\stripe\Plugin;
+use craft\test\TestSetup;
 use craft\web\Application;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase as BaseTestCase;
@@ -40,13 +43,35 @@ class TestCase extends BaseTestCase
             return;
         }
 
+        // The configured test database may be genuinely empty (no Craft schema at all) — install
+        // Craft into it if so, using a standalone connection *before* building the full app.
+        // `craft\services\Plugins::loadPlugins()` runs automatically from `Application::init()`
+        // and bails permanently for this process if the DB isn't installed yet at that point, so
+        // installing after the app is already built is too late — `getPlugin()` would never work.
+        $dbConfig = Craft::createObject(array_merge(
+            ['class' => DbConfig::class],
+            require CRAFT_CONFIG_PATH . '/db.php'
+        ));
+        $db = Craft::createObject(App::dbConfig($dbConfig));
+        $db->open();
+        if ($db->schema->getTableNames() === []) {
+            TestSetup::setupCraftDb($db);
+        }
+        $db->close();
+
         /** @var Application $app */
         $app = Craft::createObject(require CRAFT_CONFIG_PATH . '/test.php');
         Craft::$app = $app;
-        Craft::$app->setIsInstalled();
 
         if (!Craft::$app->getPlugins()->getPlugin('stripe')) {
             Craft::$app->getPlugins()->installPlugin('stripe');
+
+            // Project config writes are normally persisted by a `flush()` listener on
+            // `Application::EVENT_AFTER_REQUEST` — which never fires here, since this harness
+            // never runs a real request through the app. Without this, `installPlugin()`'s
+            // `plugins.stripe.enabled` write stays in memory and is lost at the end of the
+            // process, so `getPlugin('stripe')` would look uninstalled again on every next run.
+            Craft::$app->getProjectConfig()->saveModifiedConfigData();
         }
 
         self::$craftBooted = true;
