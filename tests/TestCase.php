@@ -18,9 +18,10 @@ use yii\db\Transaction;
 /**
  * Base test case for tests that need a booted Craft application and database.
  *
- * Boots Craft once per test run against the `tests/_craft` fixture install (schema/content
- * comes from `tests/_data/dump.sql`, imported separately), then wraps each test in a DB
- * transaction that's rolled back afterwards so the seeded data stays untouched.
+ * Boots Craft once per test run against the `tests/_craft` fixture install (an empty schema,
+ * migrated by installing the plugin below), then wraps each test in a DB transaction that's
+ * rolled back afterwards. Tests seed their own fixture data via the real plugin services (see
+ * `craft\stripe\tests\Helpers\StripeApiObjectFactory`), so no pre-seeded DB dump is needed.
  */
 class TestCase extends BaseTestCase
 {
