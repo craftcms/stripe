@@ -63,7 +63,7 @@ class Product extends Element
     /**
      * @var string
      */
-    public string $stripeStatus = 'active';
+    public string $stripeStatus = self::STRIPE_STATUS_ACTIVE;
 
     /**
      * @var string|null
@@ -639,11 +639,14 @@ class Product extends Element
     public function getStripeStatusHtml(): string
     {
         $color = match ($this->stripeStatus) {
-            'active' => 'green',
-            'archived' => 'red',
+            self::STRIPE_STATUS_ACTIVE => 'green',
+            self::STRIPE_STATUS_ARCHIVED => 'red',
             default => 'orange',
         };
-        return "<span class='status $color'></span>" . StringHelper::titleize($this->stripeStatus);
+        $stripeStatus = StringHelper::titleize(
+            implode(' ', StringHelper::toWords($this->stripeStatus, false, true))
+        );
+        return "<span class='status $color'></span>" . $stripeStatus;
     }
 
     /**
