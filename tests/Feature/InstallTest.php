@@ -12,11 +12,6 @@ use craft\stripe\tests\TestCase;
 
 class InstallTest extends TestCase
 {
-    public function testPhpUnitIsWorking(): void
-    {
-        $this->assertEquals(1, 1);
-    }
-
     public function testCraftHasDatabase(): void
     {
         $this->assertTrue(Craft::$app->getDb()->getIsActive());

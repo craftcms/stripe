@@ -64,14 +64,14 @@ class InvoicesControllerTest extends TestCase
     {
         $data = $this->runTableData(['search' => 'INV-002']);
 
-        $this->assertSame(['in_middle'], $this->ids($data));
+        $this->assertSame(['in_middle'], $this->ownIds($data));
     }
 
     public function testTableDataSearchMatchesByCustomerEmail(): void
     {
         $data = $this->runTableData(['search' => 'carol@example.com']);
 
-        $this->assertSame(['in_newest'], $this->ids($data));
+        $this->assertSame(['in_newest'], $this->ownIds($data));
     }
 
     public function testTableDataSortsByPlainColumnAscending(): void

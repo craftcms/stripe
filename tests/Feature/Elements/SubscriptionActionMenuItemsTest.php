@@ -40,7 +40,11 @@ class SubscriptionActionMenuItemsTest extends TestCase
         $items = $this->invokeDestructiveActionMenuItems($subscription);
 
         $cancelItems = array_filter($items, fn($item) => ($item['action'] ?? null) === 'stripe/subscriptions/cancel');
-        $this->assertCount(2, $cancelItems);
+        $immediateItems = array_filter($cancelItems, fn($item) => ($item['params']['immediately'] ?? false) === true);
+        $periodEndItems = array_filter($cancelItems, fn($item) => !($item['params']['immediately'] ?? false));
+
+        $this->assertCount(1, $immediateItems);
+        $this->assertCount(1, $periodEndItems);
     }
 
     public function testDestructiveActionMenuItemsExcludesCancelOptionsWhenAlreadyCanceled(): void

@@ -19,13 +19,24 @@ class StripeCustomerBehaviorTest extends TestCase
 {
     private const EMAIL = 'stripe-customer-behavior-test@example.com';
 
+    private CmsEdition $originalEdition;
+
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->originalEdition = Craft::$app->edition;
+
         // Solo edition caps Craft at 1 user, which the test DB's real admin user already uses up.
         // These tests need to create their own users, so raise the in-memory edition for this run.
         Craft::$app->edition = CmsEdition::Pro;
+    }
+
+    protected function tearDown(): void
+    {
+        Craft::$app->edition = $this->originalEdition;
+
+        parent::tearDown();
     }
 
     public function testGetStripeCustomerReturnsMatchByEmail(): void

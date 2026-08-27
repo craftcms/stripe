@@ -55,6 +55,14 @@ class PriceTest extends UnitTestCase
         $this->assertStringContainsString('red', $price->getStripeStatusHtml());
     }
 
+    public function testGetStripeStatusHtmlForUnknownStatus(): void
+    {
+        $price = new Price();
+        $price->stripeStatus = 'something-else';
+
+        $this->assertStringContainsString('orange', $price->getStripeStatusHtml());
+    }
+
     public function testGetStripeStatusHtmlTitleizesMultiWordStatus(): void
     {
         $price = new Price();

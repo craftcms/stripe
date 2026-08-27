@@ -69,7 +69,7 @@ class InvoicesServiceTest extends TestCase
         $this->assertSame('INV-001', $tableData[0]['title']);
         $this->assertSame('customer@example.com', $tableData[0]['customerEmail']);
         $this->assertSame($invoice->getStripeEditUrl(), $tableData[0]['url']);
-        $this->assertNotEmpty($tableData[0]['due']);
+        $this->assertSame('2023-11-14', $tableData[0]['due']);
     }
 
     public function testGetTableDataFallsBackToDraftTitleWhenNumberMissing(): void

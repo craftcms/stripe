@@ -42,4 +42,20 @@ class DbHelperTest extends UnitTestCase
 
         $this->assertSame(['or', ':empty:'], $result);
     }
+
+    public function testReturnsEmptyArrayUnchangedForEmptyArrayValue(): void
+    {
+        $query = Price::find()->currency([]);
+        $result = DbHelper::prepareForLikeSearch($query, 'currency');
+
+        $this->assertSame([], $result);
+    }
+
+    public function testReturnsNullUnchangedForNullValue(): void
+    {
+        $query = Price::find()->currency(null);
+        $result = DbHelper::prepareForLikeSearch($query, 'currency');
+
+        $this->assertNull($result);
+    }
 }

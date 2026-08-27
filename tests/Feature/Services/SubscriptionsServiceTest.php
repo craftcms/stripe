@@ -18,8 +18,18 @@ use craft\stripe\tests\TestCase;
 
 class SubscriptionsServiceTest extends TestCase
 {
+    private CmsEdition $originalEdition;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->originalEdition = Craft::$app->edition;
+    }
+
     protected function tearDown(): void
     {
+        Craft::$app->edition = $this->originalEdition;
         Plugin::getInstance()->getSettings()->createUserIfMissing = false;
 
         parent::tearDown();

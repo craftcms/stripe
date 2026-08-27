@@ -70,8 +70,7 @@ class PriceHelperTest extends UnitTestCase
             'transform_quantity' => null,
         ];
         $result = PriceHelper::asPricePerUnit($stripePrice);
-        $this->assertStringContainsString('Starts at', $result);
-        $this->assertStringContainsString('per unit', $result);
+        $this->assertSame('Starts at $10.00 per unit + $5.00', $result);
     }
 
     public function testAsPricePerUnitBuildsPerGroupStringForTransformQuantity(): void
@@ -94,7 +93,7 @@ class PriceHelperTest extends UnitTestCase
             'custom_unit_amount' => null,
             'transform_quantity' => null,
         ];
-        $this->assertNotEmpty(PriceHelper::asPricePerUnit($stripePrice));
+        $this->assertSame('$10.50', PriceHelper::asPricePerUnit($stripePrice));
     }
 
     public function testAsUnitPriceAppendsIntervalForSingleIntervalCount(): void
@@ -106,7 +105,7 @@ class PriceHelperTest extends UnitTestCase
             'transform_quantity' => null,
             'recurring' => ['interval_count' => 1, 'interval' => 'month'],
         ];
-        $this->assertStringContainsString('/', PriceHelper::asUnitPrice($stripePrice));
+        $this->assertSame('$10.50/month', PriceHelper::asUnitPrice($stripePrice));
     }
 
     public function testAsUnitPriceAppendsEveryNIntervalForMultipleIntervalCount(): void
