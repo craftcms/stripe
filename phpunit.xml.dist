@@ -16,12 +16,6 @@
     </testsuites>
     <php>
         <ini name="memory_limit" value="2048M" />
-
-        <env name="DB_DSN" value="mysql:host=db;port=3306;dbname=test"/>
-        <env name="DB_USER" value="db"/>
-        <env name="DB_PASSWORD" value="db"/>
-        <env name="DB_SCHEMA" value="public"/>
-        <env name="DB_TABLE_PREFIX" value=""/>
     </php>
     <source>
         <include>
