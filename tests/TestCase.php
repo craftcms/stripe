@@ -31,7 +31,7 @@ use yii\db\Transaction;
  */
 class TestCase extends BaseTestCase
 {
-    private static bool $craftBooted = false;
+    private static bool $suiteBooted = false;
 
     private Transaction $transaction;
 
@@ -45,7 +45,7 @@ class TestCase extends BaseTestCase
     {
         parent::setUpBeforeClass();
 
-        if (self::$craftBooted) {
+        if (self::$suiteBooted) {
             return;
         }
 
@@ -67,7 +67,7 @@ class TestCase extends BaseTestCase
 
         Craft::$app->getProjectConfig()->saveModifiedConfigData();
 
-        self::$craftBooted = true;
+        self::$suiteBooted = true;
     }
 
     /**
@@ -163,7 +163,7 @@ class TestCase extends BaseTestCase
         return $mock;
     }
 
-    ////////
+    //////// all this could be shared between plugins ///////
     public static function createTestCraftObjectConfig(): array
     {
         $_SERVER['REMOTE_ADDR'] = '1.1.1.1';

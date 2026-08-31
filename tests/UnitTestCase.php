@@ -23,13 +23,13 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
  */
 class UnitTestCase extends BaseTestCase
 {
-    private static bool $craftBooted = false;
+    private static bool $suiteBooted = false;
 
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
 
-        if (self::$craftBooted) {
+        if (self::$suiteBooted) {
             return;
         }
 
@@ -43,6 +43,6 @@ class UnitTestCase extends BaseTestCase
             Craft::$app->getPlugins()->createPlugin('stripe');
         }
 
-        self::$craftBooted = true;
+        self::$suiteBooted = true;
     }
 }
