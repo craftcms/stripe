@@ -99,7 +99,7 @@ class InvoicesControllerTest extends TestCase
     {
         $data = $this->runTableData([
             'per_page' => 1000,
-            'sort' => [['sortField' => 'custom:total:unsigned', 'direction' => 'desc']],
+            'sort' => [['sortField' => 'custom:total:float', 'direction' => 'desc']],
         ]);
 
         // numeric descending: 3000, 2000, 1000 — would sort wrong alphabetically without the cast

@@ -8,6 +8,7 @@
 namespace craft\stripe\tests;
 
 use Craft;
+use craft\enums\CmsEdition;
 use craft\web\Application;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
@@ -33,8 +34,10 @@ class UnitTestCase extends BaseTestCase
         }
 
         /** @var Application $app */
-        $app = Craft::createObject(require CRAFT_CONFIG_PATH . '/test.php');
+        $app = Craft::createObject(TestCase::createTestCraftObjectConfig());
         Craft::$app = $app;
+
+        Craft::$app->setEdition(CmsEdition::Pro);
 
         if (!Craft::$app->getPlugins()->getPlugin('stripe')) {
             Craft::$app->getPlugins()->createPlugin('stripe');
