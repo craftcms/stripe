@@ -58,7 +58,11 @@ class TestCase extends BaseTestCase
         Craft::$app->setEdition(CmsEdition::Pro);
 
         if (!Craft::$app->getPlugins()->getPlugin('stripe')) {
+            ob_start();
             Craft::$app->getPlugins()->installPlugin('stripe');
+            if (ob_get_level() > 0) {
+                ob_end_clean();
+            }
         }
 
         Craft::$app->getProjectConfig()->saveModifiedConfigData();
@@ -251,11 +255,18 @@ class TestCase extends BaseTestCase
                 // doesn't seed a `config/project/` folder for tests, so there's nothing to apply.
                 'applyProjectConfigYaml' => false,
             ]);
+
+            ob_start(); // don't show migration logs
             try {
                 $migration->up(true);
             } catch (\Throwable $e) {
+                ob_end_clean(); // don't show migration logs
                 TestSetup::cleanseDb($db);
                 throw $e;
+            } finally { // don't show migration logs
+                if (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
             }
         }
     }
