@@ -1,6 +1,6 @@
 # Release Notes for Stripe
 
-## ## 1.8.1 - 2026-08-25
+## 1.8.1 - 2026-08-25
 
 - Added the ability to include Stripe Status in the Subscription element’s card. ([#119](https://github.com/craftcms/stripe/pull/119))
 - Added `stripeStatus` to the Subscription element’s query criteria, so you can now query by it. ([#119](https://github.com/craftcms/stripe/pull/119))
@@ -14,8 +14,8 @@
 - Fixed inconsistent casing of several translatable strings (e.g. “stripe price” → “Stripe price”, “Product URI format” → “Product URI Format”, “Payment Method Id” → “Payment Method ID”). ([#117](https://github.com/craftcms/stripe/pull/117))
 - Fixed a bug where `craft\stripe\elements\Product::getPrices()` could ignore custom criteria. ([#115](https://github.com/craftcms/stripe/issues/115))
 - Fixed a bug where a failed subscription is saved with a status of `live` in Craft, but a Stripe status of `incomplete_expired`. ([#111](https://github.com/craftcms/stripe/issues/111))
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) CSRF vulnerability. (GHSA-rg42-24m4-xjr8)
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) missing authorization vulnerabilities. (GHSA-jwc7-hcf8-gvqp, GHSA-c8rf-84x4-9fwv, GHSA-c79r-fq48-5vhf, GHSA-5429-943q-9499)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) CSRF vulnerability. ([GHSA-rg42-24m4-xjr8](https://github.com/craftcms/stripe/security/advisories/GHSA-rg42-24m4-xjr8))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) missing authorization vulnerabilities. ([GHSA-jwc7-hcf8-gvqp](https://github.com/craftcms/stripe/security/advisories/GHSA-jwc7-hcf8-gvqp), [GHSA-c8rf-84x4-9fwv](https://github.com/craftcms/stripe/security/advisories/GHSA-c8rf-84x4-9fwv), [GHSA-c79r-fq48-5vhf](https://github.com/craftcms/stripe/security/advisories/GHSA-c79r-fq48-5vhf))
 
 ## 1.7.3 - 2026-07-15
 
