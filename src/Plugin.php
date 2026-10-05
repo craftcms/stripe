@@ -674,6 +674,11 @@ class Plugin extends BasePlugin
     {
         // if email address got changed - update stripe
         Event::on(User::class, User::EVENT_BEFORE_SAVE, function(ModelEvent $event) {
+            // if the plugin is not installed, bail straight away
+            if (!$this->isInstalled) {
+                return;
+            }
+
             /** @var User|StripeCustomerBehavior $user */
             $user = $event->sender;
             $userRecord = UserRecord::findOne($user->id);
@@ -699,6 +704,11 @@ class Plugin extends BasePlugin
         });
 
         Event::on(User::class, User::EVENT_AFTER_SAVE, function(ModelEvent $event) {
+            // if the plugin is not installed, bail straight away
+            if (!$this->isInstalled) {
+                return;
+            }
+
             /** @var User|StripeCustomerBehavior $user */
             $user = $event->sender;
 

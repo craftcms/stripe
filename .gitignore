@@ -5,3 +5,9 @@
 .env
 /node_modules
 /vendor
+/.claude
+test-results
+
+## TESTS
+/tests/_craft/storage
+/tests/_craft/.env
