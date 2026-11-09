@@ -36,7 +36,7 @@ class Api
     /**
      * The Stripe API version the plugin is written against.
      */
-    public const string STRIPE_API_VERSION = '2024-04-10';
+    public const string STRIPE_API_VERSION = '2026-01-28.clover';
 
     /**
      * The Stripe Dashboard URL.
