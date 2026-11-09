@@ -17,7 +17,7 @@ function signedStripeEvent(string $type, array $object, string $secret = TestCas
     $payload = json_encode([
         'id' => 'evt_test_1',
         'object' => 'event',
-        'api_version' => '2024-04-10',
+        'api_version' => '2026-01-28.clover',
         'type' => $type,
         'data' => ['object' => $object],
     ], JSON_THROW_ON_ERROR);

@@ -30,3 +30,12 @@ it('filters synced elements with the Craft 5 query params', function () {
         ->and(Subscription::find()->userEmail('alice@example.com')->count())->toBe(1)
         ->and(Subscription::find()->userEmail('bob@example.com')->count())->toBe(0);
 });
+
+it('reads the billing period from the subscription items', function () {
+    $this->artisan('stripe:sync')->assertSuccessful();
+
+    // The fixture's period runs from 2026-01-01 to 2026-02-01 UTC, on its only item
+    expect(Subscription::find()->one()->getCurrentPeriodEnd())->toBe(1769904000)
+        ->and(Subscription::find()->nextPaymentDate('> 2026-01-15')->count())->toBe(1)
+        ->and(Subscription::find()->nextPaymentDate('> 2026-02-15')->count())->toBe(0);
+});

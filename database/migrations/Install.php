@@ -57,7 +57,7 @@ class Install extends Migration
             $table->string('stripeStatus');
             $table->text('prices')->nullable();
             $this->generated($table, 'canceledAt', 'canceled_at');
-            $this->generated($table, 'currentPeriodEnd', 'current_period_end');
+            $table->string('currentPeriodEnd')->nullable()->storedAs(self::currentPeriodEndExpression());
             $this->generated($table, 'customerId', 'customer');
             $this->generated($table, 'latestInvoiceId', 'latest_invoice');
             $this->generated($table, 'startDate', 'start_date');
@@ -165,6 +165,21 @@ class Install extends Migration
     /**
      * A column generated from a top-level key of `data`, which element queries filter and sort by.
      */
+    /**
+     * Returns the expression for the `currentPeriodEnd` column.
+     *
+     * Stripe API version `2025-03-31.basil` and later put the billing period on the subscription items. Data synced
+     * with Stripe 1.x still has it on the subscription until it’s synced again.
+     */
+    private static function currentPeriodEndExpression(): string
+    {
+        return match (DB::getDriverName()) {
+            'pgsql' => "COALESCE(data#>>'{current_period_end}', data#>>'{items,data,0,current_period_end}')",
+            'mariadb' => "COALESCE(JSON_UNQUOTE(JSON_EXTRACT(data, '$.current_period_end')), JSON_UNQUOTE(JSON_EXTRACT(data, '$.items.data[0].current_period_end')))",
+            default => "COALESCE(data->>'$.current_period_end', data->>'$.items.data[0].current_period_end')",
+        };
+    }
+
     private function generated(Blueprint $table, string $column, string $key): void
     {
         $table->string($column)->nullable()->storedAs(new JsonExtract('data', $key));

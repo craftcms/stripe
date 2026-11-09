@@ -91,7 +91,6 @@
             "nickname": "Basic monthly",
             "product": "prod_basic",
             "recurring": {
-                "aggregate_usage": null,
                 "interval": "month",
                 "interval_count": 1,
                 "trial_period_days": null,
@@ -126,7 +125,6 @@
             "nickname": "Basic yearly",
             "product": "prod_basic",
             "recurring": {
-                "aggregate_usage": null,
                 "interval": "year",
                 "interval_count": 1,
                 "trial_period_days": null,
@@ -161,7 +159,6 @@
             "nickname": "Pro monthly",
             "product": "prod_pro",
             "recurring": {
-                "aggregate_usage": null,
                 "interval": "month",
                 "interval_count": 1,
                 "trial_period_days": null,
@@ -248,8 +245,6 @@
             "collection_method": "charge_automatically",
             "created": 1767225600,
             "currency": "usd",
-            "current_period_end": 1769904000,
-            "current_period_start": 1767225600,
             "customer": "cus_alice",
             "default_payment_method": "pm_alice_card",
             "discount": null,
@@ -277,7 +272,6 @@
                             "nickname": "Basic monthly",
                             "product": "prod_basic",
                             "recurring": {
-                                "aggregate_usage": null,
                                 "interval": "month",
                                 "interval_count": 1,
                                 "trial_period_days": null,
@@ -299,11 +293,13 @@
                             }
                         },
                         "quantity": 1,
-                        "subscription": "sub_alice"
+                        "subscription": "sub_alice",
+                        "current_period_end": 1769904000,
+                        "current_period_start": 1767225600
                     }
                 ],
                 "has_more": false,
-                "url": "\/v1\/subscription_items?subscription=sub_alice"
+                "url": "/v1/subscription_items?subscription=sub_alice"
             },
             "latest_invoice": "in_alice_1",
             "livemode": false,
@@ -330,8 +326,8 @@
             "customer_email": "alice@example.com",
             "customer_name": "Alice Example",
             "due_date": null,
-            "hosted_invoice_url": "https:\/\/invoice.stripe.test\/i\/in_alice_1",
-            "invoice_pdf": "https:\/\/pay.stripe.test\/invoice\/in_alice_1\/pdf",
+            "hosted_invoice_url": "https://invoice.stripe.test/i/in_alice_1",
+            "invoice_pdf": "https://pay.stripe.test/invoice/in_alice_1/pdf",
             "livemode": false,
             "metadata": [],
             "number": "ALICE-0001",

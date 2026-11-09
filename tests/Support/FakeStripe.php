@@ -10,7 +10,7 @@ use Stripe\HttpClient\ClientInterface;
 use Stripe\Util\CaseInsensitiveArray;
 
 /**
- * An in-memory stand-in for the Stripe API, seeded from `tests/Fixtures/stripe.json` (API version 2024-04-10 shapes).
+ * An in-memory stand-in for the Stripe API, seeded from `tests/Fixtures/stripe.json` (API version 2026-01-28.clover shapes).
  *
  * It answers the requests the plugin makes, records each one, and only accepts `sk_test_` keys.
  */

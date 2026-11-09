@@ -2,6 +2,9 @@
 
 ## 2.0.0
 
+### Added
+- Added `CraftCms\Stripe\Elements\Subscription::getCurrentPeriodStart()` and `getCurrentPeriodEnd()`.
+
 ### Changed
 - Stripe now requires Craft CMS 6.0 or later and PHP 8.5 or later, and runs natively on Craft 6 without the `craftcms/yii2-adapter` package.
 - The plugin’s classes moved to the `CraftCms\Stripe` namespace. A migration updates the class names stored in the database and project config. See [UPGRADE.md](UPGRADE.md).

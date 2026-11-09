@@ -301,8 +301,8 @@ class Subscription extends Element
             t('Stripe ID', category: 'stripe') => Html::tag('code', e((string) $this->stripeId)),
             t('Stripe Status', category: 'stripe') => $this->getStripeStatusHtml(),
             t('Customer', category: 'stripe') => $this->getCustomer() ? e((string) $this->getCustomer()->email) : false,
-            t('Current period', category: 'stripe') => isset($data['current_period_start'], $data['current_period_end'])
-                ? e($formatter->asDate($data['current_period_start'], 'short').' – '.$formatter->asDate($data['current_period_end'], 'short'))
+            t('Current period', category: 'stripe') => $this->getCurrentPeriodStart() && $this->getCurrentPeriodEnd()
+                ? e($formatter->asDate($this->getCurrentPeriodStart(), 'short').' – '.$formatter->asDate($this->getCurrentPeriodEnd(), 'short'))
                 : false,
             t('Cancel at period end', category: 'stripe') => ($data['cancel_at_period_end'] ?? false) ? t('Yes') : t('No'),
             t('Cancel at', category: 'stripe') => $date($data['cancel_at'] ?? null),
@@ -403,6 +403,35 @@ class Subscription extends Element
         $model->save();
 
         parent::afterSave($isNew);
+    }
+
+    /**
+     * Returns the start of the current billing period, as a Unix timestamp.
+     *
+     * Stripe API version `2025-03-31.basil` and later put the period on the subscription items. Data synced with
+     * Stripe 1.x still has it on the subscription.
+     */
+    public function getCurrentPeriodStart(): ?int
+    {
+        return $this->currentPeriodValue('current_period_start');
+    }
+
+    /**
+     * Returns the end of the current billing period, as a Unix timestamp.
+     *
+     * @see getCurrentPeriodStart()
+     */
+    public function getCurrentPeriodEnd(): ?int
+    {
+        return $this->currentPeriodValue('current_period_end');
+    }
+
+    private function currentPeriodValue(string $key): ?int
+    {
+        $data = $this->getData();
+        $value = $data[$key] ?? $data['items']['data'][0][$key] ?? null;
+
+        return $value === null ? null : (int) $value;
     }
 
     public function getStripeEditUrl(): string

@@ -13,13 +13,17 @@ Stripe 2.0 is a native Craft 6 plugin. This guide lists what changed from 1.x an
 1. If you still need to move subscriptions over from Craft Commerce, run `craft stripe/commerce/migrate` with Stripe 1.x on Craft 5 first. Stripe 2.0 doesn’t include that command.
 2. Upgrade your project to Craft 6.
 3. Update the plugin: `composer require craftcms/stripe:^2.0`.
-4. Run `php artisan craft:up`. It runs the plugin’s migration, which replaces the `craft\stripe\*` class names stored in the database and project config.
+4. Run `php artisan craft:up`. It runs the plugin’s migrations, which replace the `craft\stripe\*` class names stored in the database and project config, and read the subscription billing period from its new place in the Stripe data.
 5. Move `config/stripe.php`, if you have one, to `config/craft/stripe.php`.
-6. Update your PHP code as described below. Twig templates keep working unchanged.
+6. Update your PHP code as described below. Twig templates keep working, except where they read stored Stripe data that changed shape in the newer Stripe API version (see below).
 
 Your existing `stripe_*` tables, elements, field layouts, settings and webhook record are kept. The webhook URL (`stripe/webhooks/handle`) is the same, so the endpoint registered in Stripe keeps working.
 
 ## Breaking changes
+
+### Stripe API version
+
+Stripe 2.0 uses Stripe API version `2026-01-28.clover` instead of `2024-04-10`. Stripe data that the plugin syncs from now on has the newer shape. For example, a subscription’s `current_period_start` and `current_period_end` are now on its items (`data.items.data[0].current_period_end`). Use `subscription.getCurrentPeriodStart()` and `subscription.getCurrentPeriodEnd()` instead of reading them from `subscription.data`. If your code reads other stored Stripe data, or handles Stripe events, review the [Stripe API changelog](https://docs.stripe.com/changelog) for the changes since `2024-04-10`.
 
 ### Classes and namespaces
 

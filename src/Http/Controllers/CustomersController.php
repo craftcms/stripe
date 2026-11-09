@@ -70,7 +70,7 @@ readonly class CustomersController
                 'title' => ['label' => $subscription->title, 'url' => $subscription->getCpEditUrl()],
                 'status' => $subscription->stripeStatus,
                 'products' => implode(', ', array_map(fn (Product $product) => $product->title, $subscription->getProducts() ?? [])),
-                'currentPeriodEnd' => isset($subscription->getData()['current_period_end']) ? $formatter->asDate($subscription->getData()['current_period_end'], 'short') : '',
+                'currentPeriodEnd' => $subscription->getCurrentPeriodEnd() ? $formatter->asDate($subscription->getCurrentPeriodEnd(), 'short') : '',
             ]))
             ->emptyMessage(t('No subscriptions exist yet.', category: 'stripe'));
 
