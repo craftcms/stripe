@@ -1,0 +1,11 @@
+<h2>{{ 'Sync All Data from Stripe'|t('stripe') }}</h2>
+<p>{{ 'Syncs all Stripe products, prices, subscriptions, customers, invoices and payment methods. Large accounts are better synced with `php artisan stripe:sync`.'|t('stripe')|md(inlineOnly=true) }}</p>
+
+<form method="post" action="{{ actionUrl('stripe/sync/all') }}">
+    {{ csrfInput() }}
+    {{ redirectInput('utilities/stripe-sync-all') }}
+    <button type="submit" class="btn submit" data-icon="arrows-rotate"
+            onclick="return confirm('{{ 'Are you sure you want run a complete sync of all Stripe Products, Prices, Subscriptions, Customers, Invoices and Payment Methods?'|t('stripe')|e('js') }}')">
+        {{ 'Sync all data'|t('stripe') }}
+    </button>
+</form>

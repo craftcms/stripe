@@ -1,0 +1,373 @@
+{
+    "account": {
+        "id": "acct_fake123",
+        "object": "account",
+        "country": "US",
+        "default_currency": "usd"
+    },
+    "products": {
+        "prod_basic": {
+            "id": "prod_basic",
+            "object": "product",
+            "active": true,
+            "created": 1767225600,
+            "default_price": "price_basic_monthly",
+            "description": "Basic description",
+            "images": [],
+            "livemode": false,
+            "marketing_features": [],
+            "metadata": {
+                "tier": "basic"
+            },
+            "name": "Basic",
+            "package_dimensions": null,
+            "shippable": null,
+            "statement_descriptor": null,
+            "tax_code": null,
+            "type": "service",
+            "unit_label": null,
+            "updated": 1767225600,
+            "url": null
+        },
+        "prod_pro": {
+            "id": "prod_pro",
+            "object": "product",
+            "active": true,
+            "created": 1767225600,
+            "default_price": "price_pro_monthly",
+            "description": "Pro description",
+            "images": [],
+            "livemode": false,
+            "marketing_features": [],
+            "metadata": {
+                "tier": "pro"
+            },
+            "name": "Pro",
+            "package_dimensions": null,
+            "shippable": null,
+            "statement_descriptor": null,
+            "tax_code": null,
+            "type": "service",
+            "unit_label": null,
+            "updated": 1767225600,
+            "url": null
+        },
+        "prod_ebook": {
+            "id": "prod_ebook",
+            "object": "product",
+            "active": true,
+            "created": 1767225600,
+            "default_price": "price_ebook",
+            "description": "Ebook description",
+            "images": [],
+            "livemode": false,
+            "marketing_features": [],
+            "metadata": {
+                "tier": "ebook"
+            },
+            "name": "Ebook",
+            "package_dimensions": null,
+            "shippable": null,
+            "statement_descriptor": null,
+            "tax_code": null,
+            "type": "service",
+            "unit_label": null,
+            "updated": 1767225600,
+            "url": null
+        }
+    },
+    "prices": {
+        "price_basic_monthly": {
+            "id": "price_basic_monthly",
+            "object": "price",
+            "active": true,
+            "billing_scheme": "per_unit",
+            "created": 1767225600,
+            "currency": "usd",
+            "custom_unit_amount": null,
+            "livemode": false,
+            "lookup_key": null,
+            "metadata": [],
+            "nickname": "Basic monthly",
+            "product": "prod_basic",
+            "recurring": {
+                "aggregate_usage": null,
+                "interval": "month",
+                "interval_count": 1,
+                "trial_period_days": null,
+                "usage_type": "licensed"
+            },
+            "tax_behavior": "unspecified",
+            "tiers_mode": null,
+            "transform_quantity": null,
+            "type": "recurring",
+            "unit_amount": 1000,
+            "unit_amount_decimal": "1000",
+            "currency_options": {
+                "usd": {
+                    "custom_unit_amount": null,
+                    "tax_behavior": "unspecified",
+                    "unit_amount": 1000,
+                    "unit_amount_decimal": "1000"
+                }
+            }
+        },
+        "price_basic_yearly": {
+            "id": "price_basic_yearly",
+            "object": "price",
+            "active": true,
+            "billing_scheme": "per_unit",
+            "created": 1767225600,
+            "currency": "usd",
+            "custom_unit_amount": null,
+            "livemode": false,
+            "lookup_key": null,
+            "metadata": [],
+            "nickname": "Basic yearly",
+            "product": "prod_basic",
+            "recurring": {
+                "aggregate_usage": null,
+                "interval": "year",
+                "interval_count": 1,
+                "trial_period_days": null,
+                "usage_type": "licensed"
+            },
+            "tax_behavior": "unspecified",
+            "tiers_mode": null,
+            "transform_quantity": null,
+            "type": "recurring",
+            "unit_amount": 10000,
+            "unit_amount_decimal": "10000",
+            "currency_options": {
+                "usd": {
+                    "custom_unit_amount": null,
+                    "tax_behavior": "unspecified",
+                    "unit_amount": 10000,
+                    "unit_amount_decimal": "10000"
+                }
+            }
+        },
+        "price_pro_monthly": {
+            "id": "price_pro_monthly",
+            "object": "price",
+            "active": true,
+            "billing_scheme": "per_unit",
+            "created": 1767225600,
+            "currency": "usd",
+            "custom_unit_amount": null,
+            "livemode": false,
+            "lookup_key": null,
+            "metadata": [],
+            "nickname": "Pro monthly",
+            "product": "prod_pro",
+            "recurring": {
+                "aggregate_usage": null,
+                "interval": "month",
+                "interval_count": 1,
+                "trial_period_days": null,
+                "usage_type": "licensed"
+            },
+            "tax_behavior": "unspecified",
+            "tiers_mode": null,
+            "transform_quantity": null,
+            "type": "recurring",
+            "unit_amount": 2500,
+            "unit_amount_decimal": "2500",
+            "currency_options": {
+                "usd": {
+                    "custom_unit_amount": null,
+                    "tax_behavior": "unspecified",
+                    "unit_amount": 2500,
+                    "unit_amount_decimal": "2500"
+                }
+            }
+        },
+        "price_ebook": {
+            "id": "price_ebook",
+            "object": "price",
+            "active": true,
+            "billing_scheme": "per_unit",
+            "created": 1767225600,
+            "currency": "usd",
+            "custom_unit_amount": null,
+            "livemode": false,
+            "lookup_key": null,
+            "metadata": [],
+            "nickname": "E-book",
+            "product": "prod_ebook",
+            "recurring": null,
+            "tax_behavior": "unspecified",
+            "tiers_mode": null,
+            "transform_quantity": null,
+            "type": "one_time",
+            "unit_amount": 1500,
+            "unit_amount_decimal": "1500",
+            "currency_options": {
+                "usd": {
+                    "custom_unit_amount": null,
+                    "tax_behavior": "unspecified",
+                    "unit_amount": 1500,
+                    "unit_amount_decimal": "1500"
+                }
+            }
+        }
+    },
+    "customers": {
+        "cus_alice": {
+            "id": "cus_alice",
+            "object": "customer",
+            "address": null,
+            "balance": 0,
+            "created": 1767225600,
+            "currency": "usd",
+            "default_source": null,
+            "delinquent": false,
+            "description": null,
+            "email": "alice@example.com",
+            "invoice_prefix": "ALICE",
+            "invoice_settings": {
+                "default_payment_method": "pm_alice_card"
+            },
+            "livemode": false,
+            "metadata": [],
+            "name": "Alice Example",
+            "phone": null,
+            "preferred_locales": [],
+            "shipping": null,
+            "tax_exempt": "none"
+        }
+    },
+    "subscriptions": {
+        "sub_alice": {
+            "id": "sub_alice",
+            "object": "subscription",
+            "billing_cycle_anchor": 1767225600,
+            "cancel_at": null,
+            "cancel_at_period_end": false,
+            "canceled_at": null,
+            "collection_method": "charge_automatically",
+            "created": 1767225600,
+            "currency": "usd",
+            "current_period_end": 1769904000,
+            "current_period_start": 1767225600,
+            "customer": "cus_alice",
+            "default_payment_method": "pm_alice_card",
+            "discount": null,
+            "discounts": [],
+            "ended_at": null,
+            "items": {
+                "object": "list",
+                "data": [
+                    {
+                        "id": "si_alice",
+                        "object": "subscription_item",
+                        "created": 1767225600,
+                        "metadata": [],
+                        "price": {
+                            "id": "price_basic_monthly",
+                            "object": "price",
+                            "active": true,
+                            "billing_scheme": "per_unit",
+                            "created": 1767225600,
+                            "currency": "usd",
+                            "custom_unit_amount": null,
+                            "livemode": false,
+                            "lookup_key": null,
+                            "metadata": [],
+                            "nickname": "Basic monthly",
+                            "product": "prod_basic",
+                            "recurring": {
+                                "aggregate_usage": null,
+                                "interval": "month",
+                                "interval_count": 1,
+                                "trial_period_days": null,
+                                "usage_type": "licensed"
+                            },
+                            "tax_behavior": "unspecified",
+                            "tiers_mode": null,
+                            "transform_quantity": null,
+                            "type": "recurring",
+                            "unit_amount": 1000,
+                            "unit_amount_decimal": "1000",
+                            "currency_options": {
+                                "usd": {
+                                    "custom_unit_amount": null,
+                                    "tax_behavior": "unspecified",
+                                    "unit_amount": 1000,
+                                    "unit_amount_decimal": "1000"
+                                }
+                            }
+                        },
+                        "quantity": 1,
+                        "subscription": "sub_alice"
+                    }
+                ],
+                "has_more": false,
+                "url": "\/v1\/subscription_items?subscription=sub_alice"
+            },
+            "latest_invoice": "in_alice_1",
+            "livemode": false,
+            "metadata": {
+                "source": "fixture"
+            },
+            "pause_collection": null,
+            "start_date": 1767225600,
+            "status": "active",
+            "trial_end": null,
+            "trial_start": null
+        }
+    },
+    "invoices": {
+        "in_alice_1": {
+            "id": "in_alice_1",
+            "object": "invoice",
+            "amount_due": 1000,
+            "amount_paid": 1000,
+            "amount_remaining": 0,
+            "created": 1767225600,
+            "currency": "usd",
+            "customer": "cus_alice",
+            "customer_email": "alice@example.com",
+            "customer_name": "Alice Example",
+            "due_date": null,
+            "hosted_invoice_url": "https:\/\/invoice.stripe.test\/i\/in_alice_1",
+            "invoice_pdf": "https:\/\/pay.stripe.test\/invoice\/in_alice_1\/pdf",
+            "livemode": false,
+            "metadata": [],
+            "number": "ALICE-0001",
+            "paid": true,
+            "period_end": 1767225600,
+            "period_start": 1767225600,
+            "status": "paid",
+            "subscription": "sub_alice",
+            "subtotal": 1000,
+            "total": 1000
+        }
+    },
+    "payment_methods": {
+        "pm_alice_card": {
+            "id": "pm_alice_card",
+            "object": "payment_method",
+            "billing_details": {
+                "address": null,
+                "email": "alice@example.com",
+                "name": "Alice Example",
+                "phone": null
+            },
+            "card": {
+                "brand": "visa",
+                "country": "US",
+                "exp_month": 12,
+                "exp_year": 2030,
+                "funding": "credit",
+                "last4": "4242"
+            },
+            "created": 1767225600,
+            "customer": "cus_alice",
+            "livemode": false,
+            "metadata": [],
+            "type": "card"
+        }
+    },
+    "webhook_endpoints": []
+}

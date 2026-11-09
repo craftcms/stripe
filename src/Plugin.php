@@ -1,787 +1,320 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\stripe;
+declare(strict_types=1);
 
-use Craft;
-use craft\base\Element;
-use craft\base\Model;
-use craft\base\Plugin as BasePlugin;
-use craft\console\Controller;
-use craft\console\controllers\ResaveController;
-use craft\controllers\UsersController;
-use craft\elements\conditions\users\UserCondition;
-use craft\elements\User;
-use craft\enums\MenuItemType;
-use craft\events\DefineBehaviorsEvent;
-use craft\events\DefineConsoleActionsEvent;
-use craft\events\DefineEditUserScreensEvent;
-use craft\events\DefineFieldLayoutFieldsEvent;
-use craft\events\DefineMenuItemsEvent;
-use craft\events\DefineMetadataEvent;
-use craft\events\RegisterComponentTypesEvent;
-use craft\events\RegisterConditionRulesEvent;
-use craft\events\RegisterUrlRulesEvent;
-use craft\feedme\events\RegisterFeedMeFieldsEvent;
-use craft\feedme\services\Fields as FeedMeFields;
-use craft\fields\Link;
-use craft\helpers\Html;
-use craft\helpers\Queue;
-use craft\helpers\UrlHelper;
-use craft\models\FieldLayout;
-use craft\records\User as UserRecord;
-use craft\services\Elements;
-use craft\services\Fields;
-use craft\services\Utilities;
-use craft\stripe\behaviors\StripeCustomerBehavior;
-use craft\stripe\elements\conditions\users\HasStripeCustomerConditionRule;
-use craft\stripe\elements\Price;
-use craft\stripe\elements\Product;
-use craft\stripe\elements\Subscription;
-use craft\stripe\feedme\fields\Products as FeedMeProducts;
-use craft\stripe\feedme\fields\Subscriptions as FeedMeSubscriptions;
-use craft\stripe\fieldlayoutelements\PricesField;
-use craft\stripe\fields\Products as ProductsField;
-use craft\stripe\fields\Subscriptions as SubscriptionsField;
-use craft\stripe\jobs\SyncSingleCustomerData;
-use craft\stripe\linktypes\Product as ProductLinkType;
-use craft\stripe\models\Settings;
-use craft\stripe\services\Api;
-use craft\stripe\services\BillingPortal;
-use craft\stripe\services\Checkout;
-use craft\stripe\services\Customers;
-use craft\stripe\services\Invoices;
-use craft\stripe\services\PaymentMethods;
-use craft\stripe\services\Prices;
-use craft\stripe\services\Products;
-use craft\stripe\services\Subscriptions;
-use craft\stripe\services\Webhooks;
-use craft\stripe\utilities\Sync;
-use craft\stripe\web\twig\CraftVariableBehavior;
-use craft\stripe\web\twig\Extension;
-use craft\web\twig\variables\CraftVariable;
-use craft\web\UrlManager;
-use Stripe\Exception\ApiErrorException;
-use yii\base\Event;
-use yii\base\InvalidConfigException;
-use yii\base\ModelEvent;
-use yii\console\ExitCode;
+namespace CraftCms\Stripe;
+
+use Closure;
+use CraftCms\Cms\Condition\Events\ConditionRulesResolving;
+use CraftCms\Cms\Cp\Data\NavItem;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
+use CraftCms\Cms\Element\Events\ElementMetadataResolving;
+use CraftCms\Cms\Element\Events\ElementSaved;
+use CraftCms\Cms\Element\Events\ElementSaving;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Plugin\Plugin as BasePlugin;
+use CraftCms\Cms\Plugin\PluginSettings;
+use CraftCms\Cms\Route\Routes;
+use CraftCms\Cms\Support\Facades\Twig;
+use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Twig\Variables\CraftVariable;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Events\EditUserScreensResolving;
+use CraftCms\Cms\Utility\Utility;
+use CraftCms\Stripe\Console\RemoveDuplicatesCommand;
+use CraftCms\Stripe\Console\Resave\ResavePricesCommand;
+use CraftCms\Stripe\Console\Resave\ResaveProductsCommand;
+use CraftCms\Stripe\Console\Resave\ResaveSubscriptionsCommand;
+use CraftCms\Stripe\Console\ResetDataCommand;
+use CraftCms\Stripe\Console\SyncCommand;
+use CraftCms\Stripe\Elements\Price;
+use CraftCms\Stripe\Elements\Product;
+use CraftCms\Stripe\Elements\Subscription;
+use CraftCms\Stripe\FieldLayoutElements\PricesField;
+use CraftCms\Stripe\Fields\Products as ProductsField;
+use CraftCms\Stripe\Fields\Subscriptions as SubscriptionsField;
+use CraftCms\Stripe\LinkTypes\Product as ProductLinkType;
+use CraftCms\Stripe\Listeners\AddStripeUserScreen;
+use CraftCms\Stripe\Listeners\AddUserConditionRules;
+use CraftCms\Stripe\Listeners\AddUserCustomerMetadata;
+use CraftCms\Stripe\Listeners\AddUserSyncAction;
+use CraftCms\Stripe\Listeners\QueueNewUserCustomerSync;
+use CraftCms\Stripe\Listeners\SyncChangedUserEmail;
+use CraftCms\Stripe\Models\Customer;
+use CraftCms\Stripe\Twig\Extension;
+use CraftCms\Stripe\Utilities\Sync;
+use Illuminate\Console\Command;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Support\Collection;
+use Override;
+
+use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\t;
 
 /**
- * Stripe plugin
+ * Stripe for Craft CMS.
  *
- * @method static Plugin getInstance()
  * @method Settings getSettings()
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Pixel & Tonic
- * @license MIT
- * @property-read Products $products
- * @property-read Api $api
+ *
+ * @since 1.0.0
  */
 class Plugin extends BasePlugin
 {
-    public const PC_PATH_PRODUCT_FIELD_LAYOUTS = 'stripe.productFieldLayout';
-    public const PC_PATH_PRICE_FIELD_LAYOUTS = 'stripe.priceFieldLayout';
-    public const PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS = 'stripe.subscriptionFieldLayout';
+    public string $schemaVersion = '3.0.0';
 
-    /**
-     * @var string
-     */
-    public string $schemaVersion = '1.2.0';
-
-    /**
-     * @inheritdoc
-     */
-    public bool $hasCpSettings = true;
-
-    /**
-     * @inheritdoc
-     */
-    public bool $hasReadOnlyCpSettings = true;
-
-    /**
-     * @inheritdoc
-     */
-    public bool $hasCpSection = true;
-
-    /**
-     * @inheritdoc
-     */
     public string $minVersionRequired = '1.0.0';
 
-    /**
-     * @var string stripe environment determined from the key
-     * fall back to test environment to be safe
-     */
-    public string $stripeMode = 'test';
+    public bool $hasCpSection = true;
 
-    /**
-     * @var string Stripe Dashboard URL
-     */
-    public string $dashboardUrl = 'https://dashboard.stripe.com';
+    public bool $hasCpSettings = true;
 
-    /**
-     * @var string Stripe Base URL for all external links to Stripe
-     */
-    public string $stripeBaseUrl;
+    public bool $hasReadOnlyCpSettings = true;
 
-    public static function config(): array
+    /** @var array<class-string<Element>> */
+    protected array $elementTypes = [
+        Product::class,
+        Price::class,
+        Subscription::class,
+    ];
+
+    /** @var array<class-string<FieldInterface>> */
+    protected array $fieldTypes = [
+        ProductsField::class,
+        SubscriptionsField::class,
+    ];
+
+    /** @var array<class-string<BaseLinkType>> */
+    protected array $linkTypes = [
+        ProductLinkType::class,
+    ];
+
+    /** @var array<class-string<Utility>> */
+    protected array $utilities = [
+        Sync::class,
+    ];
+
+    /** @var list<class-string<Command>> */
+    protected array $commands = [
+        SyncCommand::class,
+        ResetDataCommand::class,
+        RemoveDuplicatesCommand::class,
+        ResaveProductsCommand::class,
+        ResavePricesCommand::class,
+        ResaveSubscriptionsCommand::class,
+    ];
+
+    /** @var array<class-string, class-string|class-string[]> */
+    protected array $events = [
+        ElementSaving::class => SyncChangedUserEmail::class,
+        ElementSaved::class => QueueNewUserCustomerSync::class,
+        EditUserScreensResolving::class => AddStripeUserScreen::class,
+        ElementActionMenuItemsResolving::class => AddUserSyncAction::class,
+        ElementMetadataResolving::class => AddUserCustomerMetadata::class,
+        ConditionRulesResolving::class => AddUserConditionRules::class,
+    ];
+
+    public function register(): void
     {
-        return [
-            'components' => [
-                'api' => ['class' => Api::class],
-                'billingPortal' => ['class' => BillingPortal::class],
-                'checkout' => ['class' => Checkout::class],
-                'customers' => ['class' => Customers::class],
-                'invoices' => ['class' => Invoices::class],
-                'prices' => ['class' => Prices::class],
-                'products' => ['class' => Products::class],
-                'subscriptions' => ['class' => Subscriptions::class],
-                'paymentMethods' => ['class' => PaymentMethods::class],
-                'webhooks' => ['class' => Webhooks::class],
-            ],
-        ];
-    }
-
-    public function init()
-    {
-        parent::init();
-
-        $this->registerBehaviors();
-        $this->registerElementTypes();
-        $this->registerUtilityTypes();
-        $this->registerUserEditScreens();
-        $this->registerFieldTypes();
-        $this->registerLinkTypes();
-        $this->registerFieldLayoutElements();
-        $this->registerVariables();
-        $this->registerTwigExtension();
-        $this->registerResaveCommands();
-        $this->registerConditionRules();
-        $this->registerUserActions();
-        $this->registerFeedMeEvents();
-        $this->registerUserElementChanges();
-
-        $request = Craft::$app->getRequest();
-        if (!$request->getIsConsoleRequest()) {
-            if ($request->getIsCpRequest()) {
-                $this->registerCpRoutes();
-            } else {
-                $this->registerSiteRoutes();
-            }
-        }
-
-        $projectConfigService = Craft::$app->getProjectConfig();
-        $productsService = $this->getProducts();
-        $pricesService = $this->getPrices();
-        $subscriptionService = $this->getSubscriptions();
-
-        $projectConfigService->onAdd(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
-            ->onUpdate(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleChangedFieldLayout'])
-            ->onRemove(self::PC_PATH_PRODUCT_FIELD_LAYOUTS, [$productsService, 'handleDeletedFieldLayout']);
-
-        $projectConfigService->onAdd(self::PC_PATH_PRICE_FIELD_LAYOUTS, [$pricesService, 'handleChangedFieldLayout'])
-            ->onUpdate(self::PC_PATH_PRICE_FIELD_LAYOUTS, [$pricesService, 'handleChangedFieldLayout'])
-            ->onRemove(self::PC_PATH_PRICE_FIELD_LAYOUTS, [$pricesService, 'handleDeletedFieldLayout']);
-
-        $projectConfigService->onAdd(self::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$subscriptionService, 'handleChangedFieldLayout'])
-            ->onUpdate(self::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$subscriptionService, 'handleChangedFieldLayout'])
-            ->onRemove(self::PC_PATH_SUBSCRIPTION_FIELD_LAYOUTS, [$subscriptionService, 'handleDeletedFieldLayout']);
-
-        // get stripe environment from the secret key
-        $this->stripeMode = $this->getStripeMode();
-        $this->stripeBaseUrl = $this->buildStripeBaseUrl();
-    }
-
-    /**
-     * Build the Stripe dashboard base URL with account ID for proper deep linking.
-     *
-     * @return string
-     */
-    private function buildStripeBaseUrl(): string
-    {
-        $accountId = $this->getApi()->getAccountId();
-
-        if ($accountId) {
-            // Format: https://dashboard.stripe.com/{account_id}/{mode}
-            return "$this->dashboardUrl/$accountId/$this->stripeMode";
-        }
-
-        // Fallback without account ID (will redirect via Stripe)
-        return "$this->dashboardUrl/$this->stripeMode";
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function createSettingsModel(): ?Model
-    {
-        return Craft::createObject(Settings::class);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSettingsResponse(): mixed
-    {
-        return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('stripe/settings'));
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getReadOnlySettingsResponse(): mixed
-    {
-        return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('stripe/settings'));
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function settingsHtml(): ?string
-    {
-        return Craft::$app->view->renderTemplate('stripe/settings/index.twig', [
-            'plugin' => $this,
-            'settings' => $this->getSettings(),
+        // Stripe can’t send a CSRF token with webhook events
+        $routes = $this->app->make(Routes::class);
+        PreventRequestForgery::except([
+            'stripe/webhooks/handle',
+            $routes->actionTriggerUriPrefix().'/stripe/webhooks/handle',
         ]);
     }
 
+    public function boot(): void
+    {
+        $this->app->singleton(Settings::class, fn () => $this->getSettings());
+
+        Twig::registerExtension(new Extension);
+        $this->registerVariableMacros();
+        $this->registerUserMacros();
+
+        if ($this->isInstalled) {
+            $this->app->make(FieldLayouts::class)->registerProjectConfigListeners();
+        }
+    }
+
+    #[Override]
+    protected static function createSettings(): ?PluginSettings
+    {
+        return new Settings;
+    }
+
+    #[Override]
+    public function getSettingsResponse(): mixed
+    {
+        return redirect(Url::cpUrl('stripe/settings'));
+    }
+
+    #[Override]
+    public function getReadOnlySettingsResponse(): mixed
+    {
+        return redirect(Url::cpUrl('stripe/settings'));
+    }
+
+    #[Override]
+    protected function getNativeFields(): ?Closure
+    {
+        return function (FieldLayout $fieldLayout, array $fields): array {
+            if ($fieldLayout->type === Product::class) {
+                $fields[] = PricesField::class;
+            }
+
+            return $fields;
+        };
+    }
+
+    #[Override]
+    public function getCpNavItem(): NavItem|array|null
+    {
+        $item = parent::getCpNavItem();
+
+        if (! $item instanceof NavItem) {
+            return $item;
+        }
+
+        $item->label(t('Stripe', category: 'stripe'));
+        $item->add(new NavItem()->label(t('Products', category: 'stripe'))->url('stripe/products'));
+        $item->add(new NavItem()->label(t('Subscriptions', category: 'stripe'))->url('stripe/subscriptions'));
+        $item->add(new NavItem()->label(t('Invoices', category: 'stripe'))->url('stripe/invoices'));
+
+        if (currentUser()?->isAdmin()) {
+            $item->add(new NavItem()->label(t('Settings', category: 'stripe'))->url('stripe/settings'));
+            $item->add(new NavItem()->label(t('Webhooks', category: 'stripe'))->url('stripe/webhooks'));
+        }
+
+        return $item;
+    }
+
     /**
-     * Returns the API service
-     *
-     * @return Api The API service
-     * @throws InvalidConfigException
+     * Returns the Stripe API service, for `craft.stripe.api` in Twig.
      */
     public function getApi(): Api
     {
-        return $this->get('api');
+        return $this->app->make(Api::class);
     }
 
-    /**
-     * Returns the billing portal service
-     *
-     * @return BillingPortal The billing portal service
-     * @throws InvalidConfigException
-     */
     public function getBillingPortal(): BillingPortal
     {
-        return $this->get('billingPortal');
+        return $this->app->make(BillingPortal::class);
     }
 
-    /**
-     * Returns the Prices service
-     *
-     * @return Prices The Prices service
-     * @throws InvalidConfigException
-     */
-    public function getPrices(): Prices
-    {
-        return $this->get('prices');
-    }
-
-    /**
-     * Returns the Products service
-     *
-     * @return Products The Products service
-     * @throws InvalidConfigException
-     */
-    public function getProducts(): Products
-    {
-        return $this->get('products');
-    }
-
-    /**
-     * Returns the Subscriptions service
-     *
-     * @return Subscriptions The Subscriptions service
-     * @throws InvalidConfigException
-     */
-    public function getSubscriptions(): Subscriptions
-    {
-        return $this->get('subscriptions');
-    }
-
-    /**
-     * Returns the Payment Methods service
-     *
-     * @return PaymentMethods The Payment Methods service
-     * @throws InvalidConfigException
-     */
-    public function getPaymentMethods(): PaymentMethods
-    {
-        return $this->get('paymentMethods');
-    }
-
-    /**
-     * Returns the Webhooks service
-     *
-     * @return Webhooks The Webhooks service
-     * @throws InvalidConfigException
-     */
-    public function getWebhooks(): Webhooks
-    {
-        return $this->get('webhooks');
-    }
-
-    /**
-     * Returns the Checkout service
-     *
-     * @return Checkout The Checkout service
-     * @throws InvalidConfigException
-     */
     public function getCheckout(): Checkout
     {
-        return $this->get('checkout');
+        return $this->app->make(Checkout::class);
     }
 
-    /**
-     * Returns the Customers service
-     *
-     * @return Customers The Customers service
-     * @throws InvalidConfigException
-     */
     public function getCustomers(): Customers
     {
-        return $this->get('customers');
+        return $this->app->make(Customers::class);
     }
 
-    /**
-     * Returns the Invoices service
-     *
-     * @return Invoices The Invoices service
-     * @throws InvalidConfigException
-     */
     public function getInvoices(): Invoices
     {
-        return $this->get('invoices');
+        return $this->app->make(Invoices::class);
+    }
+
+    public function getPaymentMethods(): PaymentMethods
+    {
+        return $this->app->make(PaymentMethods::class);
+    }
+
+    public function getPrices(): Prices
+    {
+        return $this->app->make(Prices::class);
+    }
+
+    public function getProducts(): Products
+    {
+        return $this->app->make(Products::class);
+    }
+
+    public function getSubscriptions(): Subscriptions
+    {
+        return $this->app->make(Subscriptions::class);
+    }
+
+    public function getWebhooks(): Webhooks
+    {
+        return $this->app->make(Webhooks::class);
     }
 
     /**
-     * Registers the utilities.
+     * `craft.stripe`, `craft.stripeProducts()`, `craft.stripePrices()` and `craft.stripeSubscriptions()`.
      */
-    private function registerUtilityTypes(): void
+    private function registerVariableMacros(): void
     {
-        if (!empty(Plugin::getInstance()->getApi()->getApiKey())) {
-            Event::on(
-                Utilities::class,
-                Utilities::EVENT_REGISTER_UTILITIES,
-                function(RegisterComponentTypesEvent $event) {
-                    $event->types[] = Sync::class;
-                }
-            );
+        $plugin = $this;
+
+        CraftVariable::macro('stripe', fn () => $plugin);
+
+        foreach ([
+            'stripeProducts' => Product::class,
+            'stripePrices' => Price::class,
+            'stripeSubscriptions' => Subscription::class,
+        ] as $name => $elementType) {
+            CraftVariable::macro($name, function (array $criteria = []) use ($elementType) {
+                $query = $elementType::find();
+                Typecast::configure($query, $criteria);
+
+                return $query;
+            });
         }
     }
 
     /**
-     * @return void
+     * The Stripe methods users had in Craft 5, such as `currentUser.getStripeCustomers()`.
      */
-    private function registerFeedMeEvents(): void
+    private function registerUserMacros(): void
     {
-        $feedMePlugin = Craft::$app->getPlugins()->getPlugin('feed-me');
-        if (!class_exists(FeedMeFields::class) || !$feedMePlugin) {
-            return;
-        }
+        self::userMacro('getStripeCustomers', function (): Collection {
+            return collect(app(Customers::class)->getCustomersByEmail($this->email));
+        });
 
-        Event::on(FeedMeFields::class, FeedMeFields::EVENT_REGISTER_FEED_ME_FIELDS, function(RegisterFeedMeFieldsEvent $event) {
-            $event->fields[] = FeedMeProducts::class;
-            $event->fields[] = FeedMeSubscriptions::class;
+        self::userMacro('getStripeCustomer', function (): ?Customer {
+            return app(Customers::class)->getFirstCustomerByEmail($this->email);
+        });
+
+        self::userMacro('getStripeSubscriptions', function (): Collection {
+            return $this->email ? Subscription::find()->userEmail($this->email)->collect() : collect();
+        });
+
+        self::userMacro('getStripePaymentMethods', function (): Collection {
+            return collect(app(PaymentMethods::class)->getPaymentMethodsByEmail($this->email));
+        });
+
+        self::userMacro('getStripeBillingPortalSessionUrl', function (?string $returnUrl = null, ?string $configurationId = null, array $params = []): ?string {
+            $customer = app(Customers::class)->getFirstCustomerByEmail($this->email);
+
+            return $customer
+                ? app(BillingPortal::class)->getCustomerBillingPortalSessionUrl($customer, $configurationId, $returnUrl, $params)
+                : null;
+        });
+
+        self::userMacro('getStripeBillingPortalSessionPaymentMethodUpdateUrl', function (?string $returnUrl = null, ?string $configurationId = null, array $params = []): ?string {
+            $customer = app(Customers::class)->getFirstCustomerByEmail($this->email);
+
+            return $customer
+                ? app(BillingPortal::class)->getCustomerBillingPortalSessionUrl($customer, $configurationId, $returnUrl, array_replace_recursive([
+                    'flow_data' => ['type' => 'payment_method_update'],
+                ], $params))
+                : null;
         });
     }
 
     /**
-     * Register the element types supplied by Stripe
+     * Registers a User macro; the closure runs bound to the user.
      *
-     * @return void
+     * @param-closure-this User $macro
      */
-    private function registerElementTypes(): void
+    private static function userMacro(string $name, Closure $macro): void
     {
-        Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, function(RegisterComponentTypesEvent $event) {
-            $event->types[] = Product::class;
-            $event->types[] = Price::class;
-            $event->types[] = Subscription::class;
-        });
-    }
-
-    private function registerUserEditScreens(): void
-    {
-        Event::on(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS, function(DefineEditUserScreensEvent $event) {
-            if (
-                !empty(Plugin::getInstance()->getApi()->getApiKey()) &&
-                Craft::$app->getUser()->checkPermission('accessPlugin-stripe')
-            ) {
-                $event->screens['stripe'] = [
-                    'label' => Craft::t('stripe', 'Stripe'),
-                ];
-            }
-        });
-
-        Event::on(User::class, User::EVENT_DEFINE_METADATA, function(DefineMetadataEvent $event) {
-            if (
-                !empty(Plugin::getInstance()->getApi()->getApiKey()) &&
-                Craft::$app->getUser()->checkPermission('accessPlugin-stripe')
-            ) {
-                $event->metadata[Craft::t('stripe', 'Stripe Customer(s)')] = function() use ($event) {
-                    return Html::beginTag('div') .
-                        $event->sender->getStripeCustomers()->reduce(function($carry, $item) {
-                            $carry = is_string($carry) ? $carry : '';
-                            $carry .=
-                                Html::beginTag('div') .
-                                Html::tag(
-                                    'a',
-                                    htmlspecialchars($item->data['name']) . ' (' . $item->stripeId . ')' . Html::tag('span', '', ['data-icon' => 'external']),
-                                    ['href' => $item->getStripeEditUrl(), 'target' => '_blank']
-                                ) .
-                                Html::endTag('div');
-
-                            return $carry;
-                        }) .
-                        Html::endTag('div');
-                };
-            }
-        });
-    }
-
-    /**
-     * Register Field Types
-     *
-     * @return void
-     */
-    private function registerFieldTypes(): void
-    {
-        Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, static function(RegisterComponentTypesEvent $event) {
-            $event->types[] = ProductsField::class;
-            $event->types[] = SubscriptionsField::class;
-        });
-    }
-
-    /**
-     * @return void
-     */
-    private function registerLinkTypes(): void
-    {
-        Event::on(Link::class, Link::EVENT_REGISTER_LINK_TYPES, function(RegisterComponentTypesEvent $event) {
-            $event->types[] = ProductLinkType::class;
-        });
-    }
-
-    /**
-     * Register field layout elements
-     *
-     * @return void
-     */
-    private function registerFieldLayoutElements(): void
-    {
-        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
-            /** @var FieldLayout $fieldLayout */
-            $fieldLayout = $event->sender;
-
-            switch ($fieldLayout->type) {
-                case Product::class:
-                    $event->fields[] = PricesField::class;
-                    break;
-            }
-        });
-    }
-
-    /**
-     * Register Stripe twig variables to the main craft variable
-     */
-    private function registerVariables(): void
-    {
-        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, static function(Event $event) {
-            $variable = $event->sender;
-            $variable->attachBehavior('stripe', CraftVariableBehavior::class);
-        });
-    }
-
-    /**
-     * Register Stripe twig extension
-     */
-    private function registerTwigExtension(): void
-    {
-        // Register the Twig extension
-        Craft::$app->getView()->registerTwigExtension(new Extension());
-    }
-
-    public function registerResaveCommands(): void
-    {
-        Event::on(ResaveController::class, Controller::EVENT_DEFINE_ACTIONS, static function(DefineConsoleActionsEvent $e) {
-            $e->actions['stripe-products'] = [
-                'action' => function(): int {
-                    /** @var ResaveController $controller */
-                    $controller = Craft::$app->controller;
-
-                    if (!empty($controller->withFields)) {
-                        $fieldLayout = Craft::$app->getFields()->getLayoutByType(Product::class);
-                        if (!$controller->hasTheFields($fieldLayout)) {
-                            $controller->output($controller->markdownToAnsi('The product field layout doesn’t satisfy `--with-fields`.'));
-                            return ExitCode::UNSPECIFIED_ERROR;
-                        }
-                    }
-
-                    return $controller->resaveElements(Product::class);
-                },
-                'options' => ['withFields'],
-                'helpSummary' => 'Re-saves Stripe products.',
-            ];
-
-            $e->actions['stripe-prices'] = [
-                'action' => function(): int {
-                    /** @var ResaveController $controller */
-                    $controller = Craft::$app->controller;
-
-                    if (!empty($controller->withFields)) {
-                        $fieldLayout = Craft::$app->getFields()->getLayoutByType(Price::class);
-                        if (!$controller->hasTheFields($fieldLayout)) {
-                            $controller->output($controller->markdownToAnsi('The price field layout doesn’t satisfy `--with-fields`.'));
-                            return ExitCode::UNSPECIFIED_ERROR;
-                        }
-                    }
-
-                    return $controller->resaveElements(Price::class);
-                },
-                'options' => ['withFields'],
-                'helpSummary' => 'Re-saves Stripe prices.',
-            ];
-
-            $e->actions['stripe-subscriptions'] = [
-                'action' => function(): int {
-                    /** @var ResaveController $controller */
-                    $controller = Craft::$app->controller;
-
-                    if (!empty($controller->withFields)) {
-                        $fieldLayout = Craft::$app->getFields()->getLayoutByType(Subscription::class);
-                        if (!$controller->hasTheFields($fieldLayout)) {
-                            $controller->output($controller->markdownToAnsi('The subscription field layout doesn’t satisfy `--with-fields`.'));
-                            return ExitCode::UNSPECIFIED_ERROR;
-                        }
-                    }
-
-                    return $controller->resaveElements(Subscription::class);
-                },
-                'options' => ['withFields'],
-                'helpSummary' => 'Re-saves Stripe subscriptions.',
-            ];
-        });
-    }
-
-    /**
-     * Register the CP routes
-     *
-     * @return void
-     */
-    private function registerCpRoutes(): void
-    {
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
-            $event->rules['stripe'] = ['template' => 'stripe/_index'];
-
-            $event->rules['stripe/settings'] = 'stripe/settings';
-
-            $event->rules['stripe/products'] = 'stripe/products/index';
-            $event->rules['stripe/products/<elementId:\\d+>'] = 'elements/edit';
-
-            $event->rules['stripe/subscriptions'] = 'stripe/subscriptions/index';
-            $event->rules['stripe/subscriptions/<elementId:\\d+>'] = 'elements/edit';
-
-            $event->rules['stripe/invoices'] = 'stripe/invoices/index';
-
-            $event->rules['myaccount/stripe'] = 'stripe/customers/index';
-            $event->rules['users/<userId:\\d+>/stripe'] = 'stripe/customers/index';
-
-            $event->rules['stripe/webhooks'] = 'stripe/webhooks/edit';
-        });
-    }
-
-    /**
-     * Registers the Site routes.
-     */
-    private function registerSiteRoutes(): void
-    {
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function(RegisterUrlRulesEvent $event) {
-            $event->rules['stripe/webhooks/handle'] = 'stripe/webhooks/handle';
-        });
-    }
-
-    /**
-     * @return void
-     */
-    private function registerBehaviors(): void
-    {
-        Event::on(
-            User::class,
-            User::EVENT_DEFINE_BEHAVIORS,
-            function(DefineBehaviorsEvent $event) {
-                $event->behaviors['stripe:customer'] = StripeCustomerBehavior::class;
-            }
-        );
-    }
-
-    /**
-     * @return void
-     */
-    private function registerConditionRules(): void
-    {
-        Event::on(
-            UserCondition::class,
-            UserCondition::EVENT_REGISTER_CONDITION_RULES,
-            function(RegisterConditionRulesEvent $event) {
-                $event->conditionRules[] = HasStripeCustomerConditionRule::class;
-            }
-        );
-    }
-
-    private function registerUserActions(): void
-    {
-        Event::on(
-            User::class,
-            Element::EVENT_DEFINE_ACTION_MENU_ITEMS,
-            function(DefineMenuItemsEvent $event) {
-                if (
-                    !empty(Plugin::getInstance()->getApi()->getApiKey()) &&
-                    Craft::$app->getUser()->checkPermission('accessPlugin-stripe')
-                ) {
-                    $sender = $event->sender;
-                    if ($email = $sender->email) {
-                        $customers = Plugin::getInstance()->getApi()->fetchAllCustomers(['email' => $email]);
-                        if ($customers) {
-                            $stripeIds = collect($customers)->pluck('id');
-                            $event->items[] = [
-                                'action' => 'stripe/sync/customer',
-                                'type' => MenuItemType::Button,
-                                'confirm' => Craft::t('stripe', 'Are you sure you want to sync this user’s Stripe customer data?'),
-                                'params' => [
-                                    'stripeIds' => $stripeIds->toArray(),
-                                ],
-                                'label' => Craft::t('stripe', 'Sync from Stripe'),
-                            ];
-                        }
-                    }
-                }
-            }
-        );
-    }
-
-    /**
-     * Maybe sync changed user email from Craft to Stripe.
-     *
-     * @return void
-     */
-    private function registerUserElementChanges(): void
-    {
-        // if email address got changed - update stripe
-        Event::on(User::class, User::EVENT_BEFORE_SAVE, function(ModelEvent $event) {
-            /** @var User|StripeCustomerBehavior $user */
-            $user = $event->sender;
-            $userRecord = UserRecord::findOne($user->id);
-            $settings = $this->getSettings();
-            if ($userRecord && $user->isCredentialed && $settings['syncChangedUserEmailsToStripe']) {
-                $oldEmail = $userRecord->getAttribute('email');
-                $newEmail = $user->email;
-                if ($oldEmail && $newEmail && ($oldEmail != $newEmail)) {
-                    $customers = Plugin::getInstance()->getCustomers()->getCustomersByEmail($oldEmail);
-                    if (!empty($customers)) {
-                        $client = $this->getApi()->getClient();
-                        foreach ($customers as $customer) {
-                            try {
-                                $updatedCustomer = $client->customers->update($customer->stripeId, ['email' => $newEmail]);
-                                $this->getCustomers()->createOrUpdateCustomer($updatedCustomer);
-                            } catch (ApiErrorException $e) {
-                                Craft::error("Unable to update customer's email in Stripe: {$e->getMessage()}", 'stripe');
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        Event::on(User::class, User::EVENT_AFTER_SAVE, function(ModelEvent $event) {
-            /** @var User|StripeCustomerBehavior $user */
-            $user = $event->sender;
-
-            // Do they have an email at all?
-            if (empty($user->email)) {
-                return;
-            }
-
-            // Do we have any existing Stripe customer records for them?
-            if (!$user->getStripeCustomers()->isEmpty()) {
-                return;
-            }
-
-            // Check Stripe for customers with this email and queue sync jobs for each
-            try {
-                $api = $this->getApi();
-                $stripeCustomers = $api->fetchAllCustomers(['email' => $user->email]);
-                
-                foreach ($stripeCustomers as $stripeCustomer) {
-                    // Queue a job to sync this customer's data
-                    Queue::push(new SyncSingleCustomerData([
-                        'stripeCustomerId' => $stripeCustomer->id,
-                    ]));
-                }
-            } catch (\Exception $e) {
-                Craft::error("Unable to fetch Stripe customers for email {$user->email}: {$e->getMessage()}", 'stripe');
-            }
-        });
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCpNavItem(): ?array
-    {
-        $ret = parent::getCpNavItem();
-        $ret['label'] = Craft::t('stripe', 'Stripe');
-
-
-        $ret['subnav']['stripeProducts'] = [
-            'label' => Craft::t('stripe', 'Products'),
-            'url' => 'stripe/products',
-        ];
-
-        $ret['subnav']['stripeSubscriptions'] = [
-            'label' => Craft::t('stripe', 'Subscriptions'),
-            'url' => 'stripe/subscriptions',
-        ];
-
-        $ret['subnav']['stripeInvoices'] = [
-            'label' => Craft::t('stripe', 'Invoices'),
-            'url' => 'stripe/invoices',
-        ];
-
-
-        if (Craft::$app->getUser()->getIsAdmin()) {
-            $ret['subnav']['stripeSettings'] = [
-                'label' => Craft::t('stripe', 'Settings'),
-                'url' => 'stripe/settings',
-            ];
-
-            $ret['subnav']['stripeWebhooks'] = [
-                'label' => Craft::t('stripe', 'Webhooks'),
-                'url' => 'stripe/webhooks',
-            ];
-        }
-
-        return $ret;
-    }
-
-    /**
-     * Get Stripe mode from the used secret key prefix.
-     *
-     * @return string
-     */
-    private function getStripeMode(): string
-    {
-        $secretKey = $this->getApi()->getApiKey();
-
-        if (!str_starts_with($secretKey, 'sk_test_')) {
-            return '';
-        }
-
-        return 'test';
+        User::macro($name, $macro);
     }
 }

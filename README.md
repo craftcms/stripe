@@ -4,10 +4,10 @@ Connect your Craft content to [Stripe](https://stripe.com)’s powerful billing 
 
 ## Requirements
 
-This plugin requires Craft CMS 5.6.0 or later, and a Stripe account with access to developer features.
+This plugin requires Craft CMS 6.0 or later, PHP 8.5 or later, and a Stripe account with access to developer features.
 
 > [!TIP]
-> Transitioning from Craft Commerce? Check out the dedicated [migration](#migrating-from-commerce) section.
+> Upgrading from Stripe 1.x on Craft 5? Read [UPGRADE.md](UPGRADE.md).
 
 ## Installation
 
@@ -21,25 +21,25 @@ Click the **Install** button, then check out the [configuration](#configuration)
 
 ### Composer
 
-These instructions assume you are using DDEV, but you can run similar commands in other environments. Open up a terminal and run…
+Open up a terminal and run…
 
 ```bash
 # Navigate to the project directory:
 cd /path/to/my-project
 
 # Require the plugin with Composer:
-ddev composer require craftcms/stripe
+composer require craftcms/stripe
 
 # Install the plugin with Craft:
-ddev craft plugin/install stripe
+php artisan craft:plugin:install stripe
 ```
 
 ## Configuration
 
 The Stripe plugin builds its configuration from three sources:
 
-- [Project config](https://craftcms.com/docs/5.x/system/project-config.html) — Managed via the **Stripe** &rarr; **Settings** screen in Craft’s control panel.
-- **A plugin config file** — Add a `config/stripe.php` file to your project and return a map of options keyed with properties from the `craft\stripe\models\Settings` class.
+- Project config — Managed via the **Stripe** &rarr; **Settings** screen in Craft’s control panel.
+- **A plugin config file** — Add a `config/craft/stripe.php` file to your project and return a map of options keyed with properties from the `CraftCms\Stripe\Settings` class.
 - **Environment variables** — Some options can be set directly as environment variables.
 
 ### API Keys
@@ -68,7 +68,7 @@ Then, in the control panel, visit **Stripe** &rarr; **Settings**, and enter the 
 To test webhooks in your local development environment, we recommend using the [Stripe CLI](https://docs.stripe.com/stripe-cli) to create a tunnel and forward events. Follow the installation instructions for your platform, then run:
 
 ```bash
-stripe listen --forward-to https://my-craft-project.ddev.site/stripe/webhooks/handle
+stripe listen --forward-to https://my-craft-project.test/stripe/webhooks/handle
 ```
 
 > [!NOTE]
@@ -83,7 +83,7 @@ Webhooks keep product and customer data synchronized between Stripe and Craft, b
 You have two options for doing an initial import of Stripe data:
 
 - Small product catalogs can usually get away with using the control panel utility: visit **Utilities** &rarr; **Stripe Sync All** and click **Sync all data**.
-- Large catalogs should perform synchronizations via the command line: Run `ddev craft stripe/sync/all` if you’re just getting started, or use one of the finer-grained [CLI tools](#cli) to import specific types of records.
+- Large catalogs should perform synchronizations via the command line: Run `php artisan stripe:sync` if you’re just getting started, or use one of the finer-grained [CLI tools](#cli) to import specific types of records.
 
 ### Content + Fields
 
@@ -96,20 +96,20 @@ Field layouts for each element type are managed in the plugin’s **Settings** s
 In addition to a field layout, product elements support **URI Format** and **Template** settings, which work just like they do on other element types: when a product’s URL is requested, Craft loads the element and passes it to the specified template under a `product` variable.
 
 > [!NOTE]
-> Prices and subscriptions do _not_ have their own URLs. You can use query parameters or [custom routes](https://craftcms.com/docs/5.x/system/routing.html) to load those elements in response to specific URI patterns.
+> Prices and subscriptions do _not_ have their own URLs. You can use query parameters or custom routes to load those elements in response to specific URI patterns.
 
 ## Migrating from [Craft Commerce](https://craftcms.com/commerce)
 
-Users of our full-featured ecommerce system, _Craft Commerce_ can migrate existing subscriptions to the standalone Stripe plugin without losing any customer data.
+Users of our full-featured ecommerce system, _Craft Commerce_, can migrate existing subscriptions to the standalone Stripe plugin without losing any customer data.
 
-Once you have fully upgraded to Craft 5.1 and Craft Commerce 5.0, follow the normal [installation](#installation) and [configuration](#configuration) instructions, above. Then, run this pair of console commands:
+The migration command is part of Stripe 1.x, so run it on Craft 5 before upgrading to Craft 6. With Craft Commerce 5 and Stripe 1.x installed and configured, run:
 
 ```bash
 # Pre-populate plugin tables with existing Stripe data:
-ddev craft stripe/commerce/migrate
+php craft stripe/commerce/migrate
 
 # Perform a synchronization to bring in additional records:
-ddev craft stripe/sync/all
+php craft stripe/sync/all
 ```
 
 ### API Changes
@@ -300,7 +300,7 @@ return [
     'endpoints' => [
         'api/products' => function() {
             return [
-                'elementType' => craft\stripe\elements\Product::class,
+                'elementType' => CraftCms\Stripe\Elements\Product::class,
                 // ...
             ];
         },
@@ -329,7 +329,7 @@ The plugin exposes its Stripe API client for advanced usage. In Twig, you would 
 In PHP, you can make the equivalent call like this:
 
 ```php
-$client = craft\stripe\Plugin::getInstance()->getApi()->getClient();
+$client = app(CraftCms\Stripe\Api::class)->getClient();
 
 $checkout = $client
     ->checkout
@@ -381,40 +381,33 @@ In most cases, you will want to use the `unitPrice` filter, as it will provide t
 
 ### CLI
 
-To view all available console commands, run `ddev craft help`. The Stripe plugin adds two main groups of commands:
-
-#### Craft Commerce Migration
-
-Migrates [preexisting Craft Commerce subscriptions](#migrating-from-craft-commerce) to records compatible with the Stripe plugin.
-
-```bash
-ddev craft stripe/commerce/migrate
-```
+To view all available console commands, run `php artisan list stripe`.
 
 #### Atomic Synchronization
 
 You can synchronize _everything_ at once…
 
 ```bash
-ddev craft stripe/sync/all
+php artisan stripe:sync
 ```
 
 …or just pull in slices of it:
 
-- **Customers**: `ddev craft stripe/sync/customers`
-- **Invoices**: `ddev craft stripe/sync/invoices`
-- **Payment Methods**: `ddev craft stripe/sync/payment-methods`
-- **Products _and_ Prices**: `ddev craft stripe/sync/products-and-prices`
-- **Subscriptions**: `ddev craft stripe/sync/subscriptions`
+- **Customers**: `php artisan stripe:sync customers`
+- **Invoices**: `php artisan stripe:sync invoices`
+- **Payment Methods**: `php artisan stripe:sync payment-methods`
+- **Products _and_ Prices**: `php artisan stripe:sync products-and-prices`
+- **Subscriptions**: `php artisan stripe:sync subscriptions`
+- **A single customer**, with their subscriptions, invoices and payment methods: `php artisan stripe:sync --customer=cus_123`
 
 #### Remove Duplicate Subscriptions
 
 Before version 1.7, duplicate subscription elements may have been created for the same Stripe subscription ID.
 
-Use the `stripe/data/remove-duplicates` command to find and remove these duplicates:
+Use the `stripe:remove-duplicates` command to find and remove these duplicates:
 
 ```bash
-ddev craft stripe/data/remove-duplicates
+php artisan stripe:remove-duplicates
 ```
 
 The command will:
@@ -423,10 +416,10 @@ The command will:
 2. Keep the most recently updated element and delete the others
 3. If duplicates have different custom field values, prompt you to choose which element to keep
 
-To preview what would be deleted without actually removing anything, use the `--dryRun` flag:
+To preview what would be deleted without actually removing anything, use the `--dry-run` flag:
 
 ```bash
-ddev craft stripe/data/remove-duplicates --dryRun
+php artisan stripe:remove-duplicates --dry-run
 ```
 
 ---
@@ -435,57 +428,48 @@ ddev craft stripe/data/remove-duplicates --dryRun
 
 ### Synchronization Events
 
-The Stripe plugin emits events just before updating each product, price, or subscription element during a [synchronization](#synchronization). A synchronization may occur via the CLI, control panel utility, or in response to a webhook.
+The Stripe plugin emits events just before and after updating each product, price, or subscription element during a [synchronization](#synchronization). A synchronization may occur via the CLI, control panel utility, or in response to a webhook.
 
-Class + Event | Event Model | `$source`
---- | --- | ---
-`craft\stripe\services\Products::EVENT_BEFORE_SYNCHRONIZE_PRODUCT` | `craft\stripe\events\StripeProductSyncEvent` | [Product](https://docs.stripe.com/api/products/object)
-`craft\stripe\services\Products::EVENT_AFTER_SYNCHRONIZE_PRODUCT` | `craft\stripe\events\StripeProductSyncEvent` | [Product](https://docs.stripe.com/api/products/object)
-`craft\stripe\services\Prices::EVENT_BEFORE_SYNCHRONIZE_PRICE` | `craft\stripe\events\StripePriceSyncEvent` | [Price](https://docs.stripe.com/api/prices/object)
-`craft\stripe\services\Prices::EVENT_AFTER_SYNCHRONIZE_PRICE` | `craft\stripe\events\StripePriceSyncEvent` | [Price](https://docs.stripe.com/api/prices/object)
-`craft\stripe\services\Subscriptions::EVENT_BEFORE_SYNCHRONIZE_SUBSCRIPTION` | `craft\stripe\events\StripeSubscriptionSyncEvent` | [Subscription](https://docs.stripe.com/api/subscriptions/object)
-`craft\stripe\services\Subscriptions::EVENT_AFTER_SYNCHRONIZE_SUBSCRIPTION` | `craft\stripe\events\StripeSubscriptionSyncEvent` | [Subscription](https://docs.stripe.com/api/subscriptions/object)
+Event | `$source`
+--- | ---
+`CraftCms\Stripe\Events\ProductSyncing`, `ProductSynced` | [Product](https://docs.stripe.com/api/products/object)
+`CraftCms\Stripe\Events\PriceSyncing`, `PriceSynced` | [Price](https://docs.stripe.com/api/prices/object)
+`CraftCms\Stripe\Events\SubscriptionSyncing`, `SubscriptionSynced` | [Subscription](https://docs.stripe.com/api/subscriptions/object)
 
 ```php
-craft\base\Event::on(
-    craft\stripe\services\Products::class,
-    craft\stripe\services\Products::EVENT_BEFORE_SYNCHRONIZE_PRODUCT,
-    function(craft\stripe\events\StripeProductSyncEvent $event) {
-        // Set a custom field value when a product looks “shippable”:
-        if ($event->source->package_dimensions !== null) {
-            $event->element->setFieldValue('requiresShipping', true);
-        }
-    },
-);
+use CraftCms\Stripe\Events\ProductSyncing;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(function (ProductSyncing $event) {
+    // Set a custom field value when a product looks “shippable”:
+    if ($event->source->package_dimensions !== null) {
+        $event->element->setFieldValue('requiresShipping', true);
+    }
+});
 ```
 
-You can set `$event->isValid` to prevent updates from being persisted during the synchronization.
+You can set `$event->isValid = false` on a `*Syncing` event to prevent the update from being saved.
+
+Every webhook event Stripe sends fires `CraftCms\Stripe\Events\StripeEventReceived` after the plugin has processed it. Its `$stripeEvent` property holds the [Event object](https://docs.stripe.com/api/events/object).
 
 ### Checkout Events
 
-Customize the parameters sent to Stripe when generating a Checkout session by listening to the `craft\stripe\services\Checkout::EVENT_BEFORE_START_CHECKOUT_SESSION` event. The `craft\stripe\events\CheckoutSessionEvent` will have a `params` property containing the request data that is about to be sent with the Stripe API client. You may modify or extend this data to suit your application—whatever the value of the property is after all handlers have been invoked is passed verbatim to the API client:
+Customize the parameters sent to Stripe when generating a Checkout session by listening to the `CraftCms\Stripe\Events\CheckoutSessionCreating` event. Its `params` property holds the request data that is about to be sent with the Stripe API client. Whatever the value of the property is after all listeners have run is passed verbatim to the API client:
 
 ```php
-craft\base\Event::on(
-    craft\stripe\services\Checkout::class,
-    craft\stripe\services\Checkout::EVENT_BEFORE_START_CHECKOUT_SESSION,
-    function(craft\stripe\events\CheckoutSessionEvent $event) {
-        // Add metadata if the customer is a logged-in “member”:
-        $currentUser = Craft::$app->getUser()->getIdentity();
+use CraftCms\Stripe\Events\CheckoutSessionCreating;
+use Illuminate\Support\Facades\Event;
 
-        // Nothing to do:
-        if (!$currentUser) {
-            return;
-        }
+use function CraftCms\Cms\currentUserElement;
 
-        if ($currentUser->isInGroup('members')) {
-            // Memoize + assign values:
-            $data = $event->params;
-            $data['metadata']['is_member'] = true;
+Event::listen(function (CheckoutSessionCreating $event) {
+    // Add metadata if the customer is a logged-in “member”:
+    $currentUser = currentUserElement();
 
-            // Set back onto the event:
-            $event->params = $data;
-        }
-    },
-);
+    if ($currentUser?->isInGroup('members')) {
+        $event->params['metadata']['is_member'] = true;
+    }
+});
 ```
+
+`CraftCms\Stripe\Events\BillingPortalSessionCreating` works the same way for billing portal sessions.

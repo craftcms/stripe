@@ -1,0 +1,48 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Stripe\Elements\Conditions;
+
+use CraftCms\Cms\Condition\BaseNumberConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Query;
+use CraftCms\Stripe\Elements\Price;
+use Illuminate\Database\Query\Builder;
+use Override;
+
+use function CraftCms\Cms\t;
+
+/**
+ * Filters prices by their unit amount, in the currency’s smallest unit.
+ *
+ * @since 3.0.0
+ */
+class UnitAmountConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
+{
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        return $condition instanceof PriceCondition;
+    }
+
+    #[Override]
+    public function getLabel(): string
+    {
+        return t('Unit Amount', category: 'stripe');
+    }
+
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
+    {
+        Query::whereNumericParam($query, 'stripe_pricedata.unitAmount', $this->paramValue(), columnType: null);
+    }
+
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var Price $element */
+        return $this->matchValue($element->unitAmount);
+    }
+}

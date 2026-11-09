@@ -1,5 +1,16 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Stripe now requires Craft CMS 6.0 or later and PHP 8.5 or later, and runs natively on Craft 6 without the `craftcms/yii2-adapter` package.
+- The plugin’s classes moved to the `CraftCms\Stripe` namespace. A migration updates the class names stored in the database and project config. See [UPGRADE.md](UPGRADE.md).
+- Plugin settings are now read from `config/craft/stripe.php`.
+- Console commands are now Artisan commands: `stripe:sync`, `stripe:reset-data`, `stripe:remove-duplicates`, and `craft:resave:stripe-products`, `craft:resave:stripe-prices` and `craft:resave:stripe-subscriptions`.
+- Plugin events are now Laravel events, such as `CraftCms\Stripe\Events\ProductSyncing` and `CraftCms\Stripe\Events\CheckoutSessionCreating`.
+- Plugin services are now resolved from the container, such as `app(CraftCms\Stripe\Subscriptions::class)`.
+- Removed the `stripe/commerce/migrate` command. Run it with Stripe 1.x on Craft 5 before upgrading.
+- Removed the Feed Me field integrations.
+
 ## 1.8.1 - 2026-08-25
 
 - Added the ability to include Stripe Status in the Subscription element’s card. ([#119](https://github.com/craftcms/stripe/pull/119))
