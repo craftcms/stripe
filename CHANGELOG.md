@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Added support for Craft CMS 6 when the `craftcms/yii2-adapter` package is installed. ([#112](https://github.com/craftcms/stripe/pull/112))
+- Added support for Craft CMS 6 when the `craftcms/yii2-adapter` package is installed. ([#122](https://github.com/craftcms/stripe/pull/122))
 
 ## 1.8.1 - 2026-08-25
 
