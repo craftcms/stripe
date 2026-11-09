@@ -92,7 +92,7 @@ class Prices extends Component
 
         // Remove any prices that are no longer in Stripe just in case.
         $stripeIds = ArrayHelper::getColumn($prices, 'id');
-        $deletablePriceElements = PriceElement::find()->stripeId(['not', $stripeIds])->all();
+        $deletablePriceElements = PriceElement::find()->stripeId(['not', ...$stripeIds])->all();
 
         foreach ($deletablePriceElements as $element) {
             Craft::$app->elements->deleteElement($element);

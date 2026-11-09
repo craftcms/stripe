@@ -8,14 +8,12 @@
 namespace craft\stripe\controllers;
 
 use Craft;
-use craft\controllers\EditUserTrait;
 use craft\elements\User;
 use craft\helpers\Cp;
 use craft\stripe\behaviors\StripeCustomerBehavior;
 use craft\stripe\elements\Subscription;
 use craft\stripe\Plugin;
 use craft\web\Controller;
-use craft\web\CpScreenResponseBehavior;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -28,7 +26,7 @@ use yii\web\Response;
  */
 class CustomersController extends Controller
 {
-    use EditUserTrait;
+    use RendersCustomerScreen;
 
     /**
      * Displays the Stripe Customer info for given user.
@@ -48,10 +46,7 @@ class CustomersController extends Controller
         $paymentMethodsService = Plugin::getInstance()->getPaymentMethods();
 
         /** @var User|StripeCustomerBehavior $user */
-        $user = $this->editedUser($userId);
-
-        /** @var Response|CpScreenResponseBehavior $response */
-        $response = $this->asEditUserScreen($user, 'stripe');
+        $user = $this->customerUser($userId);
 
         $invoices = $invoicesService->getInvoicesByUser($user);
         $paymentMethods = $user->getStripePaymentMethods()->all();
@@ -63,13 +58,11 @@ class CustomersController extends Controller
             ],
         ]);
 
-        $response->contentTemplate('stripe/customers/_customer', [
+        return $this->asCustomerScreen($user, 'stripe/customers/_customer', [
             'customers' => $user->getStripeCustomers()->all(),
             'subscriptions' => $subscriptions,
             'invoices' => $invoicesService->getTableData($invoices),
             'paymentMethods' => $paymentMethodsService->getTableData($paymentMethods),
         ]);
-
-        return $response;
     }
 }

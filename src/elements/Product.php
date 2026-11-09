@@ -12,7 +12,6 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\elements\conditions\ElementConditionInterface;
-use craft\elements\db\EagerLoadPlan;
 use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
@@ -408,7 +407,7 @@ class Product extends Element
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
+    public function setEagerLoadedElements(string $handle, array $elements, $plan): void
     {
         switch ($plan->handle) {
             case 'prices':

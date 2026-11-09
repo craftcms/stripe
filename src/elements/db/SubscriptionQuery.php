@@ -11,8 +11,6 @@ use Craft;
 use craft\base\Element;
 use craft\db\Connection;
 use craft\db\Query;
-use craft\db\QueryAbortedException;
-use craft\db\Table as CraftTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\User;
 use craft\helpers\Db;
@@ -20,8 +18,6 @@ use craft\stripe\db\Table;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Subscription;
 use craft\stripe\models\Customer;
-use yii\db\Expression;
-use yii\db\QueryBuilder;
 
 /**
  * Subscription query
@@ -33,6 +29,8 @@ use yii\db\QueryBuilder;
  */
 class SubscriptionQuery extends ElementQuery
 {
+    use PreparesSubscriptionQuery;
+
     /**
      * @var mixed The Stripe subscription ID(s) that the resulting subscriptions must have.
      */
@@ -137,12 +135,14 @@ class SubscriptionQuery extends ElementQuery
         }
 
         parent::__construct($elementType, $config);
+
+        $this->initSubscriptionQuery();
     }
 
     /**
      * @inheritdoc
      */
-    public function __set($name, $value)
+    public function __set($name, $value): void
     {
         switch ($name) {
             case 'user':
@@ -843,325 +843,5 @@ class SubscriptionQuery extends ElementQuery
     {
         $this->dateSuspended = $value;
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     * @throws QueryAbortedException
-     */
-    protected function beforePrepare(): bool
-    {
-        if ($this->stripeId === [] || $this->stripePriceId === [] || $this->priceId === [] || $this->planId === [] || $this->reference === []) {
-            return false;
-        }
-
-        $qb = Craft::$app->getDb()->getQueryBuilder();
-
-        $subscriptionTable = 'stripe_subscriptions';
-        $subscriptionDataTable = 'stripe_subscriptiondata';
-
-        // join standard subscription element table that only contains the stripeId
-        $this->joinElementTable($subscriptionTable);
-
-        $subscriptionDataJoinTable = [$subscriptionDataTable => "{{%$subscriptionDataTable}}"];
-        $this->query->leftJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
-        $this->subQuery->leftJoin($subscriptionDataJoinTable, "[[$subscriptionDataTable.stripeId]] = [[$subscriptionTable.stripeId]]");
-
-        $customerDataJoinTable = ['stripe_customerdata' => '{{%stripe_customerdata}}'];
-        $this->query->leftJoin(
-            $customerDataJoinTable,
-            "[[stripe_customerdata.stripeId]] = [[$subscriptionDataTable.customerId]]",
-        );
-        $this->subQuery->leftJoin(
-            $customerDataJoinTable,
-            "[[stripe_customerdata.stripeId]] = [[$subscriptionDataTable.customerId]]",
-        );
-
-        $this->query->select([
-            'stripe_subscriptions.stripeId',
-            'stripe_subscriptiondata.stripeStatus',
-            'stripe_subscriptiondata.data',
-            'stripe_subscriptiondata.prices',
-            'stripe_subscriptiondata.canceledAt',
-            'stripe_subscriptiondata.currentPeriodEnd',
-            'stripe_subscriptiondata.customerId',
-            'stripe_subscriptiondata.latestInvoiceId',
-            'stripe_subscriptiondata.startDate',
-            'stripe_subscriptiondata.trialStart',
-            'stripe_subscriptiondata.trialEnd',
-            'stripe_customerdata.stripeId AS customerStripeId',
-            'stripe_customerdata.email AS customerEmail',
-            'stripe_customerdata.data AS customerData',
-        ]);
-
-        if (isset($this->stripeId)) {
-            $this->subQuery->andWhere(Db::parseParam('stripe_subscriptions.stripeId', $this->stripeId));
-        }
-
-        if (isset($this->customerId)) {
-            $this->subQuery->andWhere(Db::parseParam('stripe_customerdata.stripeId', $this->customerId));
-        }
-
-        if (isset($this->userId)) {
-            // get email address for all userIds passed here
-            $userEmails = (new Query())
-                ->select('email')
-                ->from([CraftTable::USERS])
-                ->where(['id' => $this->userId])
-                ->column();
-
-            if (empty($userEmails)) {
-                $userEmails = ':empty:';
-            }
-            $this->subQuery->andWhere(Db::parseParam('stripe_customerdata.email', $userEmails));
-        }
-
-        if (isset($this->userEmail)) {
-            $this->subQuery->andWhere(Db::parseParam('stripe_customerdata.email', $this->userEmail));
-        }
-
-        if (isset($this->priceId) || isset($this->planId) || isset($this->reference)) {
-            if (isset($this->planId)) {
-                $this->stripePriceId = (new Query())
-                    ->select(['stripeId'])
-                    ->from([Table::PRICES])
-                    ->where(Db::parseParam('id', $this->planId))
-                    ->column();
-            }
-
-            if (isset($this->reference)) {
-                $this->stripePriceId = (new Query())
-                    ->select(['stripeId'])
-                    ->from([Table::PRICES])
-                    ->where(Db::parseParam('id', $this->reference))
-                    ->column();
-            }
-
-            if (isset($this->priceId)) {
-                $this->stripePriceId = (new Query())
-                    ->select(['stripeId'])
-                    ->from([Table::PRICES])
-                    ->where(Db::parseParam('id', $this->priceId))
-                    ->column();
-                //$qb->jsonContains("[[stripe_subscriptiondata.prices]]", $this->priceId)
-            }
-        }
-
-        if (isset($this->stripePriceId)) {
-            $stripePriceId = \craft\stripe\helpers\Db::prepareForLikeSearch($this, 'stripePriceId');
-            $this->subQuery->andWhere(
-                Db::parseParam('stripe_subscriptiondata.prices', $stripePriceId)
-            );
-        }
-
-        if (isset($this->latestInvoiceId)) {
-            $this->subQuery->leftJoin(
-                ['stripe_invoicedata' => '{{%stripe_invoicedata}}'],
-                "[[stripe_subscriptions.stripeId]] = [[stripe_invoicedata.subscriptionId]]",
-            );
-            $this->subQuery->andWhere(Db::parseParam(
-                "stripe_subscriptiondata.latestInvoiceId",
-                $this->latestInvoiceId
-            ));
-        }
-
-        if (isset($this->nextPaymentDate)) {
-            $this->subQuery->andWhere(Db::parseTimestampParam(
-                "stripe_subscriptiondata.currentPeriodEnd",
-                $this->nextPaymentDate,
-            ));
-        }
-
-        if (isset($this->isCanceled)) {
-            if ($this->isCanceled) {
-                $this->subQuery->andWhere(Db::parseParam(
-                    'stripe_subscriptiondata.stripeStatus',
-                    Subscription::STRIPE_STATUS_CANCELED
-                ));
-            } else {
-                $this->subQuery->andWhere(Db::parseParam(
-                    'stripe_subscriptiondata.stripeStatus',
-                    Subscription::STRIPE_STATUS_CANCELED,
-                    'not'
-                ));
-            }
-        }
-
-        if (isset($this->dateCanceled)) {
-            $this->subQuery->andWhere(Db::parseParam(
-                "stripe_subscriptiondata.canceledAt",
-                $this->dateCanceled,
-            ));
-        }
-
-        if (isset($this->stripeStatus)) {
-            $this->subQuery->andWhere(Db::parseParam(
-                "stripe_subscriptiondata.stripeStatus",
-                $this->stripeStatus,
-            ));
-        }
-
-        if (isset($this->hasStarted)) {
-            if ($this->hasStarted) {
-                $q = new Expression("stripe_subscriptiondata.startDate <= NOW()");
-            } else {
-                $q = new Expression("stripe_subscriptiondata.startDate > NOW()");
-            }
-            $this->subQuery->andWhere($q);
-        }
-
-        if (isset($this->isSuspended)) {
-            if ($this->isSuspended) {
-                // subscription is considered suspended if it's not active, trialing or canceled
-                $this->subQuery->andWhere(Db::parseParam(
-                    'stripe_subscriptiondata.stripeStatus',
-                    [
-                        'and',
-                        Subscription::STRIPE_STATUS_ACTIVE,
-                        Subscription::STRIPE_STATUS_TRIALING,
-                        Subscription::STRIPE_STATUS_CANCELED,
-                    ],
-                    'not'
-                ));
-            } else {
-                // subscription is considered NOT suspended if it's active, trialing or canceled
-                $this->subQuery->andWhere(Db::parseParam(
-                    'stripe_subscriptiondata.stripeStatus',
-                    [
-                        Subscription::STRIPE_STATUS_ACTIVE,
-                        Subscription::STRIPE_STATUS_TRIALING,
-                        Subscription::STRIPE_STATUS_CANCELED,
-                    ],
-                ));
-            }
-        }
-
-        if (isset($this->dateSuspended)) {
-            // todo: should we check for isSuspended too?
-            $this->subQuery->leftJoin(
-                ['stripe_invoicedata' => '{{%stripe_invoicedata}}'],
-                "[[stripe_subscriptions.stripeId]] = [[stripe_invoicedata.subscriptionId]]",
-            );
-
-            $this->subQuery->andWhere(Db::parseTimestampParam(
-                "stripe_invoicedata.created",
-                $this->dateSuspended
-            ));
-        }
-
-        if (isset($this->onTrial)) {
-            $this->subQuery->andWhere($this->getTrialCondition($this->onTrial, $qb));
-        }
-
-        return parent::beforePrepare();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function populate($rows): array
-    {
-        foreach ($rows as &$row) {
-            if (isset($row['customerData'])) {
-                $model = new Customer();
-                $model->setAttributes([
-                    'stripeId' => $row['customerStripeId'],
-                    'email' => $row['customerEmail'],
-                    'data' => $row['customerData'],
-                ], false);
-
-                $row['customer'] = $model;
-            }
-
-            unset($row['customerStripeId']);
-            unset($row['customerEmail']);
-            unset($row['customerData']);
-        }
-
-        return parent::populate($rows);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function statusCondition(string $status): mixed
-    {
-        $res = match ($status) {
-            strtolower(Subscription::STATUS_LIVE) => [
-                'and',
-                ['elements.enabled' => true],
-                ['elements_sites.enabled' => true],
-                ['or', ['stripe_subscriptiondata.stripeStatus' => [
-                    Subscription::STRIPE_STATUS_ACTIVE,
-                    Subscription::STRIPE_STATUS_TRIALING,
-                ]]],
-            ],
-            strtolower(Subscription::STATUS_STRIPE_SCHEDULED) => [
-                'elements.enabled' => true,
-                'elements_sites.enabled' => true,
-                'stripe_subscriptiondata.stripeStatus' => Subscription::STRIPE_STATUS_SCHEDULED,
-            ],
-            strtolower(Subscription::STATUS_STRIPE_CANCELED) => [
-                'elements.enabled' => true,
-                'elements_sites.enabled' => true,
-                'stripe_subscriptiondata.stripeStatus' => Subscription::STRIPE_STATUS_CANCELED,
-            ],
-            strtolower(Subscription::STATUS_STRIPE_SUSPENDED) => [
-                'and',
-                ['elements.enabled' => true],
-                ['elements_sites.enabled' => true],
-                ['not', ['stripe_subscriptiondata.stripeStatus' => [
-                    Subscription::STRIPE_STATUS_ACTIVE,
-                    Subscription::STRIPE_STATUS_TRIALING,
-                    Subscription::STRIPE_STATUS_SCHEDULED,
-                    Subscription::STRIPE_STATUS_CANCELED,
-                ]]],
-            ],
-            default => parent::statusCondition($status),
-        };
-
-        return $res;
-    }
-
-    /**
-     * Returns the SQL condition to use for trial status.
-     *
-     * @param bool $onTrial
-     * @param QueryBuilder $qb
-     * @return array
-     */
-    private function getTrialCondition(bool $onTrial, QueryBuilder $qb): array
-    {
-        if ($onTrial === true) {
-            // on trial so when trial start is <= now and trial end is > now
-            if (Craft::$app->getDb()->getIsPgsql()) {
-                return [
-                    'and',
-                    new Expression("stripe_subscriptiondata.trialStart <= EXTRACT(EPOCH FROM now())"),
-                    new Expression("stripe_subscriptiondata.trialEnd > EXTRACT(EPOCH FROM now())"),
-                ];
-            }
-
-            return [
-                'and',
-                new Expression("stripe_subscriptiondata.trialStart <= UNIX_TIMESTAMP()"),
-                new Expression("stripe_subscriptiondata.trialEnd > UNIX_TIMESTAMP()"),
-            ];
-        }
-
-        // not on trial so when trial_start > now or trial_end < now
-        if (Craft::$app->getDb()->getIsPgsql()) {
-            return [
-                'or',
-                new Expression("stripe_subscriptiondata.trialStart > EXTRACT(EPOCH FROM now())"),
-                new Expression("stripe_subscriptiondata.trialEnd < EXTRACT(EPOCH FROM now())"),
-            ];
-        }
-
-        return [
-            'or',
-            new Expression("stripe_subscriptiondata.trialStart > UNIX_TIMESTAMP()"),
-            new Expression("stripe_subscriptiondata.trialEnd < UNIX_TIMESTAMP()"),
-        ];
     }
 }

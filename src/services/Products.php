@@ -92,7 +92,7 @@ class Products extends Component
 
         // Remove any products that are no longer in Stripe just in case.
         $stripeIds = ArrayHelper::getColumn($products, 'id');
-        $deletableProductElements = ProductElement::find()->stripeId(['not', $stripeIds])->all();
+        $deletableProductElements = ProductElement::find()->stripeId(['not', ...$stripeIds])->all();
 
         foreach ($deletableProductElements as $element) {
             Craft::$app->elements->deleteElement($element);

@@ -11,12 +11,9 @@ use Craft;
 use craft\base\Element;
 use craft\db\Connection;
 use craft\db\Query;
-use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
-use craft\helpers\Db;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
-use yii\db\Expression;
 
 /**
  * Product query
@@ -28,6 +25,8 @@ use yii\db\Expression;
  */
 class ProductQuery extends ElementQuery
 {
+    use PreparesProductQuery;
+
     /**
      * @var mixed The Stripe product ID(s) that the resulting products must have.
      */
@@ -59,6 +58,8 @@ class ProductQuery extends ElementQuery
         }
 
         parent::__construct($elementType, $config);
+
+        $this->initProductQuery();
     }
 
     /**
@@ -114,28 +115,6 @@ class ProductQuery extends ElementQuery
     }
 
     /**
-     * @inheritdoc
-     */
-    protected function statusCondition(string $status): mixed
-    {
-        $res = match ($status) {
-            strtolower(Product::STATUS_LIVE) => [
-                'elements.enabled' => true,
-                'elements_sites.enabled' => true,
-                'stripe_productdata.stripeStatus' => Product::STRIPE_STATUS_ACTIVE,
-            ],
-            strtolower(Product::STATUS_STRIPE_ARCHIVED) => [
-                'elements.enabled' => true,
-                'elements_sites.enabled' => true,
-                'stripe_productdata.stripeStatus' => Product::STRIPE_STATUS_ARCHIVED,
-            ],
-            default => parent::statusCondition($status),
-        };
-
-        return $res;
-    }
-
-    /**
      * Narrows the query results to only products that have certain prices.
      *
      * Possible values include:
@@ -152,75 +131,5 @@ class ProductQuery extends ElementQuery
     {
         $this->hasPrice = $value;
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     * @throws QueryAbortedException
-     */
-    protected function beforePrepare(): bool
-    {
-        if ($this->stripeId === []) {
-            return false;
-        }
-
-        $productTable = 'stripe_products';
-        $productDataTable = 'stripe_productdata';
-
-        // join standard product element table that only contains the stripeId
-        $this->joinElementTable($productTable);
-
-        $productDataJoinTable = [$productDataTable => "{{%$productDataTable}}"];
-        $this->query->innerJoin($productDataJoinTable, "[[$productDataTable.stripeId]] = [[$productTable.stripeId]]");
-        $this->subQuery->innerJoin($productDataJoinTable, "[[$productDataTable.stripeId]] = [[$productTable.stripeId]]");
-
-        $this->query->select([
-            'stripe_products.stripeId',
-            'stripe_productdata.stripeStatus',
-            'stripe_productdata.data',
-        ]);
-
-        if (isset($this->stripeId)) {
-            $this->subQuery->andWhere(Db::parseParam('stripe_productdata.stripeId', $this->stripeId));
-        }
-
-        if (isset($this->stripeStatus)) {
-            $this->subQuery->andWhere(Db::parseParam('stripe_productdata.stripeStatus', $this->stripeStatus));
-        }
-
-        $this->_applyHasPriceParam();
-
-        return parent::beforePrepare();
-    }
-
-    /**
-     * Applies the hasPrice query condition
-     */
-    private function _applyHasPriceParam(): void
-    {
-        if ($this->hasPrice === null) {
-            return;
-        }
-
-        if ($this->hasPrice instanceof PriceQuery) {
-            $priceQuery = $this->hasPrice;
-        } elseif (is_array($this->hasPrice)) {
-            $query = Price::find();
-            $priceQuery = Craft::configure($query, $this->hasPrice);
-        } else {
-            throw new QueryAbortedException('Invalid param used. ProductQuery::hasPrice param only expects a price query or price query config.');
-        }
-
-        $priceQuery->limit = null;
-        $priceQuery->select('stripe_prices.primaryOwnerId');
-
-        // Remove any blank product IDs (if any)
-        $priceQuery->andWhere(['not', ['stripe_prices.primaryOwnerId' => null]]);
-
-        // Uses exists subquery for speed to check for the variant
-        $existsQuery = (new Query())
-            ->from(['existssub' => $priceQuery])
-            ->where(['existssub.primaryOwnerId' => new Expression('[[stripe_products.id]]')]);
-        $this->subQuery->andWhere(['exists', $existsQuery]);
     }
 }

@@ -107,7 +107,7 @@ class Subscriptions extends Component
         }
 
         // Remove any subscriptions that are no longer in Stripe just in case.
-        $deletableSubscriptionElements = SubscriptionElement::find()->stripeId(['not', $stripeIds])->all();
+        $deletableSubscriptionElements = SubscriptionElement::find()->stripeId(['not', ...$stripeIds])->all();
 
         foreach ($deletableSubscriptionElements as $element) {
             Craft::$app->elements->deleteElement($element);

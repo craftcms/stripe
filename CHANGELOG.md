@@ -1,5 +1,9 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Added support for Craft CMS 6 when the `craftcms/yii2-adapter` package is installed. ([#112](https://github.com/craftcms/stripe/pull/112))
+
 ## 1.8.1 - 2026-08-25
 
 - Added the ability to include Stripe Status in the Subscription element’s card. ([#119](https://github.com/craftcms/stripe/pull/119))

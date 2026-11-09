@@ -4,7 +4,7 @@ Connect your Craft content to [Stripe](https://stripe.com)’s powerful billing 
 
 ## Requirements
 
-This plugin requires Craft CMS 5.6.0 or later, and a Stripe account with access to developer features.
+This plugin requires Craft CMS 5.6.0+ or 6.0.0-alpha.1+ with the `craftcms/yii2-adapter` package, and a Stripe account with access to developer features.
 
 > [!TIP]
 > Transitioning from Craft Commerce? Check out the dedicated [migration](#migrating-from-commerce) section.
@@ -39,7 +39,7 @@ ddev craft plugin/install stripe
 The Stripe plugin builds its configuration from three sources:
 
 - [Project config](https://craftcms.com/docs/5.x/system/project-config.html) — Managed via the **Stripe** &rarr; **Settings** screen in Craft’s control panel.
-- **A plugin config file** — Add a `config/stripe.php` file to your project and return a map of options keyed with properties from the `craft\stripe\models\Settings` class.
+- **A plugin config file** — Add a `config/stripe.php` file (or `config/craft/stripe.php` if you’re using Craft CMS v6) to your project and return a map of options keyed with properties from the `craft\stripe\models\Settings` class.
 - **Environment variables** — Some options can be set directly as environment variables.
 
 ### API Keys

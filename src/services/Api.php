@@ -278,14 +278,19 @@ class Api extends Component
     public function getClient(): StripeClient
     {
         if ($this->_client === null) {
-            /** @var MonologTarget $webLogTarget */
-            $webLogTarget = Craft::$app->getLog()->targets['web'];
+            $webLogTarget = Craft::$app->getLog()->targets['web'] ?? null;
 
             Stripe::setAppInfo(Plugin::getInstance()->name, Plugin::getInstance()->version, Plugin::getInstance()->documentationUrl);
             Stripe::setApiKey($this->getApiKey());
             Stripe::setApiVersion(self::STRIPE_API_VERSION);
             Stripe::setMaxNetworkRetries(3);
-            Stripe::setLogger($webLogTarget->getLogger());
+
+            if ($webLogTarget instanceof MonologTarget) {
+                Stripe::setLogger($webLogTarget->getLogger());
+            } elseif (class_exists(\Illuminate\Support\Facades\Log::class)) {
+                // Craft 6 logs through Laravel
+                Stripe::setLogger(\Illuminate\Support\Facades\Log::channel());
+            }
 
             $this->_client = new StripeClient([
                 "api_key" => $this->getApiKey(),
