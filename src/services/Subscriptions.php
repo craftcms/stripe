@@ -193,6 +193,17 @@ class Subscriptions extends Component
             throw new MutexException($lockKey, 'Could not acquire a lock to create or update subscription.');
         }
 
+        // If this is a new element, check if one was created by another process while we waited for the lock
+        if ($acquireLock && !$subscriptionElement->id) {
+            $existing = SubscriptionElement::find()
+                ->stripeId($subscription->id)
+                ->status(null)
+                ->one();
+            if ($existing instanceof SubscriptionElement) {
+                $subscriptionElement = $existing;
+            }
+        }
+
         // Build our attribute set from the Stripe subscription data:
         $attributes = [
             'stripeId' => $subscription->id,
@@ -334,21 +345,22 @@ class Subscriptions extends Component
      *
      * @param string $stripeId
      * @param bool $immediately
+     * @param array|null $params Additional parameters to send to the Stripe API when cancelling the subscription
      * @return bool
      * @throws \Throwable
      * @throws \yii\db\StaleObjectException
      */
-    public function cancelSubscriptionByStripeId(string $stripeId, bool $immediately = false): bool
+    public function cancelSubscriptionByStripeId(string $stripeId, bool $immediately = false, ?array $params = null): bool
     {
         $stripe = Plugin::getInstance()->getApi()->getClient();
 
         try {
             if ($immediately) {
-                $subscription = $stripe->subscriptions->cancel($stripeId);
+                $subscription = $stripe->subscriptions->cancel($stripeId, $params);
             } else {
-                $subscription = $stripe->subscriptions->update($stripeId, [
+                $subscription = $stripe->subscriptions->update($stripeId, array_merge($params ?? [], [
                     'cancel_at_period_end' => true,
-                ]);
+                ]));
             }
             Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription($subscription);
         } catch (\Exception $exception) {
@@ -363,19 +375,20 @@ class Subscriptions extends Component
      * Resumes subscription by Stripe id.
      *
      * @param string $stripeId
+     * @param array|null $params Additional parameters to send to the Stripe API when resuming the subscription
      * @return bool
      * @throws \Throwable
      * @throws \yii\db\StaleObjectException
      * @since 1.5.0
      */
-    public function resumeSubscriptionByStripeId(string $stripeId): bool
+    public function resumeSubscriptionByStripeId(string $stripeId, ?array $params = null): bool
     {
         $stripe = Plugin::getInstance()->getApi()->getClient();
 
         try {
-            $subscription = $stripe->subscriptions->update($stripeId, [
+            $subscription = $stripe->subscriptions->update($stripeId, array_merge($params ?? [], [
                 'cancel_at_period_end' => false,
-            ]);
+            ]));
             Plugin::getInstance()->getSubscriptions()->createOrUpdateSubscription($subscription);
         } catch (\Exception $exception) {
             Craft::error($exception->getMessage(), 'stripe');

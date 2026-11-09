@@ -10,6 +10,7 @@ namespace craft\stripe\controllers;
 use Craft;
 use craft\stripe\Plugin;
 use craft\web\Controller;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response as YiiResponse;
 
 /**
@@ -21,6 +22,11 @@ class SyncController extends Controller
 {
     public function actionAll(): YiiResponse
     {
+        // user can do a full sync if they have permissions to access the sync all utility
+        if (!Craft::$app->getUser()->checkPermission('utility:stripe-sync-all')) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
+        }
+
         // TODO: This will likely time out if you have a lot of data, maybe we look to move all this into the SyncData job.
 
         Plugin::getInstance()->getProducts()->syncAllProducts();
@@ -40,6 +46,10 @@ class SyncController extends Controller
      */
     public function actionCustomer(): YiiResponse
     {
+        if (!Craft::$app->getUser()->checkPermission('accessPlugin-stripe')) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
+        }
+
         // TODO: Look to allow this to use the new SyncSingleCustomerData job in future?
 
         $stripeIds = Craft::$app->getRequest()->getRequiredParam('stripeIds');

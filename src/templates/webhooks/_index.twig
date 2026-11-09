@@ -1,9 +1,21 @@
 {% extends "_layouts/cp" %}
 {% import '_includes/forms.twig' as forms %}
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
-{% set selectedSubnavItem = 'stripeWebhooks' %}
+
+{% do view.registerTranslations('stripe', [
+    "API Version",
+    "Are you sure you want to delete this webhook?",
+    "Live Mode",
+    "No webhooks exist yet.",
+    "Status",
+    "Topic",
+    "URL",
+    "Webhook could not be deleted",
+    "Webhook deleted",
+]) %}
 
 {% set title = "Webhooks"|t('stripe') %}
+{% set selectedSubnavItem = 'stripeWebhooks' %}
 {% set notConfigured = notConfigured ?? false %}
 
 {% set navItems = {} %}

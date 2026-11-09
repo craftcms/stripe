@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
@@ -62,7 +63,7 @@ class Product extends Element
     /**
      * @var string
      */
-    public string $stripeStatus = 'active';
+    public string $stripeStatus = self::STRIPE_STATUS_ACTIVE;
 
     /**
      * @var string|null
@@ -80,10 +81,10 @@ class Product extends Element
     private NestedElementManager $_priceManager;
 
     /**
-     * @var ElementCollection<Price> Prices
+     * @var array<string, ElementCollection<Price>> Prices, indexed by a hash of the criteria used to fetch them
      * @see getPrices()
      */
-    private ElementCollection $_prices;
+    private array $_prices = [];
 
     /**
      * @var Price|null Price
@@ -131,7 +132,7 @@ class Product extends Element
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('stripe', 'stripe products');
+        return Craft::t('stripe', 'Stripe products');
     }
 
     /**
@@ -407,6 +408,23 @@ class Product extends Element
     /**
      * @inheritdoc
      */
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
+    {
+        switch ($plan->handle) {
+            case 'prices':
+                /** @var Price[] $elements */
+                $prices = ElementCollection::make($elements);
+                $cacheKey = md5(serialize($plan->criteria));
+                $this->_prices[$cacheKey] = $prices;
+                break;
+        }
+
+        parent::setEagerLoadedElements($handle, $elements, $plan);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getUriFormat(): ?string
     {
         return Plugin::getInstance()->getSettings()->productUriFormat;
@@ -460,7 +478,7 @@ class Product extends Element
      */
     public function canView(User $user): bool
     {
-        return true;
+        return Craft::$app->getUser()->checkPermission('accessPlugin-stripe');
     }
 
     /**
@@ -468,7 +486,7 @@ class Product extends Element
      */
     public function canSave(User $user): bool
     {
-        return true;
+        return Craft::$app->getUser()->checkPermission('accessPlugin-stripe');
     }
 
     /**
@@ -477,7 +495,7 @@ class Product extends Element
     public function canDelete(User $user): bool
     {
         // We normally cant delete stripe elements, but we can if we are in a draft state.
-        if ($this->getIsDraft()) {
+        if (Craft::$app->getUser()->checkPermission('accessPlugin-stripe') && $this->getIsDraft()) {
             return true;
         }
 
@@ -489,7 +507,7 @@ class Product extends Element
      */
     public function canCreateDrafts(User $user): bool
     {
-        return true;
+        return Craft::$app->getUser()->checkPermission('accessPlugin-stripe');
     }
 
     /**
@@ -621,11 +639,14 @@ class Product extends Element
     public function getStripeStatusHtml(): string
     {
         $color = match ($this->stripeStatus) {
-            'active' => 'green',
-            'archived' => 'red',
+            self::STRIPE_STATUS_ACTIVE => 'green',
+            self::STRIPE_STATUS_ARCHIVED => 'red',
             default => 'orange',
         };
-        return "<span class='status $color'></span>" . StringHelper::titleize($this->stripeStatus);
+        $stripeStatus = StringHelper::titleize(
+            implode(' ', StringHelper::toWords($this->stripeStatus, false, true))
+        );
+        return "<span class='status $color'></span>" . $stripeStatus;
     }
 
     /**
@@ -692,22 +713,24 @@ class Product extends Element
      */
     public function getPrices(array $criteria = []): ElementCollection
     {
-        if (!isset($this->_prices)) {
-            if (!$this->id) {
-                /** @var ElementCollection<Price> */
-                return ElementCollection::make();
-            }
+        if (!$this->id) {
+            /** @var ElementCollection<Price> */
+            return ElementCollection::make();
+        }
 
+        $cacheKey = md5(serialize($criteria));
+
+        if (!isset($this->_prices[$cacheKey])) {
             $query = $this->createPriceQuery();
             if (!empty($criteria)) {
                 Craft::configure($query, $criteria);
             }
             /** @var ElementCollection<int|string, Price> $prices */
             $prices = $query->collect();
-            $this->_prices = $prices;
+            $this->_prices[$cacheKey] = $prices;
         }
 
-        return $this->_prices;
+        return $this->_prices[$cacheKey];
     }
 
     /**

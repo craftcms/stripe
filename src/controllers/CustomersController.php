@@ -42,6 +42,8 @@ class CustomersController extends Controller
     public function actionIndex(?int $userId = null): Response
     {
         $this->requireCpRequest();
+        $this->requirePermission('accessPlugin-stripe');
+
         $invoicesService = Plugin::getInstance()->getInvoices();
         $paymentMethodsService = Plugin::getInstance()->getPaymentMethods();
 

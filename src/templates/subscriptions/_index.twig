@@ -1,4 +1,5 @@
 {% extends "_layouts/elementindex" %}
+{% do view.registerAssetBundle('craft\\stripe\\web\\assets\\stripecp\\StripeCpAsset') -%}
 {% set title = "Stripe Subscriptions"|t('stripe') %}
 {% set elementType = 'craft\\stripe\\elements\\Subscription' %}
 {% set canHaveDrafts = true %}

@@ -116,7 +116,8 @@ class CommerceController extends Controller
             try {
                 Craft::$app->getElements()->saveElement($stripeSubscription, false);
             } catch (\Exception $e) {
-                $t = 1;
+                // log an error and proceed to next one
+                Craft::error("Couldn't migrate subscription from Commerce to Stripe (standalone): " . $e->getMessage());
             }
         }
     }

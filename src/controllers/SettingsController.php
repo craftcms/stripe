@@ -90,6 +90,7 @@ class SettingsController extends Controller
      */
     public function actionSaveSettings(): ?Response
     {
+        $this->requirePostRequest();
         $settings = Craft::$app->getRequest()->getParam('settings');
         $routingSettings = Craft::$app->getRequest()->getParam('routingSettings');
         $plugin = Plugin::getInstance();

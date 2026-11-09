@@ -409,29 +409,39 @@ class Plugin extends BasePlugin
     private function registerUserEditScreens(): void
     {
         Event::on(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS, function(DefineEditUserScreensEvent $event) {
-            $event->screens['stripe'] = [
-                'label' => Craft::t('stripe', 'Stripe'),
-            ];
+            if (
+                !empty(Plugin::getInstance()->getApi()->getApiKey()) &&
+                Craft::$app->getUser()->checkPermission('accessPlugin-stripe')
+            ) {
+                $event->screens['stripe'] = [
+                    'label' => Craft::t('stripe', 'Stripe'),
+                ];
+            }
         });
 
         Event::on(User::class, User::EVENT_DEFINE_METADATA, function(DefineMetadataEvent $event) {
-            $event->metadata[Craft::t('stripe', 'Stripe Customer(s)')] = function() use ($event) {
-                return Html::beginTag('div') .
-                    $event->sender->getStripeCustomers()->reduce(function($carry, $item) {
-                        $carry = is_string($carry) ? $carry : '';
-                        $carry .=
-                            Html::beginTag('div') .
-                            Html::tag(
-                                'a',
-                                htmlspecialchars($item->data['name']) . ' (' . $item->stripeId . ')' . Html::tag('span', '', ['data-icon' => 'external']),
-                                ['href' => $item->getStripeEditUrl(), 'target' => '_blank']
-                            ) .
-                            Html::endTag('div');
+            if (
+                !empty(Plugin::getInstance()->getApi()->getApiKey()) &&
+                Craft::$app->getUser()->checkPermission('accessPlugin-stripe')
+            ) {
+                $event->metadata[Craft::t('stripe', 'Stripe Customer(s)')] = function() use ($event) {
+                    return Html::beginTag('div') .
+                        $event->sender->getStripeCustomers()->reduce(function($carry, $item) {
+                            $carry = is_string($carry) ? $carry : '';
+                            $carry .=
+                                Html::beginTag('div') .
+                                Html::tag(
+                                    'a',
+                                    htmlspecialchars($item->data['name']) . ' (' . $item->stripeId . ')' . Html::tag('span', '', ['data-icon' => 'external']),
+                                    ['href' => $item->getStripeEditUrl(), 'target' => '_blank']
+                                ) .
+                                Html::endTag('div');
 
-                        return $carry;
-                    }) .
-                    Html::endTag('div');
-            };
+                            return $carry;
+                        }) .
+                        Html::endTag('div');
+                };
+            }
         });
     }
 

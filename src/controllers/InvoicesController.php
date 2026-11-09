@@ -10,6 +10,7 @@ namespace craft\stripe\controllers;
 use Craft;
 use craft\db\Query;
 use craft\helpers\AdminTable;
+use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\stripe\db\Table;
 use craft\stripe\Plugin;
@@ -24,6 +25,20 @@ use yii\web\Response;
  */
 class InvoicesController extends Controller
 {
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requirePermission('accessPlugin-stripe');
+
+        return true;
+    }
+
     /**
      * Displays the invoices index page.
      *
@@ -66,10 +81,11 @@ class InvoicesController extends Controller
 
         // searching
         if ($search) {
+            $isPgsql = Craft::$app->getDb()->getIsPgsql();
             $sqlQuery->andWhere([
                 'or',
-                ['like', "stripe_invoicedata.number", $search],
-                ['like', "stripe_invoicedata.customerEmail", $search],
+                [$isPgsql ? 'ilike' : 'like', "stripe_invoicedata.number", $search],
+                [$isPgsql ? 'ilike' : 'like', "stripe_invoicedata.customerEmail", $search],
             ]);
         }
 
@@ -125,7 +141,7 @@ class InvoicesController extends Controller
                 }
 
                 $field = Craft::$app->getDb()->getQueryBuilder()->jsonExtract('data', [$fieldName]);
-                if ($cast) {
+                if ($cast && $cast = Db::parseColumnType($cast)) {
                     $field = 'CAST(' . $field . ' AS ' . $cast . ')';
                 }
             }
