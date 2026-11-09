@@ -15,7 +15,7 @@ use Stripe\Customer as StripeCustomer;
 /**
  * Syncs Stripe customers, and finds them by email.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 #[Singleton]
 class Customers

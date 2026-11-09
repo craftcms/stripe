@@ -10,7 +10,7 @@ use Stripe\Product as StripeProduct;
 /**
  * Fired after a Stripe product is synced to its element.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class ProductSynced
 {

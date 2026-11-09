@@ -22,7 +22,7 @@ use function CraftCms\Cms\t;
 /**
  * Syncs data from Stripe on request.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class SyncController
 {

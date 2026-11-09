@@ -14,7 +14,7 @@ use Stripe\Invoice as StripeInvoice;
 /**
  * Syncs Stripe invoices, and finds them by customer.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 #[Singleton]
 class Invoices

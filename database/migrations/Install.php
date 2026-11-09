@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Creates the same tables as Stripe 1.x, so a 1.x install upgrades without a schema change.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class Install extends Migration
 {

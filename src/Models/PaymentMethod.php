@@ -15,7 +15,7 @@ use CraftCms\Stripe\Database\Table;
  * @property string $stripeId
  * @property array<string, mixed> $data
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class PaymentMethod extends BaseModel
 {

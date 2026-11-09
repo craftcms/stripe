@@ -15,7 +15,7 @@ use Twig\TwigFunction;
 /**
  * Price filters, and the `stripeCheckoutUrl()` function.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class Extension extends AbstractExtension
 {

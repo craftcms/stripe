@@ -33,7 +33,7 @@ use function CraftCms\Cms\t;
 /**
  * The plugin settings, with the product, price and subscription field layouts.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class SettingsController
 {

@@ -64,7 +64,7 @@ use function CraftCms\Cms\t;
  */
 class Plugin extends BasePlugin
 {
-    public string $schemaVersion = '3.0.0';
+    public string $schemaVersion = '2.0.0';
 
     public string $minVersionRequired = '1.0.0';
 

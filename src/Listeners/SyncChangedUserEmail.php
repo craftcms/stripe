@@ -17,7 +17,7 @@ use Stripe\Exception\ApiErrorException;
 /**
  * Sends a user’s changed email to their Stripe customers.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 readonly class SyncChangedUserEmail
 {

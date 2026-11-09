@@ -14,7 +14,7 @@ use Stripe\PaymentMethod as StripePaymentMethod;
 /**
  * Syncs the payment methods of Stripe customers that belong to Craft users.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 #[Singleton]
 class PaymentMethods

@@ -11,7 +11,7 @@ use CraftCms\Stripe\Database\Table;
 /**
  * A synced Stripe product’s API object.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class ProductData extends BaseModel
 {

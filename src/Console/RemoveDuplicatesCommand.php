@@ -19,7 +19,7 @@ use function Laravel\Prompts\select;
  *
  * Keeps the most recently updated one, or asks which to keep when their custom field values differ.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class RemoveDuplicatesCommand extends Command
 {

@@ -11,7 +11,7 @@ use CraftCms\Stripe\Elements\Conditions\HasStripeCustomerConditionRule;
 /**
  * Adds the “Has Stripe Customer” rule to user conditions.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class AddUserConditionRules
 {

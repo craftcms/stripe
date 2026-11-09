@@ -1,6 +1,6 @@
-# Upgrading to Stripe 3.0 (Craft 6)
+# Upgrading to Stripe 2.0 (Craft 6)
 
-Stripe 3.0 is a native Craft 6 plugin. This guide lists what changed from 1.x and what to update in your project.
+Stripe 2.0 is a native Craft 6 plugin. This guide lists what changed from 1.x and what to update in your project.
 
 ## Requirements
 
@@ -10,9 +10,9 @@ Stripe 3.0 is a native Craft 6 plugin. This guide lists what changed from 1.x an
 
 ## Upgrade steps
 
-1. If you still need to move subscriptions over from Craft Commerce, run `craft stripe/commerce/migrate` with Stripe 1.x on Craft 5 first. Stripe 3.0 doesn’t include that command.
+1. If you still need to move subscriptions over from Craft Commerce, run `craft stripe/commerce/migrate` with Stripe 1.x on Craft 5 first. Stripe 2.0 doesn’t include that command.
 2. Upgrade your project to Craft 6.
-3. Update the plugin: `composer require craftcms/stripe:^3.0`.
+3. Update the plugin: `composer require craftcms/stripe:^2.0`.
 4. Run `php artisan craft:up`. It runs the plugin’s migration, which replaces the `craft\stripe\*` class names stored in the database and project config.
 5. Move `config/stripe.php`, if you have one, to `config/craft/stripe.php`.
 6. Update your PHP code as described below. Twig templates keep working unchanged.

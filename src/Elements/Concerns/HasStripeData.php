@@ -10,7 +10,7 @@ use CraftCms\Cms\Support\Json;
 /**
  * The Stripe API object an element was synced from.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 trait HasStripeData
 {

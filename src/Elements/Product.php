@@ -35,7 +35,7 @@ use function CraftCms\Cms\t;
 /**
  * A Stripe product, synced from Stripe.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class Product extends Element
 {

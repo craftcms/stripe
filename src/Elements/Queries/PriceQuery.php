@@ -25,7 +25,7 @@ use Override;
  *
  * @implements NestedElementQueryInterface<Price>
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class PriceQuery extends ElementQuery implements NestedElementQueryInterface
 {

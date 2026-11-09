@@ -20,7 +20,7 @@ use Override;
  *
  * @extends ElementQuery<Product>
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class ProductQuery extends ElementQuery
 {

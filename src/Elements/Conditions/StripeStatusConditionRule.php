@@ -21,7 +21,7 @@ use function CraftCms\Cms\t;
 /**
  * Filters products and prices by their status in Stripe.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class StripeStatusConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {

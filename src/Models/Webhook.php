@@ -14,7 +14,7 @@ use CraftCms\Stripe\Database\Table;
  * @property string $webhookId
  * @property string $webhookSigningSecret
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class Webhook extends BaseModel
 {

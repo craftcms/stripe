@@ -19,7 +19,7 @@ use Override;
 /**
  * Syncs data from Stripe.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class SyncCommand extends Command
 {

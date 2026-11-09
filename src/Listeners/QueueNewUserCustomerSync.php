@@ -15,7 +15,7 @@ use Throwable;
 /**
  * Queues a sync of the Stripe customers that have a saved user’s email, when none are synced yet.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 readonly class QueueNewUserCustomerSync
 {

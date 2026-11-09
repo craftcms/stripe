@@ -15,7 +15,7 @@ use CraftCms\Stripe\Database\Table;
  * @property \DateTimeInterface|string|null $dateCreated
  * @property \DateTimeInterface|string|null $dateUpdated
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class Subscription extends BaseModel
 {

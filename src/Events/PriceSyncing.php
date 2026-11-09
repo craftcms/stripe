@@ -11,7 +11,7 @@ use Stripe\Price as StripePrice;
 /**
  * Fired before a Stripe price is synced to its element. Set `$isValid` to `false` to skip it.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class PriceSyncing
 {

@@ -16,7 +16,7 @@ use function CraftCms\Cms\currentUserElement;
 /**
  * Starts Stripe customer portal sessions.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 #[Singleton]
 class BillingPortal

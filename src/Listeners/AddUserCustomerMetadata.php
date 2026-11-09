@@ -18,7 +18,7 @@ use function CraftCms\Cms\t;
 /**
  * Lists a user’s Stripe customers in their metadata, linked to the Stripe Dashboard.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 readonly class AddUserCustomerMetadata
 {

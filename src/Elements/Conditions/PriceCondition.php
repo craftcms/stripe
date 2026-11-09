@@ -10,7 +10,7 @@ use Override;
 /**
  * The condition for Stripe price queries and element indexes.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class PriceCondition extends ElementCondition
 {

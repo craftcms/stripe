@@ -32,7 +32,7 @@ use function CraftCms\Cms\t;
 /**
  * A Stripe price, synced from Stripe and owned by its product.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class Price extends Element implements NestedElementInterface
 {

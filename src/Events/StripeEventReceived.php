@@ -9,7 +9,7 @@ use Stripe\Event;
 /**
  * Fired for every verified Stripe webhook event, after the plugin has handled it.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class StripeEventReceived
 {

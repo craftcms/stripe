@@ -12,7 +12,7 @@ use function CraftCms\Cms\t;
 /**
  * The columns and rows of invoice tables, on the Invoices screen and the user screen.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class InvoiceTable
 {

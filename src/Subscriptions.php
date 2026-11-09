@@ -23,7 +23,7 @@ use Throwable;
 /**
  * Syncs Stripe subscriptions to subscription elements, and cancels or resumes them.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 #[Singleton]
 class Subscriptions

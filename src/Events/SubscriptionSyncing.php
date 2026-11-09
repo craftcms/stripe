@@ -11,7 +11,7 @@ use Stripe\Subscription as StripeSubscription;
 /**
  * Fired before a Stripe subscription is synced to its element. Set `$isValid` to `false` to skip it.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class SubscriptionSyncing
 {

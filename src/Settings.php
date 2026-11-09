@@ -9,7 +9,7 @@ use CraftCms\Cms\Plugin\PluginSettings;
 /**
  * Stripe settings, stored in project config or set from `config/craft/stripe.php`.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class Settings extends PluginSettings
 {

@@ -10,7 +10,7 @@ use Stripe\Subscription as StripeSubscription;
 /**
  * Fired after a Stripe subscription is synced to its element.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class SubscriptionSynced
 {

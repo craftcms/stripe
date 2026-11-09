@@ -16,7 +16,7 @@ use Throwable;
 /**
  * Registers the Stripe webhook endpoint, and syncs the objects its events are about.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 #[Singleton]
 class Webhooks

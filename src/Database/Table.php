@@ -7,7 +7,7 @@ namespace CraftCms\Stripe\Database;
 /**
  * The Stripe plugin’s database table names.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 final class Table
 {

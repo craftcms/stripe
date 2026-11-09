@@ -17,7 +17,7 @@ use function CraftCms\Cms\t;
 /**
  * Starts a Stripe Checkout session from a front-end form, and redirects to it.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class CheckoutController
 {

@@ -20,7 +20,7 @@
     "email": "support@craftcms.com",
     "issues": "https://github.com/craftcms/stripe/issues?state=open",
     "source": "https://github.com/craftcms/stripe",
-    "docs": "https://github.com/craftcms/stripe/blob/3.x/README.md",
+    "docs": "https://github.com/craftcms/stripe/blob/2.x/README.md",
     "rss": "https://github.com/craftcms/stripe/releases.atom"
   },
   "require": {
@@ -53,7 +53,7 @@
     "name": "Stripe",
     "description": "Sync and extend Stripe products and subscriptions.",
     "developer": "Pixel & Tonic",
-    "documentationUrl": "https://github.com/craftcms/stripe/blob/3.x/README.md"
+    "documentationUrl": "https://github.com/craftcms/stripe/blob/2.x/README.md"
   },
   "scripts": {
     "check-cs": "pint --test",

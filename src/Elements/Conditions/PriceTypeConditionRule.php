@@ -21,7 +21,7 @@ use function CraftCms\Cms\t;
 /**
  * Filters prices by whether they’re one-time or recurring.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class PriceTypeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {

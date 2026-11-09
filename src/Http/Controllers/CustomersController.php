@@ -24,7 +24,7 @@ use function CraftCms\Cms\t;
 /**
  * The Stripe screen of the Edit User page: the user’s customers, subscriptions, invoices and payment methods.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 readonly class CustomersController
 {

@@ -18,7 +18,7 @@ use Stripe\Product as StripeProduct;
 /**
  * Syncs Stripe products to product elements.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 #[Singleton]
 class Products

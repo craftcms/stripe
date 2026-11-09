@@ -19,7 +19,7 @@ use Override;
 /**
  * Deletes the synced Stripe data from Craft. Stripe itself is unaffected.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class ResetDataCommand extends Command
 {

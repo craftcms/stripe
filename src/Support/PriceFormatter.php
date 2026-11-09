@@ -13,7 +13,7 @@ use function CraftCms\Cms\t;
  *
  * Each method takes a Stripe price as an array or `Stripe\Price`, or a price element’s `data`.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 final class PriceFormatter
 {

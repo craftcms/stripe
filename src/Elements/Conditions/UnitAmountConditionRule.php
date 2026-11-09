@@ -20,7 +20,7 @@ use function CraftCms\Cms\t;
 /**
  * Filters prices by their unit amount, in the currency’s smallest unit.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class UnitAmountConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {

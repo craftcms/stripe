@@ -18,7 +18,7 @@ use CraftCms\Stripe\Database\Table;
  * @property CarbonInterface $stripeCreated
  * @property array<string, mixed> $data
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class Customer extends BaseModel
 {

@@ -31,7 +31,7 @@ use function CraftCms\Cms\t;
 /**
  * Receives Stripe webhook events, and manages the webhook endpoint.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class WebhooksController
 {

@@ -14,7 +14,7 @@ use function CraftCms\Cms\t;
 /**
  * Adds “Sync from Stripe” to a user’s action menu.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 readonly class AddUserSyncAction
 {

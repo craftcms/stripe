@@ -20,7 +20,7 @@ use Stripe\Price as StripePrice;
 /**
  * Syncs Stripe prices to price elements.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 #[Singleton]
 class Prices

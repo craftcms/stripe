@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Date;
  * Helpers for query params on the columns generated from Stripe objects: JSON lists, such as a price’s
  * currencies, and Unix timestamps, such as a subscription’s current period end.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 final class QueryParams
 {

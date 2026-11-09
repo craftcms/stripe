@@ -17,7 +17,7 @@ use function CraftCms\Cms\t;
 /**
  * Syncs a Stripe customer, with their subscriptions, invoices and payment methods.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class SyncCustomerData extends Job
 {

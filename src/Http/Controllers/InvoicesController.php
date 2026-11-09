@@ -19,7 +19,7 @@ use function CraftCms\Cms\t;
 /**
  * Lists the synced invoices.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class InvoicesController
 {

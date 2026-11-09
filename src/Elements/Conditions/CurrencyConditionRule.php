@@ -20,7 +20,7 @@ use function CraftCms\Cms\t;
 /**
  * Filters prices by their primary currency.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class CurrencyConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {

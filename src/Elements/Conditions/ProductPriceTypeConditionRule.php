@@ -18,7 +18,7 @@ use function CraftCms\Cms\t;
 /**
  * Filters products by the types of their prices.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class ProductPriceTypeConditionRule extends PriceTypeConditionRule
 {

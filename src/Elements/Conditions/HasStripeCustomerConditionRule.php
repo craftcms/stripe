@@ -23,7 +23,7 @@ use function CraftCms\Cms\t;
 /**
  * Filters users by whether their email belongs to a Stripe customer.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class HasStripeCustomerConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {

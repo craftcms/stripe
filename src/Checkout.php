@@ -18,7 +18,7 @@ use function CraftCms\Cms\currentUserElement;
 /**
  * Starts Stripe Checkout sessions.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 #[Singleton]
 class Checkout

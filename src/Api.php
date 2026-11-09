@@ -28,7 +28,7 @@ use Throwable;
 /**
  * Talks to the Stripe API.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 #[Singleton]
 class Api

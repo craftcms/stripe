@@ -10,7 +10,7 @@ use CraftCms\Stripe\Elements\Price;
 use Override;
 
 /**
- * @since 3.0.0
+ * @since 2.0.0
  */
 class ResavePricesCommand extends ResaveCommand
 {

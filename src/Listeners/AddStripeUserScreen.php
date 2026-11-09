@@ -13,7 +13,7 @@ use function CraftCms\Cms\t;
 /**
  * Adds a Stripe screen to the Edit User page.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 readonly class AddStripeUserScreen
 {

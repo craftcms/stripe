@@ -15,7 +15,7 @@ use function CraftCms\Cms\t;
 /**
  * Cancels and resumes subscriptions from the control panel.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class SubscriptionsController
 {

@@ -20,7 +20,7 @@ use Illuminate\Container\Attributes\Singleton;
  *
  * The paths are the same as in Stripe 1.x, so existing layouts carry over.
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 #[Singleton]
 class FieldLayouts

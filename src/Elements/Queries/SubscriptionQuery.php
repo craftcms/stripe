@@ -25,7 +25,7 @@ use Override;
  *
  * @extends ElementQuery<Subscription>
  *
- * @since 3.0.0
+ * @since 2.0.0
  */
 class SubscriptionQuery extends ElementQuery
 {
