@@ -3,6 +3,8 @@ includes:
 
 parameters:
     level: 4
+    bootstrapFiles:
+        - stubs/macros.php
     paths:
         - src
         - routes
