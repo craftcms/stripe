@@ -5,54 +5,72 @@
   "keywords": [
     "cms",
     "craftcms",
+    "laravel",
     "stripe"
   ],
   "homepage": "https://github.com/craftcms/stripe",
   "license": "MIT",
+  "authors": [
+    {
+      "name": "Pixel & Tonic",
+      "homepage": "https://pixelandtonic.com/"
+    }
+  ],
   "support": {
     "email": "support@craftcms.com",
     "issues": "https://github.com/craftcms/stripe/issues?state=open",
     "source": "https://github.com/craftcms/stripe",
-    "docs": "https://github.com/craftcms/stripe",
+    "docs": "https://github.com/craftcms/stripe/blob/2.x/README.md",
     "rss": "https://github.com/craftcms/stripe/releases.atom"
   },
-  "minimum-stability": "dev",
-  "prefer-stable": true,
   "require": {
-    "php": "^8.2",
-    "craftcms/cms": "^5.6.0",
+    "php": "^8.5",
+    "craftcms/cms": "^6.0.0-beta.1",
     "stripe/stripe-php": "^13|^14"
   },
   "require-dev": {
-    "craftcms/feed-me": "^6.6.1",
-    "craftcms/commerce": "^5.0.0-beta.3",
-    "craftcms/ecs": "dev-main",
-    "craftcms/phpstan": "dev-main",
-    "craftcms/rector": "dev-main",
-    "vlucas/phpdotenv": "^5.4.1"
+    "larastan/larastan": "^3.13",
+    "laravel/pint": "^1.22",
+    "orchestra/testbench": "^11.0",
+    "pestphp/pest": "^5.0",
+    "pestphp/pest-plugin-laravel": "^5.0",
+    "phpstan/phpstan": "^2.1"
   },
   "autoload": {
     "psr-4": {
-      "craft\\stripe\\": "src/"
+      "CraftCms\\Stripe\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "CraftCms\\Stripe\\Tests\\": "tests/",
+      "CraftCms\\Cms\\Database\\Factories\\": "vendor/craftcms/cms/database/Factories/"
     }
   },
   "extra": {
+    "class": "CraftCms\\Stripe\\Plugin",
     "handle": "stripe",
     "name": "Stripe",
     "description": "Sync and extend Stripe products and subscriptions.",
     "developer": "Pixel & Tonic",
-    "documentationUrl": "https://github.com/craftcms/stripe"
+    "documentationUrl": "https://github.com/craftcms/stripe/blob/2.x/README.md"
   },
   "scripts": {
-    "check-cs": "ecs check --ansi",
-    "fix-cs": "ecs check --ansi --fix",
-    "phpstan": "phpstan --memory-limit=1G"
+    "check-cs": "pint --test",
+    "fix-cs": "pint",
+    "phpstan": "phpstan --memory-limit=1G",
+    "test": "pest"
   },
   "config": {
+    "platform": {
+      "php": "8.5"
+    },
     "sort-packages": true,
     "allow-plugins": {
-      "yiisoft/yii2-composer": true,
-      "craftcms/plugin-installer": true
+      "craftcms/plugin-installer": true,
+      "pestphp/pest-plugin": true
     }
-  }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }
