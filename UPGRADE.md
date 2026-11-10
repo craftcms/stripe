@@ -124,7 +124,7 @@ Event::listen(function (ProductSyncing $event) {
 
 | Before | After |
 | --- | --- |
-| `craft stripe/sync/all` | `php artisan stripe:sync` |
+| `craft stripe/sync/all` | `php artisan stripe:sync all` |
 | `craft stripe/sync/products-and-prices` | `php artisan stripe:sync products-and-prices` |
 | `craft stripe/sync/subscriptions` | `php artisan stripe:sync subscriptions` |
 | `craft stripe/sync/customers` | `php artisan stripe:sync customers` |

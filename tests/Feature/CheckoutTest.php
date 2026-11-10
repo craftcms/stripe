@@ -10,7 +10,7 @@ use function Pest\Laravel\actingAs;
 beforeEach(function () {
     // Solo only allows the one admin account
     Edition::set(Edition::Pro);
-    $this->artisan('stripe:sync')->assertSuccessful();
+    $this->artisan('stripe:sync', ['type' => 'all'])->assertSuccessful();
 });
 
 it('picks the checkout mode from the line items’ prices', function (array $prices, string $mode) {

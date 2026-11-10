@@ -20,7 +20,7 @@ use CraftCms\Stripe\Elements\Product;
 
 beforeEach(function () {
     $this->stripe->state['products']['prod_ebook']['active'] = false;
-    $this->artisan('stripe:sync')->assertSuccessful();
+    $this->artisan('stripe:sync', ['type' => 'all'])->assertSuccessful();
 });
 
 /**

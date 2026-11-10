@@ -7,7 +7,9 @@ use CraftCms\Stripe\Elements\Product;
 use CraftCms\Stripe\Elements\Subscription;
 
 it('syncs products, prices and subscriptions from Stripe', function () {
-    $this->artisan('stripe:sync')->assertSuccessful();
+    $this->artisan('stripe:sync')
+        ->expectsChoice('What do you want to sync?', 'all', ['all', 'products-and-prices', 'subscriptions', 'customers', 'payment-methods', 'invoices', 'Everything', 'Products and prices', 'Subscriptions', 'Customers', 'Payment methods', 'Invoices'])
+        ->assertSuccessful();
 
     $products = Product::find()->status(null)->orderBy('title')->collect();
     expect($products->pluck('stripeId')->all())->toBe(['prod_basic', 'prod_ebook', 'prod_pro'])
@@ -23,7 +25,7 @@ it('syncs products, prices and subscriptions from Stripe', function () {
 });
 
 it('filters synced elements with the Craft 5 query params', function () {
-    $this->artisan('stripe:sync')->assertSuccessful();
+    $this->artisan('stripe:sync', ['type' => 'all'])->assertSuccessful();
 
     expect(Product::find()->hasPrice(['type' => 'one_time'])->collect()->pluck('stripeId')->all())->toBe(['prod_ebook'])
         ->and(Price::find()->stripeProductId('prod_pro')->collect()->pluck('stripeId')->all())->toBe(['price_pro_monthly'])
@@ -32,7 +34,7 @@ it('filters synced elements with the Craft 5 query params', function () {
 });
 
 it('reads the billing period from the subscription items', function () {
-    $this->artisan('stripe:sync')->assertSuccessful();
+    $this->artisan('stripe:sync', ['type' => 'all'])->assertSuccessful();
 
     // The fixture's period runs from 2026-01-01 to 2026-02-01 UTC, on its only item
     expect(Subscription::find()->one()->getCurrentPeriodEnd())->toBe(1769904000)

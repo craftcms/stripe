@@ -12,9 +12,10 @@ use CraftCms\Stripe\Models\Customer;
 use CraftCms\Stripe\Models\Invoice;
 use CraftCms\Stripe\Models\PaymentMethod;
 use Illuminate\Console\Command;
-use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\DB;
 use Override;
+
+use function Laravel\Prompts\confirm;
 
 /**
  * Deletes the synced Stripe data from Craft. Stripe itself is unaffected.
@@ -23,7 +24,6 @@ use Override;
  */
 class ResetDataCommand extends Command
 {
-    use ConfirmableTrait;
     use CraftCommand;
 
     #[Override]
@@ -34,7 +34,13 @@ class ResetDataCommand extends Command
 
     public function handle(): int
     {
-        if (! $this->confirmToProceed('This permanently deletes all synced Stripe data from Craft. (Data in Stripe will not be affected.)', fn () => true)) {
+        if (! $this->option('force') && ! confirm(
+            label: 'Delete all synced Stripe data from Craft?',
+            default: false,
+            hint: 'Data in Stripe isn’t affected. Run `php artisan stripe:sync` to sync it again.',
+        )) {
+            $this->components->warn('Aborted. Pass --force to reset without asking.');
+
             return self::SUCCESS;
         }
 

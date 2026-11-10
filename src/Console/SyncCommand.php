@@ -16,6 +16,8 @@ use CraftCms\Stripe\Subscriptions;
 use Illuminate\Console\Command;
 use Override;
 
+use function Laravel\Prompts\select;
+
 /**
  * Syncs data from Stripe.
  *
@@ -29,7 +31,7 @@ class SyncCommand extends Command
 
     #[Override]
     protected $signature = 'stripe:sync
-        {type=all : What to sync: all, products-and-prices, subscriptions, customers, payment-methods or invoices.}
+        {type? : What to sync: all, products-and-prices, subscriptions, customers, payment-methods or invoices. Asks when run interactively, otherwise defaults to all.}
         {--customer= : A Stripe customer ID, to sync only that customer, with their subscriptions, invoices and payment methods.}';
 
     #[Override]
@@ -49,7 +51,18 @@ class SyncCommand extends Command
             return self::SUCCESS;
         }
 
-        $type = $this->argument('type');
+        $type = $this->argument('type') ?? ($this->input->isInteractive() ? select(
+            label: 'What do you want to sync?',
+            options: [
+                'all' => 'Everything',
+                'products-and-prices' => 'Products and prices',
+                'subscriptions' => 'Subscriptions',
+                'customers' => 'Customers',
+                'payment-methods' => 'Payment methods',
+                'invoices' => 'Invoices',
+            ],
+            default: 'all',
+        ) : 'all');
 
         if (! in_array($type, self::TYPES, true)) {
             $this->components->error(sprintf('Unknown type “%s”. Use one of: %s.', $type, implode(', ', self::TYPES)));

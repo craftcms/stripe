@@ -10,6 +10,7 @@
 - The plugin’s classes moved to the `CraftCms\Stripe` namespace. A migration updates the class names stored in the database and project config. See [UPGRADE.md](UPGRADE.md).
 - Plugin settings are now read from `config/craft/stripe.php`.
 - Console commands are now Artisan commands: `stripe:sync`, `stripe:reset-data`, `stripe:remove-duplicates`, and `craft:resave:stripe-products`, `craft:resave:stripe-prices` and `craft:resave:stripe-subscriptions`.
+- `stripe:sync` now asks what to sync when run interactively without a type. Non-interactive runs still sync everything.
 - Plugin events are now Laravel events, such as `CraftCms\Stripe\Events\ProductSyncing` and `CraftCms\Stripe\Events\CheckoutSessionCreating`.
 - Plugin services are now resolved from the container, such as `app(CraftCms\Stripe\Subscriptions::class)`.
 - Updated Stripe API version from `2024-04-10` to `2026-01-28.clover`.

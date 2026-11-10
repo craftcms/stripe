@@ -395,10 +395,10 @@ To view all available console commands, run `php artisan list stripe`.
 
 #### Atomic Synchronization
 
-You can synchronize _everything_ at once…
+Run `php artisan stripe:sync` and pick what to synchronize. Pass `all` to synchronize _everything_ at once without being asked (non-interactive runs, like cron jobs, do this by default)…
 
 ```bash
-php artisan stripe:sync
+php artisan stripe:sync all
 ```
 
 …or just pull in slices of it:

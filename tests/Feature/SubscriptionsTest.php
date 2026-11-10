@@ -6,7 +6,7 @@ use CraftCms\Stripe\Elements\Subscription;
 use CraftCms\Stripe\Subscriptions;
 
 beforeEach(function () {
-    $this->artisan('stripe:sync')->assertSuccessful();
+    $this->artisan('stripe:sync', ['type' => 'all'])->assertSuccessful();
 });
 
 it('cancels a subscription at the end of its period, then resumes it', function () {
