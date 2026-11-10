@@ -106,6 +106,7 @@ class SettingsController
         return new CpScreenResponse()
             ->title(t('Stripe Settings', category: 'stripe'))
             ->selectedSubnavItem('stripe/settings')
+            ->redirectUrl('stripe/settings')
             ->ui($ui, new UiContext(
                 values: $values,
                 mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
