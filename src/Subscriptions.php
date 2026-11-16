@@ -83,7 +83,7 @@ class Subscriptions
      */
     public function createOrUpdateSubscription(StripeSubscription $subscription, ?Subscription $element = null): bool
     {
-        return Cache::lock("stripe-subscription:$subscription->id", 15)->block(15, function () use ($subscription, $element) {
+        $element = Cache::lock("stripe-subscription:$subscription->id")->block(15, function () use ($subscription, $element) {
             // Another process may have created the element while this one waited for the lock
             $element = Subscription::find()->stripeId($subscription->id)->status(null)->one() ?? $element ?? new Subscription;
 
@@ -133,10 +133,16 @@ class Subscriptions
                 $this->ensureUser($subscription);
             }
 
-            event(new SubscriptionSynced($element, $subscription));
-
-            return true;
+            return $element;
         });
+
+        if (! $element) {
+            return false;
+        }
+
+        event(new SubscriptionSynced($element, $subscription));
+
+        return true;
     }
 
     public function deleteSubscriptionByStripeId(string $stripeId): void

@@ -66,7 +66,7 @@ class Plugin extends BasePlugin
 {
     public string $schemaVersion = '2.0.0';
 
-    public string $minVersionRequired = '1.0.0';
+    public string $minVersionRequired = '1.8.1';
 
     public bool $hasCpSection = true;
 

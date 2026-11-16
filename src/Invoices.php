@@ -66,7 +66,7 @@ class Invoices
 
     public function createOrUpdateInvoice(StripeInvoice $invoice): bool
     {
-        return Cache::lock("stripe-invoice:$invoice->id", 15)->block(15, fn () => Invoice::updateOrCreate(
+        return Cache::lock("stripe-invoice:$invoice->id")->block(15, fn () => Invoice::updateOrCreate(
             ['stripeId' => $invoice->id],
             ['data' => $invoice->toArray()],
         )->exists);

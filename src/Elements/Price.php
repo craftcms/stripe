@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Stripe\Elements;
 
+use CraftCms\Cms\Cp\Components\InputCopy;
 use CraftCms\Cms\Database\Table as CraftTable;
 use CraftCms\Cms\Element\Concerns\NestedElement;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -291,7 +292,7 @@ class Price extends Element implements NestedElementInterface
         $data = $this->getData();
 
         return [
-            t('Stripe ID', category: 'stripe') => Html::tag('code', e((string) $this->stripeId)),
+            t('Stripe ID', category: 'stripe') => InputCopy::make()->id('stripe-price-stripeId')->value((string) $this->stripeId)->monospace()->toHtml(),
             t('Stripe Status', category: 'stripe') => $this->getStripeStatusHtml(),
             t('Product', category: 'stripe') => fn () => $this->getProduct()?->title !== null ? e($this->getProduct()->title) : false,
             t('Unit Price', category: 'stripe') => $data !== [] ? e($this->unitPrice()) : false,

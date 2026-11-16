@@ -12,6 +12,7 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\Combobox;
 use CraftCms\Cms\Ui\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\Text;
@@ -79,7 +80,8 @@ class SettingsController
                     ->instructions(t('Your Stripe secret API key, or an environment variable that holds it.', category: 'stripe'))
                     ->required(),
                 Field::make(t('Publishable Key', category: 'stripe'), Text::make('publishableKey')->monospace()->textExpanderTriggers($envTriggers))
-                    ->instructions(t('Your Stripe publishable API key, or an environment variable that holds it.', category: 'stripe')),
+                    ->instructions(t('Your Stripe publishable API key, or an environment variable that holds it.', category: 'stripe'))
+                    ->required(),
                 Field::make(t('Default Checkout Success URL', category: 'stripe'), Text::make('defaultSuccessUrl'))
                     ->instructions(t('Where Checkout sends customers after a successful payment, unless the checkout request names a URL.', category: 'stripe')),
                 Field::make(t('Default Checkout Cancel URL', category: 'stripe'), Text::make('defaultCancelUrl'))
@@ -91,7 +93,9 @@ class SettingsController
             Tab::make('products', t('Products', category: 'stripe'), [
                 Field::make(t('Product URI Format', category: 'stripe'), Text::make('productUriFormat')->monospace())
                     ->instructions(t('What product URIs should look like, such as `products/{slug}`. Leave it blank if products don’t have URLs.', category: 'stripe')),
-                Field::make(t('Product Template', category: 'stripe'), Text::make('productTemplate')->monospace())
+                Field::make(t('Product Template', category: 'stripe'), Combobox::make('productTemplate')
+                    ->options(SelectOptions::getTemplateSuggestions())
+                    ->showAllOnEmpty())
                     ->instructions(t('The template that renders product pages.', category: 'stripe')),
                 $layoutDesigner(Product::class),
             ]),

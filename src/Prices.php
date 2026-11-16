@@ -52,7 +52,7 @@ class Prices
      */
     public function createOrUpdatePrice(StripePrice $price): bool
     {
-        return Cache::lock("stripe-price:$price->id", 15)->block(15, function () use ($price) {
+        $element = Cache::lock("stripe-price:$price->id")->block(15, function () use ($price) {
             $element = Price::find()->stripeId($price->id)->status(null)->one() ?? new Price;
             $data = $price->toArray();
 
@@ -96,10 +96,16 @@ class Prices
                 'currencies' => $attributes['currencies'] ? Json::encode($attributes['currencies']) : null,
             ]);
 
-            event(new PriceSynced($element, $price));
-
-            return true;
+            return $element;
         });
+
+        if (! $element) {
+            return false;
+        }
+
+        event(new PriceSynced($element, $price));
+
+        return true;
     }
 
     public function getPriceByStripeId(string $stripeId): ?Price

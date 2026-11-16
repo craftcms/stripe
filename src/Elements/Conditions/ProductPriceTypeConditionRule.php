@@ -37,7 +37,7 @@ class ProductPriceTypeConditionRule extends PriceTypeConditionRule
     #[Override]
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        ProductQuery::applyHasPrice($query, ['type' => $this->paramValue(), 'status' => null]);
+        ProductQuery::applyHasPrice($query, ['type' => $this->paramValue()]);
     }
 
     #[Override]

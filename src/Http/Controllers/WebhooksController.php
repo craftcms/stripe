@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Stripe\Http\Controllers;
 
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Html;
@@ -98,9 +99,11 @@ class WebhooksController
             $nodes[] = TemplateContent::make('register', $this->actionButton('stripe/webhooks/create', t('Register webhook', category: 'stripe')))->trusted();
         }
 
-        $nodes[] = Field::make(t('Webhook ID', category: 'stripe'), Text::make('webhookId')->monospace())
+        $envTriggers = SelectOptions::getEnvTextExpanderTriggers(true);
+
+        $nodes[] = Field::make(t('Webhook ID', category: 'stripe'), Text::make('webhookId')->monospace()->textExpanderTriggers($envTriggers))
             ->instructions(t('The ID of the webhook endpoint in Stripe, or an environment variable that holds it.', category: 'stripe'));
-        $nodes[] = Field::make(t('Webhook Signing Secret', category: 'stripe'), Text::make('webhookSigningSecret')->monospace())
+        $nodes[] = Field::make(t('Webhook Signing Secret', category: 'stripe'), Text::make('webhookSigningSecret')->monospace()->textExpanderTriggers($envTriggers))
             ->instructions(t('The endpoint’s signing secret, or an environment variable that holds it.', category: 'stripe'))
             ->required();
 

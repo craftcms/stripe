@@ -50,7 +50,7 @@ class Products
      */
     public function createOrUpdateProduct(StripeProduct $product): bool
     {
-        return Cache::lock("stripe-product:$product->id", 15)->block(15, function () use ($product) {
+        $element = Cache::lock("stripe-product:$product->id")->block(15, function () use ($product) {
             $element = Product::find()->stripeId($product->id)->status(null)->one() ?? new Product;
 
             $attributes = [
@@ -81,10 +81,16 @@ class Products
                 'data' => $attributes['data'],
             ]);
 
-            event(new ProductSynced($element, $product));
-
-            return true;
+            return $element;
         });
+
+        if (! $element) {
+            return false;
+        }
+
+        event(new ProductSynced($element, $product));
+
+        return true;
     }
 
     /**

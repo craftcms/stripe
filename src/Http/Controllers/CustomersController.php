@@ -49,12 +49,12 @@ readonly class CustomersController
             ->columns([
                 ['key' => 'name', 'label' => t('Name', category: 'stripe')],
                 ['key' => 'email', 'label' => t('Email', category: 'stripe')],
-                ['key' => 'id', 'label' => t('Stripe ID', category: 'stripe')],
+                ['key' => 'stripeId', 'label' => t('Stripe ID', category: 'stripe')],
             ])
             ->rows(array_map(fn (Customer $customer) => [
                 'name' => $customer->getData()['name'] ?? '',
                 'email' => $customer->email,
-                'id' => ['label' => $customer->stripeId, 'url' => $customer->getStripeEditUrl()],
+                'stripeId' => ['label' => $customer->stripeId, 'url' => $customer->getStripeEditUrl()],
             ], array_values($this->customers->getCustomersByEmail($user->email))))
             ->emptyMessage(t('No Stripe customers have this user’s email.', category: 'stripe'));
 
@@ -81,7 +81,7 @@ readonly class CustomersController
 
         $paymentMethods = Table::make('stripe-payment-methods')
             ->columns([
-                ['key' => 'id', 'label' => t('Stripe ID', category: 'stripe')],
+                ['key' => 'stripeId', 'label' => t('Stripe ID', category: 'stripe')],
                 ['key' => 'type', 'label' => t('Type', category: 'stripe')],
                 ['key' => 'last4', 'label' => t('Last 4', category: 'stripe')],
                 ['key' => 'created', 'label' => t('Created', category: 'stripe')],
@@ -91,7 +91,7 @@ readonly class CustomersController
                 $type = $data['type'] ?? '';
 
                 return [
-                    'id' => ['label' => $paymentMethod->stripeId, 'url' => $paymentMethod->getStripeEditUrl()],
+                    'stripeId' => ['label' => $paymentMethod->stripeId, 'url' => $paymentMethod->getStripeEditUrl()],
                     'type' => $type,
                     'last4' => $data[$type]['last4'] ?? '',
                     'created' => isset($data['created']) ? $formatter->asDateTime($data['created'], 'short') : '',

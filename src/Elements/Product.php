@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Stripe\Elements;
 
+use CraftCms\Cms\Cp\Components\InputCopy;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -17,6 +19,9 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\Slug;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Stripe\Api;
 use CraftCms\Stripe\Database\Table;
@@ -29,6 +34,7 @@ use CraftCms\Stripe\Plugin;
 use CraftCms\Stripe\Support\StripeLink;
 use Illuminate\Support\Facades\DB;
 use Override;
+use Stringable;
 
 use function CraftCms\Cms\t;
 
@@ -261,12 +267,36 @@ class Product extends Element
     }
 
     #[Override]
+    protected function metaFieldsHtml(bool $static): string|Stringable
+    {
+        return implode("\n", [
+            $this->slugFieldHtml($static),
+            parent::metaFieldsHtml($static),
+        ]);
+    }
+
+    #[Override]
+    protected function metaFieldsNodes(bool $static): array
+    {
+        return [
+            Field::make(t('Slug'))
+                ->icon('link')
+                ->control(
+                    Slug::make('slug')
+                        ->value(! ElementHelper::isTempSlug($this->slug) ? $this->slug : null)
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                ),
+            ...parent::metaFieldsNodes($static),
+        ];
+    }
+
+    #[Override]
     protected function metadata(): array
     {
         $data = $this->getData();
 
         return [
-            t('Stripe ID', category: 'stripe') => Html::tag('code', e((string) $this->stripeId)),
+            t('Stripe ID', category: 'stripe') => InputCopy::make()->id('stripe-product-stripeId')->value((string) $this->stripeId)->monospace()->toHtml(),
             t('Stripe Status', category: 'stripe') => $this->getStripeStatusHtml(),
             t('Default price', category: 'stripe') => fn () => $this->getDefaultPrice()->title ?? false,
             t('Description', category: 'stripe') => isset($data['description']) ? e($data['description']) : false,
@@ -508,7 +538,6 @@ class Product extends Element
     {
         return Price::find()
             ->owner($this)
-            ->status(null)
             ->orderBy('elements.id');
     }
 

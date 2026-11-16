@@ -31,7 +31,7 @@ readonly class SyncChangedUserEmail
     {
         $user = $event->element;
 
-        if (! $user instanceof User || $event->isNew || ! $user->id || ! $this->settings->syncChangedUserEmailsToStripe || ! $this->api->isConfigured()) {
+        if (! $user instanceof User || $event->isNew || ! $user->id || ! $user->getIsCredentialed() || ! $this->settings->syncChangedUserEmailsToStripe || ! $this->api->isConfigured()) {
             return;
         }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Stripe\Elements;
 
+use CraftCms\Cms\Cp\Components\InputCopy;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -298,7 +299,7 @@ class Subscription extends Element
         $date = fn (?int $timestamp) => $timestamp ? $formatter->asDateTime($timestamp, 'short') : false;
 
         return [
-            t('Stripe ID', category: 'stripe') => Html::tag('code', e((string) $this->stripeId)),
+            t('Stripe ID', category: 'stripe') => InputCopy::make()->id('stripe-subscription-stripeId')->value((string) $this->stripeId)->monospace()->toHtml(),
             t('Stripe Status', category: 'stripe') => $this->getStripeStatusHtml(),
             t('Customer', category: 'stripe') => $this->getCustomer() ? e((string) $this->getCustomer()->email) : false,
             t('Current period', category: 'stripe') => $this->getCurrentPeriodStart() && $this->getCurrentPeriodEnd()

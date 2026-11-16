@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Stripe;
 
 use CraftCms\Cms\Plugin\PluginSettings;
+use Override;
+
+use function CraftCms\Cms\t;
 
 /**
  * Stripe settings, stored in project config or set from `config/craft/stripe.php`.
@@ -52,4 +55,22 @@ class Settings extends PluginSettings
      * @var bool Whether syncing a subscription creates a user for a customer email that has none (Craft Pro only)
      */
     public bool $createUserIfMissing = false;
+
+    #[Override]
+    public function getRules(): array
+    {
+        return [
+            'secretKey' => ['required', 'string'],
+            'publishableKey' => ['required', 'string'],
+        ];
+    }
+
+    #[Override]
+    public function attributeLabels(): array
+    {
+        return [
+            'secretKey' => t('Stripe Secret Key', category: 'stripe'),
+            'publishableKey' => t('Stripe Publishable Key', category: 'stripe'),
+        ];
+    }
 }

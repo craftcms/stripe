@@ -70,7 +70,7 @@ class PaymentMethods
 
     public function createOrUpdatePaymentMethod(StripePaymentMethod $paymentMethod): bool
     {
-        return Cache::lock("stripe-payment-method:$paymentMethod->id", 15)->block(15, fn () => PaymentMethod::updateOrCreate(
+        return Cache::lock("stripe-payment-method:$paymentMethod->id")->block(15, fn () => PaymentMethod::updateOrCreate(
             ['stripeId' => $paymentMethod->id],
             ['data' => $paymentMethod->toArray()],
         )->exists);

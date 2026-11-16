@@ -6,6 +6,7 @@ namespace CraftCms\Stripe\Utilities;
 
 use CraftCms\Cms\Utility\Utility;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Stripe\Api;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -34,6 +35,12 @@ class Sync extends Utility
     public static function icon(): ?string
     {
         return dirname(__DIR__, 2).'/resources/icon-mask.svg';
+    }
+
+    #[Override]
+    public static function isSelectable(): bool
+    {
+        return app(Api::class)->isConfigured();
     }
 
     #[Override]
