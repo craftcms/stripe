@@ -37,7 +37,8 @@ class CheckoutController
 
         $lineItems = collect($request->input('lineItems'))
             ->filter(fn (array $item) => (int) $item['quantity'] > 0)
-            ->map(fn (array $item) => ['price' => (string) $item['price'], 'quantity' => (int) $item['quantity']])
+            // Other line item params, such as `adjustable_quantity` or `tax_rates`, are passed to Stripe as posted
+            ->map(fn (array $item) => [...$item, 'price' => (string) $item['price'], 'quantity' => (int) $item['quantity']])
             ->values()
             ->all();
 

@@ -34,7 +34,7 @@ class Checkout
      * `$user` can be a user, an email, `null` for the current user, or `false` to leave the customer to Stripe.
      * The session uses the user’s first Stripe customer, or their email when they don’t have one.
      *
-     * @param  array<int, array{price: string, quantity: int}>  $lineItems
+     * @param  array<int, array<string, mixed>>  $lineItems  Stripe Checkout line items, each with at least `price` and `quantity`
      * @param  array<string, mixed>|null  $params  More params for the Stripe API
      */
     public function getCheckoutUrl(

@@ -10,6 +10,8 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Ui\Nodes\Heading;
 use CraftCms\Cms\Ui\Nodes\Table;
 use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Stripe\Customers;
 use CraftCms\Stripe\Elements\Product;
 use CraftCms\Stripe\Elements\Subscription;
@@ -100,14 +102,18 @@ readonly class CustomersController
             ->emptyMessage(t('No payment methods exist yet.', category: 'stripe'));
 
         return $response->ui(Ui::make([
-            Heading::make('stripe-customers-heading', t('Customers', category: 'stripe')),
-            $customers,
             Heading::make('stripe-subscriptions-heading', t('Subscriptions', category: 'stripe')),
             $subscriptions,
             Heading::make('stripe-invoices-heading', t('Invoices', category: 'stripe')),
             $invoices,
             Heading::make('stripe-payment-methods-heading', t('Payment Methods', category: 'stripe')),
             $paymentMethods,
-        ]));
+        ]), props: [
+            // The customers go in the details column
+            'sidebarUi' => app(UiResolver::class)->resolve(Ui::make([
+                Heading::make('stripe-customers-heading', t('Customers', category: 'stripe')),
+                $customers,
+            ]), new UiContext),
+        ]);
     }
 }

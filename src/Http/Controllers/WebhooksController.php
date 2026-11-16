@@ -14,6 +14,7 @@ use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Nodes\Callout;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\MarkdownContent;
+use CraftCms\Cms\Ui\Nodes\Table;
 use CraftCms\Cms\Ui\Nodes\TemplateContent;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
@@ -87,12 +88,24 @@ class WebhooksController
 
         $nodes = [];
 
-        if ($endpoint !== null) {
-            $nodes[] = Callout::make('registered', t('Stripe sends events to {url} ({status}).', [
-                'url' => $endpoint->url,
-                'status' => $endpoint->status,
-            ], 'stripe'))->variant('success');
-        } else {
+        $nodes[] = Table::make('webhook-endpoint')
+            ->columns([
+                ['key' => 'topic', 'label' => t('Topic', category: 'stripe')],
+                ['key' => 'apiVersion', 'label' => t('API Version', category: 'stripe')],
+                ['key' => 'livemode', 'label' => t('Live Mode', category: 'stripe')],
+                ['key' => 'status', 'label' => t('Status', category: 'stripe')],
+                ['key' => 'url', 'label' => t('URL', category: 'stripe')],
+            ])
+            ->rows($endpoint !== null ? [[
+                'topic' => (string) ($endpoint->description ?: $endpoint->id),
+                'apiVersion' => (string) $endpoint->api_version,
+                'livemode' => $endpoint->livemode ? t('Yes') : t('No'),
+                'status' => (string) $endpoint->status,
+                'url' => (string) $endpoint->url,
+            ]] : [])
+            ->emptyMessage(t('No webhooks exist yet.', category: 'stripe'));
+
+        if ($endpoint === null) {
             $nodes[] = MarkdownContent::make('instructions', t('No webhook endpoint is registered. Register one for {url}, or create one in the Stripe Dashboard and enter its ID and signing secret below.', [
                 'url' => '`'.Url::siteUrl('stripe/webhooks/handle').'`',
             ], 'stripe'));

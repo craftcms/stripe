@@ -438,7 +438,7 @@ class Product extends Element
 
         if ($isNew) {
             // The webhook for a new price can arrive before the one for its product
-            foreach (Price::find()->stripeProductId($this->stripeId)->status(null)->all() as $price) {
+            foreach (Price::find()->stripeProductId($this->stripeId)->all() as $price) {
                 /** @var Price $price */
                 if ($price->getPrimaryOwnerId() === null) {
                     $price->setPrimaryOwnerId($this->id);

@@ -42,6 +42,11 @@ class Prices
 
         $stripeIds = array_map(fn (StripePrice $price) => $price->id, $prices);
 
+        // An empty list would match every element, so nothing is deleted when Stripe returns none
+        if ($stripeIds === []) {
+            return;
+        }
+
         foreach (Price::find()->stripeId(['not', ...$stripeIds])->status(null)->all() as $element) {
             Elements::deleteElement($element);
         }

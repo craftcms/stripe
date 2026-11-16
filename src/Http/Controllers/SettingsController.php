@@ -53,11 +53,14 @@ class SettingsController
 
     private readonly bool $readOnly;
 
+    private readonly bool $headlessMode;
+
     public function __construct(
         GeneralConfig $generalConfig,
         private readonly FieldLayouts $fieldLayouts,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
+        $this->headlessMode = $generalConfig->headlessMode;
     }
 
     public function index(): CpScreenResponse
@@ -93,10 +96,13 @@ class SettingsController
             Tab::make('products', t('Products', category: 'stripe'), [
                 Field::make(t('Product URI Format', category: 'stripe'), Text::make('productUriFormat')->monospace())
                     ->instructions(t('What product URIs should look like, such as `products/{slug}`. Leave it blank if products don’t have URLs.', category: 'stripe')),
-                Field::make(t('Product Template', category: 'stripe'), Combobox::make('productTemplate')
-                    ->options(SelectOptions::getTemplateSuggestions())
-                    ->showAllOnEmpty())
-                    ->instructions(t('The template that renders product pages.', category: 'stripe')),
+                // Product pages aren’t rendered in headless mode
+                ...($this->headlessMode ? [] : [
+                    Field::make(t('Product Template', category: 'stripe'), Combobox::make('productTemplate')
+                        ->options(SelectOptions::getTemplateSuggestions())
+                        ->showAllOnEmpty())
+                        ->instructions(t('The template that renders product pages.', category: 'stripe')),
+                ]),
                 $layoutDesigner(Product::class),
             ]),
             Tab::make('prices', t('Prices', category: 'stripe'), [
@@ -148,7 +154,8 @@ class SettingsController
             'syncChangedUserEmailsToStripe' => $request->boolean('syncChangedUserEmailsToStripe'),
             'createUserIfMissing' => $request->boolean('createUserIfMissing'),
             'productUriFormat' => (string) ($data['productUriFormat'] ?? ''),
-            'productTemplate' => (string) ($data['productTemplate'] ?? ''),
+            // Headless mode hides the field, so keep the current template
+            'productTemplate' => $this->headlessMode ? $settings->productTemplate : (string) ($data['productTemplate'] ?? ''),
         ]);
 
         foreach (self::LAYOUTS as $elementType => $key) {

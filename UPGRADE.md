@@ -132,6 +132,7 @@ Event::listen(function (ProductSyncing $event) {
 | `craft stripe/sync/payment-methods` | `php artisan stripe:sync payment-methods` |
 | `craft stripe/sync/invoices` | `php artisan stripe:sync invoices` |
 | `craft stripe/data/reset` | `php artisan stripe:reset-data` |
+| `craft stripe/data/reset --interactive=0` | `php artisan stripe:reset-data --force` |
 | `craft stripe/data/remove-duplicates --dryRun` | `php artisan stripe:remove-duplicates --dry-run` |
 | `craft resave/stripe-products` | `php artisan craft:resave:stripe-products` |
 | `craft resave/stripe-prices` | `php artisan craft:resave:stripe-prices` |
@@ -140,6 +141,16 @@ Event::listen(function (ProductSyncing $event) {
 ### Templates
 
 Twig templates work as before: `craft.stripe`, `craft.stripeProducts()`, `craft.stripePrices()`, `craft.stripeSubscriptions()`, the `unitPrice`, `pricePerUnit`, `unitAmount` and `interval` filters, the `stripeCheckoutUrl()` function, and the `currentUser.getStripeCustomers()`, `getStripeCustomer()`, `getStripeSubscriptions()`, `getStripePaymentMethods()`, `getStripeBillingPortalSessionUrl()` and `getStripeBillingPortalSessionPaymentMethodUpdateUrl()` methods.
+
+The plugin’s `stripeMode`, `dashboardUrl` and `stripeBaseUrl` properties were removed. Get them from the plugin’s API service instead:
+
+| Before | After |
+| --- | --- |
+| `craft.stripe.stripeMode` | `craft.stripe.api.mode` |
+| `craft.stripe.dashboardUrl` | `constant('CraftCms\\Stripe\\Api::DASHBOARD_URL')` |
+| `craft.stripe.stripeBaseUrl` | `craft.stripe.api.dashboardUrl()` |
+
+`dashboardUrl()` also takes a path, such as `craft.stripe.api.dashboardUrl('customers/' ~ customer.stripeId)`. In PHP, use `Plugin::getInstance()->getApi()->getMode()`, `Api::DASHBOARD_URL` and `Plugin::getInstance()->getApi()->dashboardUrl()`.
 
 ### Routes and action URLs
 

@@ -9,7 +9,6 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Stripe\Api;
 use CraftCms\Stripe\Customers;
 use CraftCms\Stripe\Invoices;
-use CraftCms\Stripe\Jobs\SyncCustomerData;
 use CraftCms\Stripe\PaymentMethods;
 use CraftCms\Stripe\Prices;
 use CraftCms\Stripe\Products;
@@ -44,9 +43,9 @@ class SyncController
     }
 
     /**
-     * Syncs the Stripe customers with a user’s email, with their subscriptions, invoices and payment methods.
+     * Syncs the Stripe customers with a user’s email.
      */
-    public function user(Request $request, Api $api): Response
+    public function user(Request $request, Api $api, Customers $customers): Response
     {
         $userId = (int) $request->validate(['userId' => ['required', 'integer']])['userId'];
         $user = User::find()->id($userId)->status(null)->one();
@@ -54,7 +53,7 @@ class SyncController
         abort_unless($user instanceof User && $user->email, 404);
 
         foreach ($api->fetchAllCustomers(['email' => $user->email]) as $customer) {
-            dispatch_sync(new SyncCustomerData($customer->id));
+            $customers->createOrUpdateCustomer($customer);
         }
 
         return $this->asSuccess(t('Stripe Customers successfully synced', category: 'stripe'));
