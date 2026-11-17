@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Stripe\Elements;
 
 use CraftCms\Cms\Cp\Components\InputCopy;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
@@ -17,7 +18,6 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Ui\Controls\Slug;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -469,12 +469,15 @@ class Product extends Element
     public function getStripeStatusHtml(): string
     {
         $color = match ($this->stripeStatus) {
-            self::STRIPE_STATUS_ACTIVE => 'green',
-            self::STRIPE_STATUS_ARCHIVED => 'red',
-            default => 'orange',
+            self::STRIPE_STATUS_ACTIVE => Color::Green,
+            self::STRIPE_STATUS_ARCHIVED => Color::Red,
+            default => Color::Orange,
         };
 
-        return Html::tag('span', '', ['class' => ['status', $color]]).e(ucfirst($this->stripeStatus));
+        return app(StatusHtml::class)->statusLabelHtml([
+            'color' => $color,
+            'label' => ucfirst($this->stripeStatus),
+        ]) ?? '';
     }
 
     /**

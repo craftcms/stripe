@@ -4,23 +4,24 @@ declare(strict_types=1);
 
 namespace CraftCms\Stripe\Http\Controllers;
 
+use CraftCms\Cms\Cp\Components\Button;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
-use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Nodes\Callout;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\MarkdownContent;
 use CraftCms\Cms\Ui\Nodes\Table;
-use CraftCms\Cms\Ui\Nodes\TemplateContent;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Stripe\Api;
 use CraftCms\Stripe\Webhooks;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Exception\UnexpectedValueException;
@@ -100,7 +101,10 @@ class WebhooksController
                 'topic' => (string) ($endpoint->description ?: $endpoint->id),
                 'apiVersion' => (string) $endpoint->api_version,
                 'livemode' => $endpoint->livemode ? t('Yes') : t('No'),
-                'status' => (string) $endpoint->status,
+                'status' => ['html' => app(StatusHtml::class)->statusLabelHtml([
+                    'color' => $endpoint->status === 'enabled' ? Color::Green : Color::Red,
+                    'label' => t(ucfirst((string) $endpoint->status), category: 'stripe'),
+                ]) ?? ''],
                 'url' => (string) $endpoint->url,
             ]] : [])
             ->emptyMessage(t('No webhooks exist yet.', category: 'stripe'));
@@ -109,7 +113,10 @@ class WebhooksController
             $nodes[] = MarkdownContent::make('instructions', t('No webhook endpoint is registered. Register one for {url}, or create one in the Stripe Dashboard and enter its ID and signing secret below.', [
                 'url' => '`'.Url::siteUrl('stripe/webhooks/handle').'`',
             ], 'stripe'));
-            $nodes[] = TemplateContent::make('register', $this->actionButton('stripe/webhooks/create', t('Register webhook', category: 'stripe')))->trusted();
+            $response->additionalButtonsHtml(Button::make()
+                ->label(t('Register webhook', category: 'stripe'))
+                ->icon('plus')
+                ->action($this->postAction('stripe/webhooks/create')));
         }
 
         $envTriggers = SelectOptions::getEnvTextExpanderTriggers(true);
@@ -121,7 +128,10 @@ class WebhooksController
             ->required();
 
         if ($webhook !== null) {
-            $nodes[] = TemplateContent::make('delete', $this->actionButton('stripe/webhooks/delete', t('Delete webhook', category: 'stripe'), t('Are you sure you want to delete the webhook endpoint in Stripe?', category: 'stripe')))->trusted();
+            $response->addAltAction(t('Delete webhook', category: 'stripe'), [
+                'variant' => 'danger',
+                'action' => $this->postAction('stripe/webhooks/delete', t('Are you sure you want to delete the webhook endpoint in Stripe?', category: 'stripe')),
+            ]);
         }
 
         return $response->ui(Ui::make($nodes), new UiContext(values: [
@@ -133,16 +143,19 @@ class WebhooksController
     }
 
     /**
-     * A form with a single button that posts to an action.
+     * An action that posts to a controller action, then returns to the Webhooks screen.
+     *
+     * @return array<string, mixed>
      */
-    private function actionButton(string $action, string $label, ?string $confirm = null): string
+    private function postAction(string $action, ?string $confirm = null): array
     {
-        return Html::beginForm(Url::actionUrl($action), 'post', array_filter([
-            'onsubmit' => $confirm ? 'return confirm('.Json::encode($confirm).')' : null,
-        ])).
-            Html::csrfInput().
-            Html::button($label, ['type' => 'submit', 'class' => 'btn']).
-            Html::endForm();
+        return array_filter([
+            'type' => 'http',
+            'method' => 'POST',
+            'url' => Url::actionUrl($action),
+            'body' => ['redirect' => Crypt::encrypt(Url::cpUrl('stripe/webhooks'))],
+            'confirm' => $confirm,
+        ]);
     }
 
     public function store(Request $request): Response

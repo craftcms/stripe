@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Stripe\Elements;
 
 use CraftCms\Cms\Cp\Components\InputCopy;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -12,7 +13,6 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
@@ -450,9 +450,10 @@ class Subscription extends Element
             default => Color::Blue,
         };
 
-        $label = t(ucwords(str_replace('_', ' ', $this->stripeStatus)), category: 'stripe');
-
-        return Html::tag('span', '', ['class' => ['status', 'stripe-status', $color->value]]).e($label);
+        return app(StatusHtml::class)->statusLabelHtml([
+            'color' => $color,
+            'label' => t(ucwords(str_replace('_', ' ', $this->stripeStatus)), category: 'stripe'),
+        ]) ?? '';
     }
 
     /**

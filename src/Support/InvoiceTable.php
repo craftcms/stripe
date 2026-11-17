@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Stripe\Support;
 
+use CraftCms\Cms\Cp\Html\StatusHtml;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Stripe\Models\Invoice;
 
@@ -48,7 +50,7 @@ class InvoiceTable
                 'id' => $invoice->stripeId,
                 'number' => ['label' => $data['number'] ?? t('Draft', category: 'stripe'), 'url' => $invoice->getStripeEditUrl(), 'target' => '_blank'],
                 'amount' => $formatter->asCurrency($amount, strtoupper($data['currency'] ?? 'usd')),
-                'status' => $data['status'] ?? '',
+                'status' => isset($data['status']) ? ['html' => self::statusHtml($data['status'])] : '',
                 'customerEmail' => $data['customer_email'] ?? '',
                 'due' => isset($data['due_date']) ? $formatter->asDate($data['due_date'], 'short') : '',
                 'created' => isset($data['created']) ? $formatter->asDateTime($data['created'], 'short') : '',
@@ -56,5 +58,21 @@ class InvoiceTable
         }
 
         return $rows;
+    }
+
+    /**
+     * Returns an invoice status as a badge.
+     */
+    private static function statusHtml(string $status): string
+    {
+        return app(StatusHtml::class)->statusLabelHtml([
+            'color' => match ($status) {
+                'open' => Color::Blue,
+                'paid' => Color::Green,
+                'uncollectible' => Color::Red,
+                default => Color::Gray,
+            },
+            'label' => t(ucfirst($status), category: 'stripe'),
+        ]) ?? '';
     }
 }

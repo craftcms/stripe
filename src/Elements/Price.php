@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Stripe\Elements;
 
 use CraftCms\Cms\Cp\Components\InputCopy;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Database\Table as CraftTable;
 use CraftCms\Cms\Element\Concerns\NestedElement;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -13,7 +14,6 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Stripe\Api;
@@ -351,9 +351,10 @@ class Price extends Element implements NestedElementInterface
 
     public function getStripeStatusHtml(): string
     {
-        $color = $this->stripeStatus === self::STRIPE_STATUS_ARCHIVED ? 'red' : 'green';
-
-        return Html::tag('span', '', ['class' => ['status', $color]]).e(ucfirst($this->stripeStatus));
+        return app(StatusHtml::class)->statusLabelHtml([
+            'color' => $this->stripeStatus === self::STRIPE_STATUS_ARCHIVED ? Color::Red : Color::Green,
+            'label' => ucfirst($this->stripeStatus),
+        ]) ?? '';
     }
 
     /**
