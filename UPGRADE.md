@@ -13,7 +13,7 @@ Stripe 2.0 is a native Craft 6 plugin. This guide lists what changed from 1.x an
 1. If you still need to move subscriptions over from Craft Commerce, run `craft stripe/commerce/migrate` with Stripe 1.x on Craft 5 first. Stripe 2.0 doesn’t include that command.
 2. Upgrade your project to Craft 6.
 3. Update the plugin: `composer require craftcms/stripe:^2.0`.
-4. Run `php artisan craft:up`. It runs the plugin’s migrations, which replace the `craft\stripe\*` class names stored in the database and project config, and read the subscription billing period from its new place in the Stripe data.
+4. Run `php artisan craft:up`. It runs the plugin’s migrations, which replace the `craft\stripe\*` class names stored in the database and project config, and read the subscription billing period and the invoice’s subscription from their new places in the Stripe data.
 5. Move `config/stripe.php`, if you have one, to `config/craft/stripe.php`.
 6. Update your PHP code as described below. Twig templates keep working, except where they read stored Stripe data that changed shape in the newer Stripe API version (see below).
 
@@ -23,7 +23,7 @@ Your existing `stripe_*` tables, elements, field layouts, settings and webhook r
 
 ### Stripe API version
 
-Stripe 2.0 uses Stripe API version `2026-01-28.clover` instead of `2024-04-10`. Stripe data that the plugin syncs from now on has the newer shape. For example, a subscription’s `current_period_start` and `current_period_end` are now on its items (`data.items.data[0].current_period_end`). Use `subscription.getCurrentPeriodStart()` and `subscription.getCurrentPeriodEnd()` instead of reading them from `subscription.data`. If your code reads other stored Stripe data, or handles Stripe events, review the [Stripe API changelog](https://docs.stripe.com/changelog) for the changes since `2024-04-10`.
+Stripe 2.0 uses Stripe API version `2026-01-28.clover` instead of `2024-04-10`. Stripe data that the plugin syncs from now on has the newer shape. For example, a subscription’s `current_period_start` and `current_period_end` are now on its items (`data.items.data[0].current_period_end`). Use `subscription.getCurrentPeriodStart()` and `subscription.getCurrentPeriodEnd()` instead of reading them from `subscription.data`. Similarly, an invoice’s subscription ID is now at `data.parent.subscription_details.subscription` instead of `data.subscription`. If your code reads other stored Stripe data, or handles Stripe events, review the [Stripe API changelog](https://docs.stripe.com/changelog) for the changes since `2024-04-10`.
 
 A webhook endpoint registered with Stripe 1.x keeps its API version, so Stripe keeps sending its events in the `2024-04-10` shape. The plugin’s own syncing isn’t affected, because it fetches each object from the API again. But `StripeEventReceived` listeners that read the event’s object get the old shape until the endpoint is registered again. The plugin’s **Webhooks** settings page shows the endpoint’s API version. To move to the new version, update your listeners, then delete the webhook and create it again on that page. The new endpoint has a new signing secret, which the plugin saves to your `.env` file, so update the secret in any other environment that uses the endpoint.
 
@@ -105,6 +105,8 @@ These methods were removed or changed:
 | `Webhooks::getWebhookRecord()` | `Webhooks::getWebhook()`, which returns `null` when no webhook is saved, instead of a new record. |
 | `Invoices::getTableData()`, `PaymentMethods::getTableData()` | Removed. They built rows for the 1.x control panel tables. |
 | `Invoices::populateInvoices()`, `Invoices::populateInvoice()` | Removed. Invoice queries return `CraftCms\Stripe\Models\Invoice` models directly. |
+| `Settings::getProductFieldLayout()`, `getPriceFieldLayout()`, `getSubscriptionFieldLayout()` | `CraftCms\Stripe\FieldLayouts::getFieldLayout($elementType)`, such as `getFieldLayout(Product::class)` |
+| `Settings::setProductFieldLayout()`, `setPriceFieldLayout()`, `setSubscriptionFieldLayout()` | `CraftCms\Stripe\FieldLayouts::saveFieldLayout($elementType, $fieldLayout)`, which saves the layout to project config |
 | `Products::handleChangedFieldLayout($event)`, and the same method on `Prices` and `Subscriptions` | `CraftCms\Stripe\FieldLayouts::handleChangedFieldLayout($event, $elementType)` |
 | `Products::handleDeletedFieldLayout()`, and the same method on `Prices` and `Subscriptions` | Removed. `FieldLayouts` deletes the element type’s field layouts when they’re removed from project config. |
 
@@ -179,7 +181,7 @@ The plugin’s `stripeMode`, `dashboardUrl` and `stripeBaseUrl` properties were 
 
 ### Routes and action URLs
 
-The `stripe/checkout` and `stripe/webhooks/handle` action URLs keep working, as do the control panel URLs. The control panel actions (`stripe/subscriptions/cancel`, `stripe/sync/*`, `stripe/settings/*`, `stripe/webhooks/*`) require a logged-in user with access to the plugin, and the settings and webhook ones require an admin.
+The `stripe/checkout` and `stripe/webhooks/handle` action URLs keep working and don’t need a logged-in user. The control panel URLs keep working too. The other actions (`stripe/subscriptions/cancel`, `stripe/subscriptions/resume`, `stripe/sync/*`, `stripe/settings/*` and the other `stripe/webhooks/*` actions) require a logged-in user with access to the plugin. The settings and webhook ones also require an admin, and `stripe/sync/all` also requires access to the **Stripe Sync All** utility.
 
 The `stripe/sync/customer` action was replaced by `stripe/sync/user`. It takes a `userId` param instead of `stripeIds`, and syncs every Stripe customer with that user’s email.
 
