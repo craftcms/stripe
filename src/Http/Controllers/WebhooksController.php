@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Stripe\Http\Controllers;
 
-use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -88,6 +87,7 @@ class WebhooksController
         $endpoint = $this->webhooks->fetchEndpoint();
 
         $nodes = [];
+        $formAdditionalButtons = [];
 
         $nodes[] = Table::make('webhook-endpoint')
             ->columns([
@@ -113,10 +113,11 @@ class WebhooksController
             $nodes[] = MarkdownContent::make('instructions', t('No webhook endpoint is registered. Register one for {url}, or create one in the Stripe Dashboard and enter its ID and signing secret below.', [
                 'url' => '`'.Url::siteUrl('stripe/webhooks/handle').'`',
             ], 'stripe'));
-            $response->additionalButtonsHtml(Button::make()
-                ->label(t('Register webhook', category: 'stripe'))
-                ->icon('plus')
-                ->action($this->postAction('stripe/webhooks/create')));
+            $formAdditionalButtons[] = [
+                'label' => t('Register webhook', category: 'stripe'),
+                'icon' => 'plus',
+                'action' => $this->postAction('stripe/webhooks/create'),
+            ];
         }
 
         $envTriggers = SelectOptions::getEnvTextExpanderTriggers(true);
@@ -127,11 +128,12 @@ class WebhooksController
             ->instructions(t('The endpoint’s signing secret, or an environment variable that holds it.', category: 'stripe'))
             ->required();
 
-        if ($webhook !== null) {
-            $response->addAltAction(t('Delete webhook', category: 'stripe'), [
-                'variant' => 'danger',
+        if ($endpoint !== null) {
+            $formAdditionalButtons[] = [
+                'label' => t('Delete webhook', category: 'stripe'),
+                'icon' => 'trash',
                 'action' => $this->postAction('stripe/webhooks/delete', t('Are you sure you want to delete the webhook endpoint in Stripe?', category: 'stripe')),
-            ]);
+            ];
         }
 
         return $response->ui(Ui::make($nodes), new UiContext(values: [
@@ -139,6 +141,7 @@ class WebhooksController
             'webhookSigningSecret' => $webhook->webhookSigningSecret ?? '',
         ]), [
             'submit' => ['method' => 'post', 'url' => Url::actionUrl('stripe/webhooks/save-settings')],
+            'formAdditionalButtons' => $formAdditionalButtons,
         ]);
     }
 
