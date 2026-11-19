@@ -14,6 +14,7 @@
 - Plugin events are now Laravel events, such as `CraftCms\Stripe\Events\ProductSyncing` and `CraftCms\Stripe\Events\CheckoutSessionCreating`.
 - Plugin services are now resolved from the container, such as `app(CraftCms\Stripe\Subscriptions::class)`.
 - Updated Stripe API version from `2024-04-10` to `2026-01-28.clover`.
+- Stripe now requires `stripe/stripe-php` 19.3 or later.
 - The Subscription element’s current period and the `nextPaymentDate` query param now read the billing period from the subscription’s items, where Stripe API version `2025-03-31.basil` and later put it.
 
 ### Removed
