@@ -85,11 +85,11 @@ class Customers
     }
 
     /**
-     * Whether a Craft user has the email address.
+     * Whether a Craft user has the email address, ignoring case.
      */
     public function userExistsForEmail(string $email): bool
     {
-        return DB::table(CraftTable::USERS)->where('email', $email)->exists();
+        return DB::table(CraftTable::USERS)->whereRaw('LOWER(email) = ?', [mb_strtolower($email)])->exists();
     }
 
     public function deleteCustomerDataByStripeId(string $stripeId): void
