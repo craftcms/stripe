@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Stripe\Http\Controllers;
 
+use CraftCms\Cms\Element\EmbeddedElementIndex;
 use CraftCms\Cms\Http\Controllers\Users\EditUserTrait;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -11,7 +12,6 @@ use CraftCms\Cms\Ui\Nodes\Heading;
 use CraftCms\Cms\Ui\Nodes\Table;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Stripe\Customers;
-use CraftCms\Stripe\Elements\Product;
 use CraftCms\Stripe\Elements\Subscription;
 use CraftCms\Stripe\Invoices;
 use CraftCms\Stripe\Models\Customer;
@@ -20,6 +20,7 @@ use CraftCms\Stripe\PaymentMethods;
 use CraftCms\Stripe\Support\InvoiceTable;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\currentUser;
 
 /**
  * The Stripe screen of the Edit User page: the user’s customers, subscriptions, invoices and payment methods.
@@ -58,21 +59,10 @@ readonly class CustomersController
             ], array_values($this->customers->getCustomersByEmail($user->email))))
             ->emptyMessage(t('No Stripe customers have this user’s email.', category: 'stripe'));
 
-        $subscriptions = Table::make('stripe-subscriptions')
-            ->columns([
-                ['key' => 'title', 'label' => t('Subscription', category: 'stripe')],
-                ['key' => 'status', 'label' => t('Stripe Status', category: 'stripe')],
-                ['key' => 'products', 'label' => t('Products', category: 'stripe')],
-                ['key' => 'currentPeriodEnd', 'label' => t('Current period end', category: 'stripe')],
-            ])
-            ->rows(Subscription::find()->userId($user->id)->status(null)->collect()->map(fn (Subscription $subscription) => [
-                '_status' => $subscription->getStatus(),
-                'title' => ['label' => $subscription->title, 'url' => $subscription->getCpEditUrl()],
-                'status' => ['html' => $subscription->getStripeStatusHtml()],
-                'products' => implode(', ', array_map(fn (Product $product) => $product->title, $subscription->getProducts() ?? [])),
-                'currentPeriodEnd' => $subscription->getCurrentPeriodEnd() ? $formatter->asDate($subscription->getCurrentPeriodEnd(), 'short') : '',
-            ]))
-            ->emptyMessage(t('No subscriptions exist yet.', category: 'stripe'));
+        $subscriptions = EmbeddedElementIndex::make(Subscription::class)
+            ->criteria(['userId' => $user->id])
+            ->readOnly(! currentUser()?->can('accessPlugin-stripe'))
+            ->storageKey('commerce:user-subscriptions');
 
         $invoices = Table::make('stripe-invoices')
             ->columns(InvoiceTable::columns())
@@ -103,7 +93,7 @@ readonly class CustomersController
             Heading::make('stripe-customers-heading', t('Customers', category: 'stripe')),
             $customers,
             Heading::make('stripe-subscriptions-heading', t('Subscriptions', category: 'stripe')),
-            $subscriptions,
+            $subscriptions->uiNode('subscriptions'),
             Heading::make('stripe-invoices-heading', t('Invoices', category: 'stripe')),
             $invoices,
             Heading::make('stripe-payment-methods-heading', t('Payment Methods', category: 'stripe')),
