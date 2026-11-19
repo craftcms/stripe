@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Stripe\Elements\Queries;
 
 use Closure;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
@@ -138,16 +137,6 @@ class PriceQuery extends ElementQuery implements NestedElementQueryInterface
     public static function mustHaveOwner(): bool
     {
         return false;
-    }
-
-    #[Override]
-    public function owner(ElementInterface $owner): static
-    {
-        // Prices aren’t localized, so don’t limit them to the owner’s site
-        $this->ownerId = [$owner->id];
-        $this->owner = $owner;
-
-        return $this;
     }
 
     public function stripeId(mixed $value): static
