@@ -19,8 +19,8 @@ use CraftCms\Stripe\Models\PaymentMethod;
 use CraftCms\Stripe\PaymentMethods;
 use CraftCms\Stripe\Support\InvoiceTable;
 
-use function CraftCms\Cms\t;
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\t;
 
 /**
  * The Stripe screen of the Edit User page: the user’s customers, subscriptions, invoices and payment methods.
