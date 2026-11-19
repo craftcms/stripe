@@ -310,6 +310,7 @@ class Subscription extends Element
             t('Canceled at', category: 'stripe') => $date($data['canceled_at'] ?? null),
             t('Ended at', category: 'stripe') => $date($data['ended_at'] ?? null),
             t('Metadata', category: 'stripe') => $this->metadataHtml($data['metadata'] ?? []),
+            t('Open in Stripe', category: 'stripe') => StripeLink::html($this->getStripeEditUrl(), t('Open in Stripe', category: 'stripe')),
         ];
     }
 
