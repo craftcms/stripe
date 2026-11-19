@@ -13,6 +13,7 @@ use CraftCms\Stripe\Elements\Subscription;
 use CraftCms\Stripe\Events\SubscriptionSynced;
 use CraftCms\Stripe\Events\SubscriptionSyncing;
 use CraftCms\Stripe\Models\SubscriptionData;
+use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -172,13 +173,14 @@ class Subscriptions
             $subscription = $immediately
                 ? $client->subscriptions->cancel($stripeId, $params)
                 : $client->subscriptions->update($stripeId, [...($params ?? []), 'cancel_at_period_end' => true]);
-        } catch (Throwable $e) {
+            $this->createOrUpdateSubscription($subscription);
+        } catch (Exception $e) {
             Log::error("Failed to cancel Stripe subscription ID #$stripeId: {$e->getMessage()}");
 
             return false;
         }
 
-        return $this->createOrUpdateSubscription($subscription);
+        return true;
     }
 
     /**
@@ -193,13 +195,14 @@ class Subscriptions
                 ...($params ?? []),
                 'cancel_at_period_end' => false,
             ]);
-        } catch (Throwable $e) {
+            $this->createOrUpdateSubscription($subscription);
+        } catch (Exception $e) {
             Log::error("Failed to resume Stripe subscription ID #$stripeId: {$e->getMessage()}");
 
             return false;
         }
 
-        return $this->createOrUpdateSubscription($subscription);
+        return true;
     }
 
     /**
