@@ -32,11 +32,12 @@ class CheckoutController
         $request->validate([
             'lineItems' => ['required', 'array'],
             'lineItems.*.price' => ['required', 'string'],
-            'lineItems.*.quantity' => ['required', 'integer', 'min:0'],
+            'lineItems.*.quantity' => ['nullable', 'integer', 'min:0'],
         ]);
 
+        // Line items with a blank or 0 quantity are skipped, so forms can leave optional quantities empty
         $lineItems = collect($request->input('lineItems'))
-            ->filter(fn (array $item) => (int) $item['quantity'] > 0)
+            ->filter(fn (array $item) => (int) ($item['quantity'] ?? 0) > 0)
             // Other line item params, such as `adjustable_quantity` or `tax_rates`, are passed to Stripe as posted
             ->map(fn (array $item) => [...$item, 'price' => (string) $item['price'], 'quantity' => (int) $item['quantity']])
             ->values()
