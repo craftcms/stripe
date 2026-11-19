@@ -25,6 +25,8 @@ Your existing `stripe_*` tables, elements, field layouts, settings and webhook r
 
 Stripe 2.0 uses Stripe API version `2026-01-28.clover` instead of `2024-04-10`. Stripe data that the plugin syncs from now on has the newer shape. For example, a subscription’s `current_period_start` and `current_period_end` are now on its items (`data.items.data[0].current_period_end`). Use `subscription.getCurrentPeriodStart()` and `subscription.getCurrentPeriodEnd()` instead of reading them from `subscription.data`. If your code reads other stored Stripe data, or handles Stripe events, review the [Stripe API changelog](https://docs.stripe.com/changelog) for the changes since `2024-04-10`.
 
+A webhook endpoint registered with Stripe 1.x keeps its API version, so Stripe keeps sending its events in the `2024-04-10` shape. The plugin’s own syncing isn’t affected, because it fetches each object from the API again. But `StripeEventReceived` listeners that read the event’s object get the old shape until the endpoint is registered again. The plugin’s **Webhooks** settings page shows the endpoint’s API version. To move to the new version, update your listeners, then delete the webhook and create it again on that page. The new endpoint has a new signing secret, which the plugin saves to your `.env` file, so update the secret in any other environment that uses the endpoint.
+
 ### Classes and namespaces
 
 | Before | After |
@@ -73,6 +75,12 @@ These were removed:
 - The `stripe/commerce/migrate` command (see the upgrade steps).
 - The `stripecp` asset bundle.
 
+`PriceFormatter` keeps the formatting methods of `craft\stripe\helpers\Price`, with these changes:
+
+- `$zeroDecimalCurrencies` is now the `PriceFormatter::ZERO_DECIMAL_CURRENCIES` constant.
+- `$threeDecimalCurrencies` was removed.
+- `renderCardHtml()` was removed. Element sidebars are built by the elements themselves.
+
 ### Services
 
 The plugin no longer has `api`, `products`, `subscriptions`, etc. components. Resolve the services from the container, or use the plugin’s getters, which are unchanged:
@@ -86,6 +94,21 @@ app(\CraftCms\Stripe\Subscriptions::class)->cancelSubscriptionByStripeId($id);
 // or
 \CraftCms\Stripe\Plugin::getInstance()->getSubscriptions()->cancelSubscriptionByStripeId($id);
 ```
+
+These methods were removed or changed:
+
+| Before | After |
+| --- | --- |
+| `Subscription::stripeStatuses()` | Removed. Use `$subscription->getStripeStatusHtml()` to render a status label. |
+| `Subscriptions::createOrUpdateSubscriptionElement($subscription, $element)` | `Subscriptions::createOrUpdateSubscription($subscription, $element)` |
+| `Subscriptions::getUnsavedDraftByUid()` | Returns `null` when there’s no draft, instead of a new `Subscription`. |
+| `Webhooks::getWebhookRecord()` | `Webhooks::getWebhook()`, which returns `null` when no webhook is saved, instead of a new record. |
+| `Invoices::getTableData()`, `PaymentMethods::getTableData()` | Removed. They built rows for the 1.x control panel tables. |
+| `Invoices::populateInvoices()`, `Invoices::populateInvoice()` | Removed. Invoice queries return `CraftCms\Stripe\Models\Invoice` models directly. |
+| `Products::handleChangedFieldLayout($event)`, and the same method on `Prices` and `Subscriptions` | `CraftCms\Stripe\FieldLayouts::handleChangedFieldLayout($event, $elementType)` |
+| `Products::handleDeletedFieldLayout()`, and the same method on `Prices` and `Subscriptions` | Removed. `FieldLayouts` deletes the element type’s field layouts when they’re removed from project config. |
+
+The `$email` and `$user` arguments of `Customers::getCustomersByEmail()`, `getFirstCustomerByEmail()`, `Invoices::getInvoicesByEmail()`, `getInvoicesByUser()`, `PaymentMethods::getPaymentMethodsByEmail()` and `getPaymentMethodsByUser()` no longer default to `null`. They still accept `null`, but you have to pass it.
 
 ### Events
 
@@ -157,6 +180,8 @@ The plugin’s `stripeMode`, `dashboardUrl` and `stripeBaseUrl` properties were 
 ### Routes and action URLs
 
 The `stripe/checkout` and `stripe/webhooks/handle` action URLs keep working, as do the control panel URLs. The control panel actions (`stripe/subscriptions/cancel`, `stripe/sync/*`, `stripe/settings/*`, `stripe/webhooks/*`) require a logged-in user with access to the plugin, and the settings and webhook ones require an admin.
+
+The `stripe/sync/customer` action was replaced by `stripe/sync/user`. It takes a `userId` param instead of `stripeIds`, and syncs every Stripe customer with that user’s email.
 
 ### Database and migrations
 
