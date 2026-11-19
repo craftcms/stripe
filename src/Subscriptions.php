@@ -231,6 +231,12 @@ class Subscriptions
 
         if ($customer === null) {
             $stripeCustomer = $this->api->fetchCustomerById($customerId);
+
+            // Deleted customers have no email or creation date to store
+            if ($stripeCustomer->deleted ?? false) {
+                return;
+            }
+
             $customers->createOrUpdateCustomer($stripeCustomer);
             $email = $stripeCustomer->email;
         } else {

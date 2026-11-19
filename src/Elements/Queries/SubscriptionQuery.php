@@ -33,7 +33,7 @@ class SubscriptionQuery extends ElementQuery
     protected string $table = Table::SUBSCRIPTIONS;
 
     #[Override]
-    protected array $defaultOrderBy = ['elements.dateCreated' => SORT_DESC];
+    protected array $defaultOrderBy = ['stripe_subscriptions.stripeId' => SORT_ASC];
 
     public mixed $stripeId = null;
 

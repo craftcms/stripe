@@ -152,6 +152,8 @@ The plugin’s `stripeMode`, `dashboardUrl` and `stripeBaseUrl` properties were 
 
 `dashboardUrl()` also takes a path, such as `craft.stripe.api.dashboardUrl('customers/' ~ customer.stripeId)`. In PHP, use `Plugin::getInstance()->getApi()->getMode()`, `Api::DASHBOARD_URL` and `Plugin::getInstance()->getApi()->dashboardUrl()`.
 
+`craft.stripe.api.mode` returns `live` for live keys, where `craft.stripe.stripeMode` returned an empty string. Update any check such as `craft.stripe.stripeMode == ''` to `craft.stripe.api.mode == 'live'`.
+
 ### Routes and action URLs
 
 The `stripe/checkout` and `stripe/webhooks/handle` action URLs keep working, as do the control panel URLs. The control panel actions (`stripe/subscriptions/cancel`, `stripe/sync/*`, `stripe/settings/*`, `stripe/webhooks/*`) require a logged-in user with access to the plugin, and the settings and webhook ones require an admin.

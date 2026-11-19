@@ -298,7 +298,7 @@ class Product extends Element
         return [
             t('Stripe ID', category: 'stripe') => InputCopy::make()->id('stripe-product-stripeId')->value((string) $this->stripeId)->monospace()->toHtml(),
             t('Stripe Status', category: 'stripe') => $this->getStripeStatusHtml(),
-            t('Default price', category: 'stripe') => fn () => $this->getDefaultPrice()->title ?? false,
+            t('Default price', category: 'stripe') => fn () => ($price = $this->getDefaultPrice()) ? e($price->title) : false,
             t('Description', category: 'stripe') => isset($data['description']) ? e($data['description']) : false,
             t('Metadata', category: 'stripe') => $this->metadataHtml($data['metadata'] ?? []),
             t('Open in Stripe', category: 'stripe') => $this->stripeEditLinkHtml(t('Open in Stripe', category: 'stripe')),

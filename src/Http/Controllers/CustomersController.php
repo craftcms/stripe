@@ -61,8 +61,8 @@ readonly class CustomersController
 
         $subscriptions = EmbeddedElementIndex::make(Subscription::class)
             ->criteria(['userId' => $user->id])
-            ->readOnly(! currentUser()?->can('accessPlugin-stripe'))
-            ->storageKey('commerce:user-subscriptions');
+            ->readOnly(! currentUser()?->can('editUsers'))
+            ->storageKey('stripe:user-subscriptions');
 
         $invoices = Table::make('stripe-invoices')
             ->columns(InvoiceTable::columns())

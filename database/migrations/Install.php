@@ -89,7 +89,7 @@ class Install extends Migration
             $this->generated($table, 'created', 'created');
             $this->generated($table, 'customerEmail', 'customer_email');
             $this->generated($table, 'number', 'number');
-            $this->generated($table, 'subscriptionId', 'subscription');
+            $table->string('subscriptionId')->nullable()->storedAs(self::invoiceSubscriptionIdExpression());
             $table->unique(['stripeId']);
             $table->index(['customerEmail']);
             $table->index(['number']);
@@ -177,6 +177,21 @@ class Install extends Migration
             'pgsql' => "COALESCE(data#>>'{current_period_end}', data#>>'{items,data,0,current_period_end}')",
             'mariadb' => "COALESCE(JSON_UNQUOTE(JSON_EXTRACT(data, '$.current_period_end')), JSON_UNQUOTE(JSON_EXTRACT(data, '$.items.data[0].current_period_end')))",
             default => "COALESCE(data->>'$.current_period_end', data->>'$.items.data[0].current_period_end')",
+        };
+    }
+
+    /**
+     * Returns the expression for the invoice `subscriptionId` column.
+     *
+     * Stripe API version `2025-03-31.basil` and later put the invoice’s subscription under
+     * `parent.subscription_details`. Data synced with Stripe 1.x still has it on the invoice until it’s synced again.
+     */
+    private static function invoiceSubscriptionIdExpression(): string
+    {
+        return match (DB::getDriverName()) {
+            'pgsql' => "COALESCE(data#>>'{subscription}', data#>>'{parent,subscription_details,subscription}')",
+            'mariadb' => "COALESCE(JSON_UNQUOTE(JSON_EXTRACT(data, '$.subscription')), JSON_UNQUOTE(JSON_EXTRACT(data, '$.parent.subscription_details.subscription')))",
+            default => "COALESCE(data->>'$.subscription', data->>'$.parent.subscription_details.subscription')",
         };
     }
 
