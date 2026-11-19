@@ -241,7 +241,20 @@ class Product extends Element
                 'label' => t('Stripe ID', category: 'stripe'),
                 'placeholder' => 'prod_xxxxxxxxxxx',
             ],
+            'stripeEdit' => [
+                'label' => t('Stripe Edit', category: 'stripe'),
+                'placeholder' => fn () => StripeLink::html('#'),
+            ],
         ];
+    }
+
+    #[Override]
+    public static function attributePreviewHtml(array $attribute): mixed
+    {
+        return match ($attribute['value']) {
+            'stripeEdit' => $attribute['placeholder'](),
+            default => parent::attributePreviewHtml($attribute),
+        };
     }
 
     #[Override]

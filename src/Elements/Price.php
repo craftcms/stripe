@@ -250,19 +250,48 @@ class Price extends Element implements NestedElementInterface
     {
         return [
             ...parent::defineCardAttributes(),
+            'primaryCurrency' => [
+                'label' => t('Primary Currency', category: 'stripe'),
+                'placeholder' => 'USD',
+            ],
             'stripeId' => [
                 'label' => t('Stripe ID', category: 'stripe'),
                 'placeholder' => 'price_xxxxxxxxxxx',
             ],
-            'unitPrice' => [
-                'label' => t('Unit Price', category: 'stripe'),
-                'placeholder' => '$12.34/month',
+            'stripeEdit' => [
+                'label' => t('Stripe Edit', category: 'stripe'),
+                'placeholder' => fn () => StripeLink::html('#'),
             ],
             'type' => [
                 'label' => t('Type', category: 'stripe'),
                 'placeholder' => 'recurring',
             ],
+            'unitPrice' => [
+                'label' => t('Unit Price', category: 'stripe'),
+                'placeholder' => '$12.34/month',
+            ],
+            'pricePerUnit' => [
+                'label' => t('Price per Unit', category: 'stripe'),
+                'placeholder' => '$12.34',
+            ],
+            'interval' => [
+                'label' => t('Interval', category: 'stripe'),
+                'placeholder' => fn () => PriceFormatter::getInterval(['recurring' => ['interval_count' => 1, 'interval' => 'month']]),
+            ],
+            'currency' => [
+                'label' => t('Currency', category: 'stripe'),
+                'placeholder' => 'USD',
+            ],
         ];
+    }
+
+    #[Override]
+    public static function attributePreviewHtml(array $attribute): mixed
+    {
+        return match ($attribute['value']) {
+            'stripeEdit' => $attribute['placeholder'](),
+            default => parent::attributePreviewHtml($attribute),
+        };
     }
 
     #[Override]
@@ -280,7 +309,7 @@ class Price extends Element implements NestedElementInterface
             'type' => e($this->type ?? ''),
             'pricePerUnit' => e($this->pricePerUnit()),
             'unitPrice' => e($this->unitPrice()),
-            'primaryCurrency' => e(strtoupper((string) $this->primaryCurrency)),
+            'primaryCurrency', 'currency' => e(strtoupper((string) $this->primaryCurrency)),
             'interval' => e($this->interval()),
             default => (string) parent::attributeHtml($attribute),
         };

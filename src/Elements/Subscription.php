@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Stripe\Elements;
 
 use CraftCms\Cms\Cp\Components\InputCopy;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
@@ -251,11 +252,37 @@ class Subscription extends Element
                 'label' => t('Stripe ID', category: 'stripe'),
                 'placeholder' => 'sub_xxxxxxxxxxx',
             ],
+            'stripeEdit' => [
+                'label' => t('Stripe Edit', category: 'stripe'),
+                'placeholder' => fn () => StripeLink::html('#'),
+            ],
+            'stripeStatus' => [
+                'label' => t('Stripe Status', category: 'stripe'),
+                'placeholder' => fn () => new self()->getStripeStatusHtml(),
+            ],
             'customerEmail' => [
                 'label' => t('Customer Email', category: 'stripe'),
                 'placeholder' => 'test@example.com',
             ],
+            'products' => [
+                'label' => t('Products', category: 'stripe'),
+                'placeholder' => function () {
+                    $product = new Product;
+                    $product->title = t('{type} Title', ['type' => Product::displayName()], category: 'stripe');
+
+                    return app(ElementHtml::class)->chipHtml($product);
+                },
+            ],
         ];
+    }
+
+    #[Override]
+    public static function attributePreviewHtml(array $attribute): mixed
+    {
+        return match ($attribute['value']) {
+            'stripeEdit', 'stripeStatus', 'products' => $attribute['placeholder'](),
+            default => parent::attributePreviewHtml($attribute),
+        };
     }
 
     #[Override]
