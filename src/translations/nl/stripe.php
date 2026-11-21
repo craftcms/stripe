@@ -70,7 +70,7 @@ return [
     'Invoices' => 'Facturen',
     'Last 4 digits' => 'Laatste 4 cijfers',
     'Leave blank if products don’t have URLs' => 'Leeg laten als producten geen URL\'s hebben',
-    'Live Mode' => 'Live-modus',
+    'Live Mode' => 'Productiemodus',
     'Max Amount' => 'Maximumbedrag',
     'Metadata' => 'Metagegevens',
     'Min Amount' => 'Minimumbedrag',

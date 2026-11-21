@@ -14,7 +14,7 @@ return [
     '{type} Title' => '{type}标题',
     '{pricePerUnit}/{interval}' => '{pricePerUnit}/{interval}',
     '{unitPrice} per group of {divideBy}' => '每 {divideBy} 个 {unitPrice}',
-    'Active' => '有效',
+    'Active' => '已激活',
     'Add a product' => '添加产品',
     'Add a subscription' => '添加订阅',
     'All products' => '所有产品',

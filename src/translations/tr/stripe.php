@@ -70,7 +70,7 @@ return [
     'Invoices' => 'Faturalar',
     'Last 4 digits' => 'Son 4 hane',
     'Leave blank if products don’t have URLs' => 'Ürünlerin URL\'si yoksa boş bırakın',
-    'Live Mode' => 'Canlı Mod',
+    'Live Mode' => 'Üretim Modu',
     'Max Amount' => 'Azami Tutar',
     'Metadata' => 'Meta veri',
     'Min Amount' => 'Asgari Tutar',

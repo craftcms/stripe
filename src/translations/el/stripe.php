@@ -70,7 +70,7 @@ return [
     'Invoices' => 'Τιμολόγια',
     'Last 4 digits' => 'Τελευταία 4 ψηφία',
     'Leave blank if products don’t have URLs' => 'Αφήστε κενό εάν τα προϊόντα δεν έχουν URL',
-    'Live Mode' => 'Ζωντανή λειτουργία',
+    'Live Mode' => 'Λειτουργία παραγωγής',
     'Max Amount' => 'Μέγιστο ποσό',
     'Metadata' => 'Μεταδεδομένα',
     'Min Amount' => 'Ελάχιστο ποσό',

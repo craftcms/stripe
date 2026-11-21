@@ -70,7 +70,7 @@ return [
     'Invoices' => 'Fakturaer',
     'Last 4 digits' => 'Siste 4 sifre',
     'Leave blank if products don’t have URLs' => 'Skal stå tomt hvis produktene ikke har nettadresser',
-    'Live Mode' => 'Live-modus',
+    'Live Mode' => 'Produksjonsmodus',
     'Max Amount' => 'Maks. beløp',
     'Metadata' => 'Metadata',
     'Min Amount' => 'Min. beløp',

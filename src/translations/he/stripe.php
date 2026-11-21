@@ -70,7 +70,7 @@ return [
     'Invoices' => 'חשבוניות',
     'Last 4 digits' => '4 ספרות אחרונות',
     'Leave blank if products don’t have URLs' => 'השאר ריק אם למוצרים אין כתובות URL',
-    'Live Mode' => 'מצב חי',
+    'Live Mode' => 'מצב ייצור',
     'Max Amount' => 'סכום מקסימלי',
     'Metadata' => 'מטא-נתונים',
     'Min Amount' => 'סכום מינימלי',

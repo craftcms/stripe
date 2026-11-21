@@ -70,7 +70,7 @@ return [
     'Invoices' => '인보이스',
     'Last 4 digits' => '마지막 4자리',
     'Leave blank if products don’t have URLs' => '제품에 URL이 포함되지 않은 경우 비워 두십시오',
-    'Live Mode' => '라이브 모드',
+    'Live Mode' => '운영 모드',
     'Max Amount' => '최대 금액',
     'Metadata' => '메타데이터',
     'Min Amount' => '최소 금액',

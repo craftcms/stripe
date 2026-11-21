@@ -70,7 +70,7 @@ return [
     'Invoices' => 'Számlák',
     'Last 4 digits' => 'Utolsó 4 számjegy',
     'Leave blank if products don’t have URLs' => 'Ha a termékekhez nem tartozik URL, hagyja üresen.',
-    'Live Mode' => 'Éles mód',
+    'Live Mode' => 'Produkciós mód',
     'Max Amount' => 'Maximális összeg',
     'Metadata' => 'Metaadatok',
     'Min Amount' => 'Minimális összeg',

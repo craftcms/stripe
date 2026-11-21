@@ -93,7 +93,7 @@ return [
     'Payment Methods' => 'Moyens de paiement',
     'Please specify the quantity' => 'Veuillez indiquer la quantité',
     'Preset Amount' => 'Montant prédéfini',
-    'Price per Unit' => 'Prix unitaire',
+    'Price per Unit' => 'Prix par unité',
     'Price Type' => 'Type de prix',
     'Prices' => 'Prix',
     'Primary Currency' => 'Devise principale',

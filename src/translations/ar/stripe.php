@@ -70,7 +70,7 @@ return [
     'Invoices' => 'الفواتير',
     'Last 4 digits' => 'آخر 4 أرقام',
     'Leave blank if products don’t have URLs' => 'اترك هذا الجزء فارغًا إذا لم تتوفر عناوين URL للمنتجات',
-    'Live Mode' => 'الوضع المباشر',
+    'Live Mode' => 'وضع الإنتاج',
     'Max Amount' => 'الحد الأقصى للمبلغ',
     'Metadata' => 'البيانات التعريفية',
     'Min Amount' => 'الحد الأدنى للمبلغ',
