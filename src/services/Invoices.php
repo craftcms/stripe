@@ -12,6 +12,7 @@ use craft\db\Query;
 use craft\elements\User;
 use craft\errors\MutexException;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\stripe\db\Table;
 use craft\stripe\helpers\Price;
 use craft\stripe\models\Invoice;
@@ -234,7 +235,7 @@ class Invoices extends Component
                 'id' => $invoice->stripeId,
                 'title' => $invoice->data['number'] ?? Craft::t('stripe', 'Draft'),
                 'amount' => $formatter->asCurrency($amount, $invoice->data['currency']),
-                'stripeStatus' => $invoice->data['status'],
+                'stripeStatus' => $invoice->data['status'] ? Craft::t('stripe', StringHelper::titleize($invoice->data['status'])) : null,
                 'frequency' => '',
                 'customerEmail' => $invoice->data['customer_email'],
                 'due' => $invoice->data['due_date'] ? $formatter->asDatetime($invoice->data['due_date'], 'php:Y-m-d') : '',
