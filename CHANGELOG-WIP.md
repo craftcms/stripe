@@ -4,8 +4,10 @@
 
 ### Added
 - Added `CraftCms\Stripe\Elements\Subscription::getCurrentPeriodStart()` and `getCurrentPeriodEnd()`.
+- Added translations for Arabic, Chinese, Czech, Danish, Dutch, English (United Kingdom), French, French (Canada), German, German (Switzerland), Greek, Hebrew, Hungarian, Icelandic, Indonesian, Italian, Japanese, Korean, Kyrgyz, Norwegian Bokmål, Norwegian Nynorsk, Persian, Portuguese, Russian, Slovak, Swedish, Thai, Turkish, Ukrainian, and Welsh.
 
 ### Changed
+- Completed the Spanish and Polish translations, and fixed some of their existing translations.
 - Stripe now requires Craft CMS 6.0 or later and PHP 8.5 or later, and runs natively on Craft 6 without the `craftcms/yii2-adapter` package.
 - The plugin’s classes moved to the `CraftCms\Stripe` namespace. A migration updates the class names stored in the database and project config. See [UPGRADE.md](UPGRADE.md).
 - Plugin settings are now read from `config/craft/stripe.php`.
