@@ -65,7 +65,7 @@ return [
     'Live Mode' => 'Робочий режим',
     'Metadata' => 'Метадані',
     'month' => 'місяць',
-    'Name' => 'Ім\'я',
+    'Name' => 'Ім’я',
     'New invoice' => 'Новий рахунок',
     'No invoices exist yet.' => 'Рахунків ще немає.',
     'No payment methods exist yet.' => 'Способів оплати ще немає.',
