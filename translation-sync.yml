@@ -1,0 +1,9 @@
+# Branches whose translation files are kept in sync, oldest first.
+# When branches translate a string differently, the newest branch's translation wins.
+branches:
+  1.x: src/translations
+  2.x: lang
+files:
+  - stripe.php
+source_language: en
+commit_message: Update translations
