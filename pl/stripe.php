@@ -29,7 +29,7 @@ return [
     'Couldn’t save webhook settings.' => 'Nie udało się zapisać ustawień webhooka.',
     'Create the webhook for the current environment.' => 'Utwórz webhook dla bieżącego środowiska.',
     'Create' => 'Utwórz',
-    'Created {duration} ago.' => 'Utworzono {duration} temu.',
+    'Created {duration} ago.' => 'Czas od utworzenia: {duration}.',
     'Created at' => 'Utworzono dnia',
     'Created' => 'Utworzono',
     'Currency' => 'Waluta',
