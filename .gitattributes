@@ -7,7 +7,6 @@
 /.gitignore export-ignore
 /.lintstagedrc.json export-ignore
 /.nvmrc export-ignore
-/crowdin.yml export-ignore
 /CHANGELOG.md export-ignore
 /README.md export-ignore
 /SECURITY.md export-ignore
@@ -34,3 +33,6 @@
 
 # Auto detect text files and perform LF normalization
 * text=auto
+# Translations other than the en source are managed by translation-sync
+/lang/*/stripe.php linguist-generated=true
+/lang/en/stripe.php -linguist-generated
