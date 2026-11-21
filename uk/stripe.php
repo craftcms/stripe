@@ -133,7 +133,7 @@ return [
     'Suspended in Stripe' => 'Призупинено в Stripe',
     'Sync All Data from Stripe' => 'Синхронізація всіх даних зі Stripe',
     'Sync all data' => 'Синхронізувати всі дані',
-    'Sync customer-related Stripe data.' => 'Синхронізувати дані Stripe, пов\'язані з клієнтом.',
+    'Sync customer-related Stripe data.' => 'Синхронізувати дані Stripe, пов’язані з клієнтом.',
     'Sync from Stripe' => 'Синхронізувати зі Stripe',
     'Sync Stripe data for customer {customerId}.' => 'Синхронізувати дані Stripe для клієнта {customerId}.',
     'Tax Code' => 'Податковий код',
