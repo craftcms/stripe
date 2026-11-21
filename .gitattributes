@@ -15,3 +15,7 @@ tests/ export-ignore
 
 # Auto-detect text files and perform LF normalization
 * text=auto
+
+# Translations other than the en source are managed by translation-sync
+/src/translations/*/stripe.php linguist-generated=true
+/src/translations/en/stripe.php -linguist-generated
