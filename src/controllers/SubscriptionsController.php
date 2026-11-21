@@ -75,14 +75,14 @@ class SubscriptionsController extends Controller
         $subscriptionElement = SubscriptionElement::find()->stripeId($stripeId)->one();
         if (!$subscriptionElement) {
             Craft::error("Resume subscription - subscription element with Stripe ID {$stripeId} not found.", 'stripe');
-            return $this->asFailure(Craft::t('app', 'Unable to resume subscription.'));
+            return $this->asFailure(Craft::t('stripe', 'Unable to resume subscription.'));
         }
 
         if (!Plugin::getInstance()->getSubscriptions()->resumeSubscriptionByStripeId($subscriptionElement->stripeId)) {
-            return $this->asFailure(Craft::t('app', 'Unable to resume subscription.'));
+            return $this->asFailure(Craft::t('stripe', 'Unable to resume subscription.'));
         }
 
-        return $this->asSuccess(Craft::t('app', 'Subscription resumed.'));
+        return $this->asSuccess(Craft::t('stripe', 'Subscription resumed.'));
     }
 
     /**
@@ -99,13 +99,13 @@ class SubscriptionsController extends Controller
         $subscriptionElement = SubscriptionElement::find()->stripeId($stripeId)->one();
         if (!$subscriptionElement) {
             Craft::error("Cancel subscription - subscription element with Stripe ID {$stripeId} not found.", 'stripe');
-            return $this->asFailure(Craft::t('app', 'Unable to cancel subscription.'));
+            return $this->asFailure(Craft::t('stripe', 'Unable to cancel subscription.'));
         }
 
         if (!Plugin::getInstance()->getSubscriptions()->cancelSubscriptionByStripeId($subscriptionElement->stripeId, $immediately)) {
-            return $this->asFailure(Craft::t('app', 'Unable to cancel subscription.'));
+            return $this->asFailure(Craft::t('stripe', 'Unable to cancel subscription.'));
         }
 
-        return $this->asSuccess(Craft::t('app', 'Subscription cancelled.'));
+        return $this->asSuccess(Craft::t('stripe', 'Subscription cancelled.'));
     }
 }

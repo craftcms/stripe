@@ -11,7 +11,6 @@ use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\StringHelper;
 use craft\stripe\elements\db\PriceQuery;
 use craft\stripe\elements\Price;
 use craft\stripe\enums\PriceType;
@@ -36,15 +35,10 @@ class PriceTypeConditionRule extends BaseMultiSelectConditionRule implements Ele
      */
     protected function options(): array
     {
-        return array_map(function($option) {
-            return [
-                'value' => $option,
-                'label' => StringHelper::humanize($option),
-            ];
-        }, [
-            PriceType::OneTime->value,
-            PriceType::Recurring->value,
-        ]);
+        return [
+            ['value' => PriceType::OneTime->value, 'label' => \Craft::t('stripe', 'One-time')],
+            ['value' => PriceType::Recurring->value, 'label' => \Craft::t('stripe', 'Recurring')],
+        ];
     }
 
     /**

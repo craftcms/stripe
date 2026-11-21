@@ -11,7 +11,6 @@ use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\StringHelper;
 use craft\stripe\elements\db\ProductQuery;
 use craft\stripe\elements\Price;
 use craft\stripe\elements\Product;
@@ -37,8 +36,8 @@ class StripeStatusConditionRule extends BaseMultiSelectConditionRule implements 
     protected function options(): array
     {
         return [
-            ['value' => Product::STRIPE_STATUS_ACTIVE, 'label' => StringHelper::titleize(Product::STRIPE_STATUS_ACTIVE)],
-            ['value' => Product::STRIPE_STATUS_ARCHIVED, 'label' => StringHelper::titleize(Product::STRIPE_STATUS_ARCHIVED)],
+            ['value' => Product::STRIPE_STATUS_ACTIVE, 'label' => \Craft::t('stripe', 'Active')],
+            ['value' => Product::STRIPE_STATUS_ARCHIVED, 'label' => \Craft::t('stripe', 'Archived')],
         ];
     }
 

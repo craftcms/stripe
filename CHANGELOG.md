@@ -1,5 +1,12 @@
 # Release Notes for Stripe
 
+## Unreleased
+
+- Added translations for Arabic, Chinese, Czech, Danish, Dutch, English (United Kingdom), French, French (Canada), German, German (Switzerland), Greek, Hebrew, Hungarian, Icelandic, Indonesian, Italian, Japanese, Korean, Kyrgyz, Norwegian Bokmål, Norwegian Nynorsk, Persian, Portuguese, Russian, Slovak, Swedish, Thai, Turkish, Ukrainian, and Welsh.
+- Completed the Spanish and Polish translations, and fixed some of their existing translations.
+- Stripe statuses, invoice statuses, price types, and product data labels are now translatable.
+- Fixed a bug where subscription cancel and resume messages, and Feed Me field mapping labels, weren’t translatable.
+
 ## 1.8.1 - 2026-08-25
 
 - Added the ability to include Stripe Status in the Subscription element’s card. ([#119](https://github.com/craftcms/stripe/pull/119))

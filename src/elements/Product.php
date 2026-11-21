@@ -643,9 +643,9 @@ class Product extends Element
             self::STRIPE_STATUS_ARCHIVED => 'red',
             default => 'orange',
         };
-        $stripeStatus = StringHelper::titleize(
+        $stripeStatus = Craft::t('stripe', StringHelper::titleize(
             implode(' ', StringHelper::toWords($this->stripeStatus, false, true))
-        );
+        ));
         return "<span class='status $color'></span>" . $stripeStatus;
     }
 

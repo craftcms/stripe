@@ -62,11 +62,11 @@
 
         {% js %}
             var columns = [
-            { name: '__slot:title', title: '{{ 'Topic'|t('stripe') }}' },
-            { name: 'apiVersion', title: '{{ 'API Version'|t('stripe') }}' },
-            { name: 'livemode', title: '{{ 'Live Mode'|t('stripe') }}' },
-            { name: 'whStatus', title: '{{ 'Status'|t('stripe') }}' },
-            { name: 'address', title: '{{ 'URL'|t('stripe') }}' },
+            { name: '__slot:title', title: Craft.t('stripe', 'Topic') },
+            { name: 'apiVersion', title: Craft.t('stripe', 'API Version') },
+            { name: 'livemode', title: Craft.t('stripe', 'Live Mode') },
+            { name: 'whStatus', title: Craft.t('stripe', 'Status') },
+            { name: 'address', title: Craft.t('stripe', 'URL') },
             ];
 
             new Craft.VueAdminTable({

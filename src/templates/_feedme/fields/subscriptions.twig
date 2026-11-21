@@ -16,7 +16,7 @@
     type: 'elementselect',
     options: {
       elementType: fieldClass.elementType,
-      selectionLabel: "Default Subscription"|t('feed-me'),
+      selectionLabel: "Default Subscription"|t('stripe'),
       sources: field.sources ?? '*',
     },
   } %}
@@ -26,7 +26,7 @@
 
 {% block extraSettings %}
   <div class="element-match">
-    <span>{{ 'Data provided for this subscription is:'|t('feed-me') }}</span>
+    <span>{{ 'Data provided for this subscription is:'|t('stripe') }}</span>
 
     {{ forms.selectField({
       name: 'options[match]',
