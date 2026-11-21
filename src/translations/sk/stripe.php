@@ -39,7 +39,7 @@ return [
     'Couldn’t save webhook settings.' => 'Nepodarilo sa uložiť nastavenia webhooku.',
     'Create the webhook for the current environment.' => 'Vytvoriť webhook pre aktuálne prostredie.',
     'Create' => 'Vytvoriť',
-    'Created {duration} ago.' => 'Vytvorené pred {duration}.',
+    'Created {duration} ago.' => 'Čas od vytvorenia: {duration}.',
     'Created at' => 'Vytvorené dňa',
     'Created' => 'Vytvorené',
     'Currency' => 'Mena',

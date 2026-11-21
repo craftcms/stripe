@@ -57,7 +57,7 @@ return [
     'Draft' => 'Vázlat',
     'Due' => 'Esedékes',
     'Ended at' => 'Befejeződés időpontja',
-    'Every {intervalCount} {interval}' => '{interval, select, day{{intervalCount, plural, =1{Naponta} other{# naponta}}} week{{intervalCount, plural, =1{Hetente} other{# hetente}}} month{{intervalCount, plural, =1{Havonta} other{# havonta}}} year{{intervalCount, plural, =1{Évente} other{# évente}}} other{{intervalCount, number} {interval}}}',
+    'Every {intervalCount} {interval}' => '{interval, select, day{{intervalCount, plural, =1{Naponta} other{# naponta}}} week{{intervalCount, plural, =1{Hetente} other{# hetente}}} month{{intervalCount, plural, =1{Havonta} other{# havonta}}} year{{intervalCount, plural, =1{Évente} other{# évente}}} other{Időköz: {intervalCount, number} {interval}}}',
     'Features' => 'Funkciók',
     'Frequency' => 'Gyakoriság',
     'General' => 'Általános',

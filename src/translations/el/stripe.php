@@ -160,7 +160,7 @@ return [
     'Unpaid' => 'Απλήρωτη',
     'Updated at' => 'Ενημερώθηκε στις',
     'URL' => 'URL',
-    'Void' => 'Ακυρωμένο',
+    'Void' => 'Άκυρο',
     'Webhook ID' => 'ID webhook',
     'Webhook Management' => 'Διαχείριση webhook',
     'Webhook Settings' => 'Ρυθμίσεις webhook',

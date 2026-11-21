@@ -39,7 +39,7 @@ return [
     'Couldn’t save webhook settings.' => 'Nastavení webhooku se nepodařilo uložit.',
     'Create the webhook for the current environment.' => 'Vytvořit webhook pro aktuální prostředí.',
     'Create' => 'Vytvořit',
-    'Created {duration} ago.' => 'Vytvořeno před {duration}.',
+    'Created {duration} ago.' => 'Doba od vytvoření: {duration}.',
     'Created at' => 'Vytvořeno dne',
     'Created' => 'Vytvořeno',
     'Currency' => 'Měna',
