@@ -62,7 +62,7 @@ return [
     'Interval' => 'Aralık',
     'Invoices' => 'Faturalar',
     'Last 4' => 'Son 4',
-    'Live Mode' => 'Canlı Mod',
+    'Live Mode' => 'Üretim Modu',
     'Metadata' => 'Meta veri',
     'month' => 'ay',
     'Name' => 'İsim',

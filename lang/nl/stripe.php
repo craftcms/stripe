@@ -62,7 +62,7 @@ return [
     'Interval' => 'Interval',
     'Invoices' => 'Facturen',
     'Last 4' => 'Laatste 4',
-    'Live Mode' => 'Live-modus',
+    'Live Mode' => 'Productiemodus',
     'Metadata' => 'Metagegevens',
     'month' => 'maand',
     'Name' => 'Naam',

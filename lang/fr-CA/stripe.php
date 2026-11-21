@@ -82,7 +82,7 @@ return [
     'Payment Methods' => 'Moyens de paiement',
     'per unit' => 'par unité',
     'Please specify the quantity' => 'Veuillez indiquer la quantité',
-    'Price per Unit' => 'Prix unitaire',
+    'Price per Unit' => 'Prix par unité',
     'Price Type' => 'Type de prix',
     'Prices' => 'Prix',
     'Primary Currency' => 'Devise principale',

@@ -62,7 +62,7 @@ return [
     'Interval' => 'Időköz',
     'Invoices' => 'Számlák',
     'Last 4' => 'Utolsó 4',
-    'Live Mode' => 'Éles mód',
+    'Live Mode' => 'Produkciós mód',
     'Metadata' => 'Metaadatok',
     'month' => 'hónap',
     'Name' => 'Név',

@@ -62,7 +62,7 @@ return [
     'Interval' => 'Intervall',
     'Invoices' => 'Rechnungen',
     'Last 4' => 'Letzte 4',
-    'Live Mode' => 'Live-Modus',
+    'Live Mode' => 'Produktivmodus',
     'Metadata' => 'Metadaten',
     'month' => 'Monat',
     'Name' => 'Name',

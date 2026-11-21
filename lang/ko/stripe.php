@@ -62,7 +62,7 @@ return [
     'Interval' => '간격',
     'Invoices' => '인보이스',
     'Last 4' => '마지막 4자리',
-    'Live Mode' => '라이브 모드',
+    'Live Mode' => '운영 모드',
     'Metadata' => '메타데이터',
     'month' => '월',
     'Name' => '이름',

@@ -62,7 +62,7 @@ return [
     'Interval' => 'מרווח',
     'Invoices' => 'חשבוניות',
     'Last 4' => '4 אחרונות',
-    'Live Mode' => 'מצב חי',
+    'Live Mode' => 'מצב ייצור',
     'Metadata' => 'מטא-נתונים',
     'month' => 'חודש',
     'Name' => 'שם',

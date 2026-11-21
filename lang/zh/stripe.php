@@ -12,7 +12,7 @@
  * @author    Pixel & Tonic, Inc
  */
 return [
-    'Active' => '有效',
+    'Active' => '已激活',
     'Add a product' => '添加产品',
     'Add a subscription' => '添加订阅',
     'All products' => '所有产品',

@@ -62,7 +62,7 @@ return [
     'Interval' => 'Intervall',
     'Invoices' => 'Fakturaer',
     'Last 4' => 'Siste 4',
-    'Live Mode' => 'Live-modus',
+    'Live Mode' => 'Produksjonsmodus',
     'Metadata' => 'Metadata',
     'month' => 'måned',
     'Name' => 'Navn',
