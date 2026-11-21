@@ -149,7 +149,7 @@ return [
     'Unit Price' => 'Τιμή μονάδας',
     'Unpaid' => 'Απλήρωτη',
     'URL' => 'URL',
-    'Void' => 'Ακυρωμένο',
+    'Void' => 'Άκυρο',
     'Webhook could not be deleted' => 'Δεν ήταν δυνατή η διαγραφή του webhook',
     'Webhook deleted' => 'Το webhook διαγράφηκε',
     'Webhook ID' => 'ID webhook',

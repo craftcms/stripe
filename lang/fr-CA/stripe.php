@@ -144,7 +144,7 @@ return [
     'Unable to cancel subscription.' => 'Impossible d’annuler l’abonnement.',
     'Unable to create webhook' => 'Impossible de créer le webhook',
     'Unable to resume subscription.' => 'Impossible de reprendre l’abonnement.',
-    'Uncollectible' => 'Irrécouvrable',
+    'Uncollectible' => 'Non recouvrable',
     'Unit Amount' => 'Montant unitaire',
     'Unit Price' => 'Prix unitaire',
     'Unpaid' => 'Impayé',

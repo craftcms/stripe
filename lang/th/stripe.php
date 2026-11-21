@@ -91,7 +91,7 @@ return [
     'Product URI Format' => 'รูปแบบ URI ของผลิตภัณฑ์',
     'Products' => 'ผลิตภัณฑ์',
     'Publishable Key' => 'คีย์ที่เผยแพร่ได้',
-    'Recurring' => 'เรียกเก็บเงินซ้ำ',
+    'Recurring' => 'เรียกเก็บเงินเป็นประจำ',
     'Register webhook' => 'ลงทะเบียนเว็บฮุก',
     'Resume subscription' => 'ดำเนินการสมัครสมาชิกต่อ',
     'Scheduled' => 'ตั้งเวลาแล้ว',
