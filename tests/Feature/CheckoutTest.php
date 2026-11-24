@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Stripe\Plugin;
 
 use function Pest\Laravel\actingAs;
 
@@ -30,6 +31,23 @@ it('picks the checkout mode from the line items’ prices', function (array $pri
     'recurring' => [['price_basic_monthly'], 'subscription'],
     'mixed' => [['price_ebook', 'price_pro_monthly'], 'subscription'],
 ]);
+
+it('returns to the page that posted the checkout when no URL is set', function () {
+    // Settings may already be loaded, or be loaded again from config for the request
+    config(['craft.stripe.defaultCancelUrl' => null]);
+    Plugin::getInstance()->getSettings()->defaultCancelUrl = null;
+
+    $this->post('/pricing?plan=pro', [
+        'action' => 'stripe/checkout',
+        'lineItems' => [['price' => 'price_ebook', 'quantity' => 1]],
+        'customer' => 'false',
+    ])->assertRedirectContains('https://checkout.stripe.test/c/pay/');
+
+    $session = $this->stripe->requestsTo('POST', '/v1/checkout/sessions')[0];
+
+    expect($session['cancel_url'])->toBe('http://localhost/pricing?plan=pro')
+        ->and($session['success_url'])->toBe('https://localhost/thanks');
+});
 
 it('checks out as the current user’s Stripe customer', function () {
     actingAs(UserModel::factory()->createElement(['email' => 'alice@example.com']));

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Stripe;
 
+use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Stripe\Elements\Price;
@@ -94,6 +95,19 @@ class Checkout
             default => Plugin::getInstance()->getSettings()->defaultCancelUrl,
         };
 
-        return $url ? Url::siteUrl($url) : request()->fullUrl();
+        return $url ? Url::siteUrl($url) : $this->getRequestedPageUrl();
+    }
+
+    /**
+     * Returns the URL of the page that started the checkout.
+     *
+     * A form that posts an `action` param leaves `request()` with the action’s URI, so this uses the original path.
+     */
+    private function getRequestedPageUrl(): string
+    {
+        $request = request();
+        $query = $request->getQueryString();
+
+        return $request->getSchemeAndHttpHost().'/'.ResolveSite::requestPath($request).($query ? "?$query" : '');
     }
 }
