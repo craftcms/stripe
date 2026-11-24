@@ -57,7 +57,7 @@ class Prices
      */
     public function createOrUpdatePrice(StripePrice $price): bool
     {
-        $element = Cache::lock("stripe-price:$price->id")->block(15, function () use ($price) {
+        $element = Cache::lock("stripe-price:$price->id", 60)->block(15, function () use ($price) {
             $element = Price::find()->stripeId($price->id)->status(null)->one() ?? new Price;
             $data = $price->toArray();
 

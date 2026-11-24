@@ -50,7 +50,7 @@ class Customers
 
     public function createOrUpdateCustomer(StripeCustomer $customer): bool
     {
-        return Cache::lock("stripe-customer:$customer->id")->block(15, fn () => Customer::updateOrCreate(
+        return Cache::lock("stripe-customer:$customer->id", 60)->block(15, fn () => Customer::updateOrCreate(
             ['stripeId' => $customer->id],
             [
                 'email' => (string) $customer->email,

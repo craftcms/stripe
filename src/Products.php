@@ -55,7 +55,7 @@ class Products
      */
     public function createOrUpdateProduct(StripeProduct $product): bool
     {
-        $element = Cache::lock("stripe-product:$product->id")->block(15, function () use ($product) {
+        $element = Cache::lock("stripe-product:$product->id", 60)->block(15, function () use ($product) {
             $element = Product::find()->stripeId($product->id)->status(null)->one() ?? new Product;
 
             $attributes = [
