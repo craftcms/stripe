@@ -90,8 +90,16 @@ class Subscriptions
     public function createOrUpdateSubscription(StripeSubscription $subscription, ?Subscription $element = null): bool
     {
         $element = Cache::lock("stripe-subscription:$subscription->id", 60)->block(15, function () use ($subscription, $element) {
+            $draft = $element?->getIsUnpublishedDraft() ? $element : null;
             // Another process may have created the element while this one waited for the lock
             $element = Subscription::find()->stripeId($subscription->id)->status(null)->one() ?? $element ?? new Subscription;
+
+            // When the subscription was synced before its checkout’s draft could be published, keep the draft’s field values
+            $mergeDraft = $draft !== null && $element !== $draft;
+
+            if ($mergeDraft) {
+                $element->setFieldValues($draft->getSerializedFieldValues());
+            }
 
             $attributes = [
                 'stripeId' => $subscription->id,
@@ -125,6 +133,10 @@ class Subscriptions
                 Log::error("Failed to synchronize Stripe subscription ID #$subscription->id: {$e->getMessage()}");
 
                 return false;
+            }
+
+            if ($mergeDraft) {
+                Elements::deleteElement($draft, hardDelete: true);
             }
 
             /** @var Subscription $element */
