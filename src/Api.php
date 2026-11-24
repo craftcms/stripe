@@ -111,6 +111,8 @@ class Api
 
     /**
      * Returns the Stripe account ID for the current API key, cached for a day.
+     *
+     * A failed lookup is cached too, so Dashboard links don’t each call the API again.
      */
     public function getAccountId(): ?string
     {
@@ -120,15 +122,18 @@ class Api
             return null;
         }
 
-        return Cache::remember('stripe-account-id-'.md5($apiKey), 86400, function () {
+        // An empty string stands for a failed lookup, because the cache treats `null` as a miss
+        $accountId = Cache::remember('stripe-account-id-'.md5($apiKey), 86400, function () {
             try {
                 return $this->getClient()->accounts->retrieve()->id;
             } catch (Throwable $e) {
                 Log::warning("Failed to retrieve Stripe account ID: {$e->getMessage()}");
 
-                return null;
+                return '';
             }
         });
+
+        return $accountId !== '' ? $accountId : null;
     }
 
     /**

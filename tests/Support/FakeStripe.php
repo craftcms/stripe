@@ -64,15 +64,15 @@ class FakeStripe implements ClientInterface
             throw new RuntimeException("Unexpected Stripe URL: $absUrl");
         }
 
-        if (! preg_grep('/^Authorization: Bearer sk_test_/', $headers)) {
-            return $this->respond(401, ['error' => ['message' => 'Only sk_test_ keys are accepted by the fake Stripe API.']]);
-        }
-
         $method = strtoupper($method);
         $path = (string) parse_url($absUrl, PHP_URL_PATH);
         parse_str((string) parse_url($absUrl, PHP_URL_QUERY), $query);
         $params = $query + $params;
         $this->requests[] = ['method' => $method, 'path' => $path, 'params' => $params];
+
+        if (! preg_grep('/^Authorization: Bearer sk_test_/', $headers)) {
+            return $this->respond(401, ['error' => ['message' => 'Only sk_test_ keys are accepted by the fake Stripe API.']]);
+        }
 
         return $this->route($method, array_values(array_filter(explode('/', $path))), $path, $params);
     }

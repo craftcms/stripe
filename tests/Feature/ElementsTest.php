@@ -8,6 +8,7 @@ use CraftCms\Stripe\Elements\Subscription;
 use CraftCms\Stripe\Models\Customer;
 use CraftCms\Stripe\Models\Invoice;
 use CraftCms\Stripe\Models\PaymentMethod;
+use CraftCms\Stripe\Plugin;
 
 it('derives product and price statuses from Stripe', function (string $elementType) {
     $element = new $elementType;
@@ -69,6 +70,15 @@ it('links elements and records to the Stripe Dashboard', function (string $class
     'invoice' => [Invoice::class, ['stripeId' => 'in_1'], 'invoices/in_1'],
     'payment method, by its customer' => [PaymentMethod::class, ['data' => ['customer' => 'cus_1']], 'customers/cus_1'],
 ]);
+
+it('looks up the Stripe account only once when the lookup fails', function () {
+    // The fake Stripe API rejects live keys
+    Plugin::getInstance()->getSettings()->secretKey = 'sk_live_rejected';
+
+    expect((new Product(['stripeId' => 'prod_1']))->getStripeEditUrl())->toBe('https://dashboard.stripe.com/products/prod_1')
+        ->and((new Product(['stripeId' => 'prod_2']))->getStripeEditUrl())->toBe('https://dashboard.stripe.com/products/prod_2')
+        ->and($this->stripe->requestsTo('GET', '/v1/account'))->toHaveCount(1);
+});
 
 it('holds the Stripe data as an array', function (string $class) {
     $model = new $class;
