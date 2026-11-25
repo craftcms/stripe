@@ -8,7 +8,7 @@ use CraftCms\Cms\Element\EmbeddedElementIndex;
 use CraftCms\Cms\Http\Controllers\Users\EditUserTrait;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Ui\Nodes\Heading;
+use CraftCms\Cms\Ui\Nodes\Tab;
 use CraftCms\Cms\Ui\Nodes\Table;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Stripe\Customers;
@@ -90,14 +90,10 @@ readonly class CustomersController
             ->emptyMessage(t('No payment methods exist yet.', category: 'stripe'));
 
         return $response->ui(Ui::make([
-            Heading::make('stripe-customers-heading', t('Customers', category: 'stripe')),
-            $customers,
-            Heading::make('stripe-subscriptions-heading', t('Subscriptions', category: 'stripe')),
-            $subscriptions->uiNode('subscriptions'),
-            Heading::make('stripe-invoices-heading', t('Invoices', category: 'stripe')),
-            $invoices,
-            Heading::make('stripe-payment-methods-heading', t('Payment Methods', category: 'stripe')),
-            $paymentMethods,
+            Tab::make('stripe-subscriptions-tab', t('Subscriptions', category: 'stripe'), [$subscriptions->uiNode('subscriptions')]),
+            Tab::make('stripe-invoices-tab', t('Invoices', category: 'stripe'), [$invoices]),
+            Tab::make('stripe-payment-methods-tab', t('Payment Methods', category: 'stripe'), [$paymentMethods]),
+            Tab::make('stripe-customers-tab', t('Customers', category: 'stripe'), [$customers]),
         ]), props: [
             // The Ui page shows `metadataHtml` in its Info panel, rather than the `details` other user screens use
             'metadataHtml' => (string) value($response->metaSidebarHtml),
