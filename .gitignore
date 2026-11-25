@@ -1,7 +1,9 @@
-*.DS_Store
 *.idea/*
 *.log
+*.DS_Store
 *Thumbs.db
+node_modules/
+vendor/
+public/hot
 .env
-/node_modules
-/vendor
+.phpunit.result.cache
