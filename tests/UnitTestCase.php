@@ -1,0 +1,48 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\stripe\tests;
+
+use Craft;
+use craft\enums\CmsEdition;
+use craft\web\Application;
+use PHPUnit\Framework\TestCase as BaseTestCase;
+
+/**
+ * Lightweight base test case for tests that need Craft's service locator and the Stripe
+ * plugin instance, but not a live database.
+ *
+ * Boots Craft the same way {@see TestCase} does, but skips `setIsInstalled()` and the DB
+ * transaction wrap. `Plugin::$plugin` is still initialized via `createPlugin()`, which — unlike
+ * `installPlugin()` — only instantiates the plugin module (triggering its `init()`) without
+ * writing to the database or project config.
+ */
+class UnitTestCase extends BaseTestCase
+{
+    private static bool $suiteBooted = false;
+
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+
+        if (self::$suiteBooted) {
+            return;
+        }
+
+        /** @var Application $app */
+        $app = Craft::createObject(TestCase::createTestCraftObjectConfig());
+        Craft::$app = $app;
+
+        Craft::$app->setEdition(CmsEdition::Pro);
+
+        if (!Craft::$app->getPlugins()->getPlugin('stripe')) {
+            Craft::$app->getPlugins()->createPlugin('stripe');
+        }
+
+        self::$suiteBooted = true;
+    }
+}
